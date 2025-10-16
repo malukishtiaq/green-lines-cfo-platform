@@ -1,0 +1,245 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Management
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      UserRole @default(ADMIN)
+  avatar    String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  assignedTasks TaskAssignment[]
+  createdTasks  Task[]           @relation("TaskCreator")
+  updatedTasks  Task[]           @relation("TaskUpdater")
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  AGENT
+  VIEWER
+}
+
+// Customer Management
+model Customer {
+  id          String   @id @default(cuid())
+  name        String
+  email       String   @unique
+  phone       String?
+  company     String?
+  address     String?
+  city        String?
+  country     String   @default("UAE")
+  industry    String?
+  size        CompanySize?
+  status      CustomerStatus @default(ACTIVE)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  servicePlans ServicePlan[]
+  tasks        Task[]
+  communications Communication[]
+
+  @@map("customers")
+}
+
+enum CompanySize {
+  STARTUP
+  SMALL
+  MEDIUM
+  LARGE
+  ENTERPRISE
+}
+
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PROSPECT
+}
+
+// Service Plans
+model ServicePlan {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  type        ServiceType
+  status      ServiceStatus @default(ACTIVE)
+  price       Decimal?
+  currency    String   @default("AED")
+  duration    Int?     // in months
+  features    Json?    // Store plan features as JSON
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  tasks      Task[]
+
+  @@map("service_plans")
+}
+
+enum ServiceType {
+  BASIC_CFO
+  PREMIUM_CFO
+  ENTERPRISE_CFO
+  CONSULTING
+  AUDIT
+  TAX_FILING
+  CUSTOM
+}
+
+enum ServiceStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  COMPLETED
+}
+
+// Task Management
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  type        TaskType
+  priority    Priority @default(MEDIUM)
+  status      TaskStatus @default(PENDING)
+  dueDate     DateTime?
+  completedAt DateTime?
+  estimatedHours Int?
+  actualHours    Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  servicePlanId String?
+  servicePlan   ServicePlan? @relation(fields: [servicePlanId], references: [id])
+  createdById   String
+  createdBy     User @relation("TaskCreator", fields: [createdById], references: [id])
+  updatedById   String?
+  updatedBy     User? @relation("TaskUpdater", fields: [updatedById], references: [id])
+  assignments   TaskAssignment[]
+
+  @@map("tasks")
+}
+
+enum TaskType {
+  FINANCIAL_REVIEW
+  TAX_PREPARATION
+  BUDGET_PLANNING
+  AUDIT_SUPPORT
+  COMPLIANCE_CHECK
+  REPORTING
+  CONSULTATION
+  OTHER
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  ON_HOLD
+}
+
+// Task Assignments
+model TaskAssignment {
+  id        String   @id @default(cuid())
+  assignedAt DateTime @default(now())
+  status    AssignmentStatus @default(ASSIGNED)
+  notes     String?
+
+  // Relations
+  taskId String
+  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, userId])
+  @@map("task_assignments")
+}
+
+enum AssignmentStatus {
+  ASSIGNED
+  ACCEPTED
+  IN_PROGRESS
+  COMPLETED
+  REJECTED
+}
+
+// Communication Log
+model Communication {
+  id        String   @id @default(cuid())
+  type      CommunicationType
+  subject   String?
+  content   String
+  direction CommunicationDirection
+  createdAt DateTime @default(now())
+
+  // Relations
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map("communications")
+}
+
+enum CommunicationType {
+  EMAIL
+  PHONE
+  MEETING
+  CHAT
+  DOCUMENT
+  OTHER
+}
+
+enum CommunicationDirection {
+  INBOUND
+  OUTBOUND
+}
+
+// System Settings
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+  type  SettingType @default(STRING)
+  description String?
+
+  @@map("settings")
+}
+
+enum SettingType {
+  STRING
+  NUMBER
+  BOOLEAN
+  JSON
+}
