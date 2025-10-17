@@ -1,0 +1,366 @@
+# Green Lines CFO Platform - Monorepo Cursor Rules
+
+## 🏗️ Project Overview
+This is a monorepo containing the Green Lines CFO Platform with multiple applications and packages. All development must follow established patterns for consistency and maintainability.
+
+## 📁 Monorepo Structure
+```
+cfo_docs/
+├── apps/
+│   ├── hq-console/          # Admin Dashboard (Next.js 14)
+│   ├── agent-app/           # Agent Application (Future)
+│   ├── customer-app/        # Customer Portal (Future)
+│   └── api/                 # Backend API (Future)
+├── packages/
+│   ├── config/              # Shared configuration
+│   ├── database/            # Database schemas and utilities
+│   ├── shared-components/   # Reusable UI components
+│   ├── shared-types/       # TypeScript type definitions
+│   └── shared-utils/        # Utility functions
+├── docs/                    # Documentation (ONLY centralized docs here)
+└── tools/                   # Development tools
+```
+
+## 🚫 Documentation Rules (CRITICAL)
+- **NO scattered MD files** in app directories
+- **ONLY create docs in `docs/` folder**
+- **Single progress log**: `docs/Development_Progress_Log.md`
+- **NO feature-specific MD files** - creates mess
+- **Update progress log** instead of creating new files
+
+## 🎯 Development Guidelines
+
+### 1. **Application-Specific Rules**
+Each app has its own `.cursorrules` file with specific patterns:
+- **HQ Console**: Clean Architecture + Multi-language (Arabic RTL + English LTR)
+- **Agent App**: Follow HQ Console patterns when implemented
+- **Customer App**: Follow HQ Console patterns when implemented
+- **API**: RESTful APIs with proper error handling
+
+### 2. **Package Development**
+When creating shared packages:
+- Use TypeScript with strict typing
+- Export clear interfaces and types
+- Include proper documentation
+- Follow semantic versioning
+- Test across all consuming applications
+
+### 3. **Monorepo Management**
+- Use TurboRepo for build orchestration
+- Maintain consistent dependency versions
+- Use workspace protocols for internal packages
+- Follow established naming conventions
+
+## 🌍 Multi-Language Support (MANDATORY)
+
+### Language Support
+- **English (en)**: LTR - Default language
+- **Arabic (ar)**: RTL - Full RTL support
+- **URL Structure**: `/en/route` and `/ar/route`
+
+### Translation Requirements
+```typescript
+// ALWAYS use translations in components
+import { useTranslations } from 'next-intl';
+
+const MyComponent = () => {
+  const t = useTranslations('featureName');
+  const tCommon = useTranslations('common');
+  
+  return <h1>{t('title')}</h1>;
+};
+```
+
+### RTL/LTR Considerations
+```typescript
+// ALWAYS check for RTL in layout components
+import { useLocale } from 'next-intl';
+
+const MyLayout = () => {
+  const locale = useLocale();
+  const isRTL = locale === 'ar';
+  
+  return (
+    <div style={{ direction: isRTL ? 'rtl' : 'ltr' }}>
+      {/* Content */}
+    </div>
+  );
+};
+```
+
+## 🏛️ Clean Architecture (MANDATORY)
+
+### Directory Structure
+```
+src/
+├── domain/                    # 🎯 Domain Layer (Pure Business Logic)
+│   ├── entities/             # Business entities and enums
+│   ├── repositories/         # Repository interfaces (contracts)
+│   └── services/            # Domain services (validation, calculations)
+├── application/              # 🔧 Application Layer (Use Cases & Services)
+│   ├── use-cases/           # Business use cases
+│   ├── services/            # Application services (orchestration)
+│   └── index.ts            # Dependency injection container
+├── infrastructure/          # 🗄️ Infrastructure Layer (External Concerns)
+│   ├── database/           # Database configuration
+│   ├── http/               # HTTP client (like Flutter's Dio)
+│   ├── repositories/       # Repository implementations
+│   └── services/           # External services (email, payments)
+└── presentation/            # 🎨 Presentation Layer (UI)
+    ├── components/         # React components
+    ├── hooks/             # Custom React hooks
+    └── pages/             # Next.js pages (if needed)
+```
+
+### Dependency Flow Rules
+- **Inner layers** don't know about **outer layers**
+- **Outer layers** depend on **inner layers**
+- **Domain layer** has NO external dependencies
+- Use dependency injection through factories
+
+## 🌐 HTTP Client Pattern (Like Flutter's Dio)
+
+### Centralized HTTP Client
+```typescript
+// Use centralized HTTP client for ALL API calls
+import { httpClient } from '@/infrastructure/http/HttpClient';
+
+// Instead of scattered axios calls
+const response = await httpClient.get<Customer[]>('/customers');
+const customer = await httpClient.post<Customer>('/customers', customerData);
+```
+
+### HTTP Client Features
+- **Singleton Pattern**: One instance across entire app
+- **Request/Response Logging**: Like Dio printing - see all API calls in console
+- **Automatic Auth**: Bearer token handling
+- **Error Handling**: Centralized 401 redirects
+- **Easy Switching**: Change from axios to fetch/dio in one file
+
+## 🔐 Access Control System (MANDATORY)
+
+### User Roles
+- **Owner**: Can do everything (create users, delete users, access settings)
+- **CEO**: Can see everything but can't delete users or change settings
+- **Admin**: Can manage most things but not settings or user creation
+- **HR**: Can manage users and profiles
+- **Accountant**: Can manage payments and financial data
+- **Moderator**: Can manage tasks and customers but not settings
+- **Agent**: Can manage assigned tasks only
+- **Customer**: Can only view their own data
+
+### Permission Usage
+```typescript
+// Check permissions
+const { hasPermission, canAccessPage } = useAccessControl(UserRole.ADMIN);
+
+// Conditional rendering
+<PermissionGate permission={Permission.READ_REPORTS}>
+  <ReportsButton />
+</PermissionGate>
+
+// Page access
+if (!canAccessPage('settings')) {
+  return <AccessDenied />;
+}
+```
+
+## 🎨 Design System (Centralized Styling)
+
+### Theme Configuration
+```typescript
+// Change entire app design from one file
+// src/design-system/theme.ts
+export const themeConfig = {
+  colors: {
+    primary: '#1890ff', // Change this to update entire app
+    secondary: '#52c41a',
+  },
+  typography: {
+    fontFamily: {
+      primary: 'Inter, sans-serif', // Change font here
+    },
+  },
+};
+```
+
+### Usage Patterns
+```typescript
+// Method 1: Theme Configuration
+const { themeConfig } = useTheme();
+<div style={{ backgroundColor: themeConfig.colors.primary }}>
+
+// Method 2: CSS Variables
+<div className="bg-primary text-white">
+
+// Method 3: Utility Classes
+<div className="p-lg m-md border-radius-md shadow-md">
+```
+
+## 🔧 Service Architecture
+
+### Service Types
+- **Domain Services**: Pure business logic (validation, calculations)
+- **Application Services**: Use case orchestration (transactions, workflows)
+- **Infrastructure Services**: External integrations (email, payments, files)
+
+### Service Usage
+```typescript
+// Get services through factory
+const emailService = ServiceFactory.getEmailService();
+const validationService = ServiceFactory.getValidationService();
+
+// Use in use cases
+if (!validationService.isValidEmail(email)) {
+  throw new Error('Invalid email');
+}
+await emailService.sendWelcomeEmail(email, data);
+```
+
+## 📝 Translation Requirements (MANDATORY)
+
+### Always Add Translations
+When creating new features, ALWAYS add translations to both language files:
+
+```json
+// messages/en.json
+{
+  "newEntity": {
+    "title": "New Entity Management",
+    "name": "Name",
+    "description": "Description",
+    "create": "Create New Entity",
+    "edit": "Edit Entity",
+    "delete": "Delete Entity"
+  }
+}
+```
+
+```json
+// messages/ar.json
+{
+  "newEntity": {
+    "title": "إدارة الكيان الجديد",
+    "name": "الاسم",
+    "description": "الوصف",
+    "create": "إنشاء كيان جديد",
+    "edit": "تعديل الكيان",
+    "delete": "حذف الكيان"
+  }
+}
+```
+
+## 🔧 Technical Standards
+
+### TypeScript
+- Use strict TypeScript across all packages
+- Define proper interfaces and types
+- Avoid `any` type usage
+- Use proper error handling
+
+### Code Quality
+- Follow ESLint and Prettier configurations
+- Use meaningful variable and function names
+- Write self-documenting code
+- Include proper comments for complex logic
+
+### Error Handling
+```typescript
+// Always handle errors properly
+try {
+  const result = await useCase.execute(data);
+  return result;
+} catch (error) {
+  if (error instanceof Error) {
+    setError(error.message);
+  } else {
+    setError('An unexpected error occurred');
+  }
+  throw error;
+}
+```
+
+## 📋 Code Review Checklist
+
+Before submitting any code, ensure:
+
+- [ ] **Architecture**: Follows clean architecture principles
+- [ ] **Multi-language**: All text is translated (en.json + ar.json)
+- [ ] **RTL Support**: Layout works in both LTR and RTL
+- [ ] **TypeScript**: Proper typing, no `any` usage
+- [ ] **Error Handling**: Proper try-catch blocks
+- [ ] **Loading States**: User feedback during async operations
+- [ ] **Responsive**: Works on all screen sizes
+- [ ] **Accessibility**: Proper ARIA labels and semantic HTML
+- [ ] **Performance**: Optimized re-renders and API calls
+- [ ] **HTTP Client**: Uses centralized HTTP client
+- [ ] **Access Control**: Proper permission checks
+- [ ] **Design System**: Uses centralized styling
+- [ ] **Services**: Uses service architecture
+- [ ] **Documentation**: Updated progress log only
+
+## 🎯 File Naming Conventions
+
+### Applications
+- **Components**: PascalCase (`NewEntityComponent.tsx`)
+- **Hooks**: camelCase starting with `use` (`useNewEntity.ts`)
+- **Use Cases**: PascalCase ending with `UseCase` (`CreateNewEntityUseCase.ts`)
+- **Services**: PascalCase ending with `Service` (`NewEntityValidationService.ts`)
+- **Repositories**: PascalCase ending with `Repository` (`PrismaNewEntityRepository.ts`)
+- **Entities**: PascalCase (`NewEntity.ts`)
+- **Types**: PascalCase (`NewEntityStatus.ts`)
+
+### Packages
+- **Config**: kebab-case (`eslint-config.ts`)
+- **Components**: PascalCase (`Button.tsx`)
+- **Types**: PascalCase (`ApiTypes.ts`)
+- **Utils**: camelCase (`formatDate.ts`)
+
+## 🔄 Git Workflow
+
+1. **Feature Branch**: Create feature branch from `main`
+2. **Clean Architecture**: Implement following the 4-layer pattern
+3. **Translations**: Add translations to both language files
+4. **RTL Testing**: Test Arabic layout
+5. **Code Review**: Ensure all checklist items are met
+6. **Merge**: Merge to `main` after approval
+
+## 🚫 Common Mistakes to Avoid
+
+1. **Don't skip translations** - Every user-facing text must be translated
+2. **Don't ignore RTL** - Always test Arabic layout
+3. **Don't bypass clean architecture** - Follow the layer dependencies
+4. **Don't use `any` type** - Use proper TypeScript typing
+5. **Don't forget error handling** - Always handle async operations
+6. **Don't skip loading states** - Users need feedback
+7. **Don't ignore accessibility** - Use semantic HTML and ARIA labels
+8. **Don't create scattered MD files** - Only use centralized docs
+9. **Don't use direct axios/fetch** - Use centralized HTTP client
+10. **Don't hardcode permissions** - Use access control system
+11. **Don't hardcode styles** - Use design system
+12. **Don't skip services** - Use service architecture
+
+## 🎉 Success Criteria
+
+A feature is complete when:
+- ✅ Follows clean architecture principles
+- ✅ Supports both English and Arabic
+- ✅ Works in both LTR and RTL layouts
+- ✅ Has proper TypeScript typing
+- ✅ Includes error handling and loading states
+- ✅ Is responsive and accessible
+- ✅ Uses centralized HTTP client
+- ✅ Implements proper access control
+- ✅ Uses design system for styling
+- ✅ Uses service architecture
+- ✅ Has been tested in both languages
+- ✅ Follows established patterns
+- ✅ Progress log is updated (NO new MD files)
+
+## 📚 Resources
+
+- **Development Progress**: `docs/Development_Progress_Log.md`
+- **Project Guide**: `docs/Project_Guide.md`
+- **Phase Implementation**: `docs/Phase_2_Implementation.md`
+
+Remember: Consistency across the entire monorepo is key! Every new feature should feel like it belongs in the same ecosystem.

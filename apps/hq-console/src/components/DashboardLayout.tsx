@@ -23,6 +23,11 @@ import {
   BellOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
+import { useTranslations, useLocale } from 'next-intl';
+import LanguageSwitcher from './LanguageSwitcher';
+import ThemeSwitcher from './ThemeSwitcher';
+import { useAccessControl } from '@/presentation/hooks/useAccessControl';
+import { UserRole, Permission } from '@/domain/entities/AccessControl';
 
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
@@ -33,45 +38,55 @@ interface DashboardLayoutProps {
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
+  const t = useTranslations('navigation');
+  const locale = useLocale();
+  const isRTL = locale === 'ar';
+  
+  // Access control - in real app, this would come from user session
+  const { canAccessPage, currentRole } = useAccessControl(UserRole.ADMIN);
 
   const menuItems: MenuProps['items'] = [
     {
       key: 'dashboard',
       icon: <DashboardOutlined />,
-      label: 'Dashboard',
+      label: t('dashboard'),
     },
-    {
+    // Only show customers if user has permission
+    ...(canAccessPage('customers') ? [{
       key: 'customers',
       icon: <TeamOutlined />,
-      label: 'Customers',
-    },
-    {
+      label: t('customers'),
+    }] : []),
+    // Only show service plans if user has permission
+    ...(canAccessPage('service-plans') ? [{
       key: 'service-plans',
       icon: <FileTextOutlined />,
-      label: 'Service Plans',
-    },
-    {
+      label: t('servicePlans'),
+    }] : []),
+    // Only show tasks if user has permission
+    ...(canAccessPage('tasks') ? [{
       key: 'tasks',
       icon: <BarChartOutlined />,
-      label: 'Tasks & Assignment',
-    },
-    {
+      label: t('tasks'),
+    }] : []),
+    // Only show settings if user has permission
+    ...(canAccessPage('settings') ? [{
       key: 'settings',
       icon: <SettingOutlined />,
-      label: 'Settings',
-    },
+      label: t('settings'),
+    }] : []),
   ];
 
   const userMenuItems: MenuProps['items'] = [
     {
       key: 'profile',
       icon: <UserOutlined />,
-      label: 'Profile',
+      label: t('profile'),
     },
     {
       key: 'settings',
       icon: <SettingOutlined />,
-      label: 'Settings',
+      label: t('settings'),
     },
     {
       type: 'divider',
@@ -79,19 +94,19 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     {
       key: 'logout',
       icon: <LogoutOutlined />,
-      label: 'Logout',
+      label: t('logout'),
     },
   ];
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ minHeight: '100vh', direction: isRTL ? 'rtl' : 'ltr' }}>
       <Sider
         trigger={null}
         collapsible
         collapsed={collapsed}
         style={{
           background: '#fff',
-          boxShadow: '2px 0 8px 0 rgba(29,35,41,.05)',
+          boxShadow: isRTL ? '-2px 0 8px 0 rgba(29,35,41,.05)' : '2px 0 8px 0 rgba(29,35,41,.05)',
         }}
       >
         <div
@@ -145,12 +160,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               height: 64,
             }}
           />
-          <Space>
-            <Button
-              type="text"
-              icon={<BellOutlined />}
-              style={{ fontSize: '16px' }}
-            />
+                 <Space>
+                   <LanguageSwitcher />
+                   <ThemeSwitcher />
+                   <Button
+                     type="text"
+                     icon={<BellOutlined />}
+                     style={{ fontSize: '16px' }}
+                   />
             <Dropdown
               menu={{ items: userMenuItems }}
               placement="bottomRight"
