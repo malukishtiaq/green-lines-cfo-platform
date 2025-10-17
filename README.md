@@ -6,10 +6,9 @@ A comprehensive digital-first CFO Services platform spanning three main applicat
 
 **⚠️ IMPORTANT**: If you're starting a new development session, **START HERE**:
 
-1. **📖 Read the Project Continuation Guide**: [`docs/Project_Continuation_Guide.md`](./docs/Project_Continuation_Guide.md)
+1. **📖 Read the Complete Project Guide**: [`docs/Project_Guide.md`](./docs/Project_Guide.md) - **MASTER REFERENCE**
 2. **🎯 Check current phase status**: Phase 2 - Core Dashboard Enhancement  
-3. **📋 Follow Phase 2 guide**: [`docs/Phase_2_Implementation_Guide.md`](./docs/Phase_2_Implementation_Guide.md)
-4. **⚡ Quick reference**: [`docs/Development_Quick_Reference.md`](./docs/Development_Quick_Reference.md)
+3. **📋 Follow Phase 2 implementation**: [`docs/Phase_2_Implementation.md`](./docs/Phase_2_Implementation.md) - **DETAILED STEPS**
 
 ## 📍 Current Project Status
 
@@ -104,10 +103,8 @@ npm run dev
 ## 📚 Documentation
 
 ### Essential Documentation
-- **[Project Continuation Guide](./docs/Project_Continuation_Guide.md)** - **MASTER REFERENCE**
-- **[Phase 2 Implementation Guide](./docs/Phase_2_Implementation_Guide.md)** - **CURRENT PHASE**
-- **[Development Quick Reference](./docs/Development_Quick_Reference.md)** - **QUICK COMMANDS**
-- **[Phase Development Guide](./docs/Phase_Development_Guide.md)** - **COMPLETE PHASE BREAKDOWN**
+- **[Project Guide](./docs/Project_Guide.md)** - **MASTER REFERENCE** - Complete project status, setup, and all phases
+- **[Phase 2 Implementation](./docs/Phase_2_Implementation.md)** - **CURRENT PHASE** - Detailed implementation steps for Phase 2
 
 ### Additional Documentation
 - **[Conversation Log](./docs/Conversation_Log.md)** - Complete project history
@@ -214,6 +211,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**⚠️ IMPORTANT**: Always start with the [Project Continuation Guide](./docs/Project_Continuation_Guide.md) for complete context and current status.
+**⚠️ IMPORTANT**: Always start with the [Project Guide](./docs/Project_Guide.md) for complete context and current status.
 
 **Green Lines CFO Platform** - Building the future of CFO services in the UAE 🇦🇪
