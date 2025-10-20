@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Layout,
   Menu,
@@ -9,6 +9,8 @@ import {
   Dropdown,
   Typography,
   Space,
+  Badge,
+  Alert,
 } from 'antd';
 import {
   MenuFoldOutlined,
@@ -39,6 +41,37 @@ interface DashboardLayoutProps {
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
+  const [hasDraft, setHasDraft] = useState(false);
+  const [draftInfo, setDraftInfo] = useState<{ lastSaved?: string; stage?: number } | null>(null);
+
+  // Check for draft on mount and periodically
+  useEffect(() => {
+    const checkDraft = () => {
+      if (typeof window !== 'undefined') {
+        const draft = localStorage.getItem('planBuilderDraft');
+        if (draft) {
+          try {
+            const parsed = JSON.parse(draft);
+            setHasDraft(true);
+            setDraftInfo({
+              lastSaved: parsed.lastSaved,
+              stage: parsed.currentStage
+            });
+          } catch (e) {
+            setHasDraft(false);
+          }
+        } else {
+          setHasDraft(false);
+          setDraftInfo(null);
+        }
+      }
+    };
+
+    checkDraft();
+    // Check every 5 seconds for draft changes
+    const interval = setInterval(checkDraft, 5000);
+    return () => clearInterval(interval);
+  }, []);
   
   // Hardcoded translations for now
   const t = (key: string) => {
@@ -70,7 +103,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     {
       key: 'plans/new',
       icon: <FileTextOutlined />,
-      label: 'New Plan',
+      label: (
+        <Badge dot={hasDraft} offset={[10, 0]}>
+          <span>New Plan</span>
+        </Badge>
+      ),
     },
     // Temporarily commented out until routes are created
     // {
@@ -206,6 +243,28 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             direction: isRTL ? 'rtl' : 'ltr'
           }}
         >
+          {hasDraft && typeof window !== 'undefined' && !window.location.pathname.includes('/plans/new') && (
+            <Alert
+              message="You have an unfinished plan draft"
+              description={
+                <span>
+                  {draftInfo?.lastSaved && (
+                    <>Last saved: {new Date(draftInfo.lastSaved).toLocaleString()}. </>
+                  )}
+                  Click "New Plan" in the sidebar to continue editing.
+                </span>
+              }
+              type="info"
+              showIcon
+              closable
+              style={{ marginBottom: 16 }}
+              action={
+                <Button size="small" type="primary" onClick={() => window.location.href = '/plans/new'}>
+                  Continue Editing
+                </Button>
+              }
+            />
+          )}
           {children}
         </Content>
       </Layout>
