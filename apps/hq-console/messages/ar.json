@@ -35,6 +35,7 @@
   "navigation": {
     "dashboard": "لوحة التحكم",
     "customers": "العملاء",
+    "partners": "الشركاء",
     "servicePlans": "خطط الخدمة",
     "tasks": "المهام والتعيين",
     "settings": "الإعدادات",
@@ -54,6 +55,32 @@
     "thisMonth": "هذا الشهر",
     "fromLastMonth": "من الشهر الماضي",
     "currentRating": "التقييم الحالي"
+  },
+  "partner": {
+    "title": "الشريك",
+    "partners": "الشركاء",
+    "createPartner": "إنشاء شريك",
+    "editPartner": "تعديل الشريك",
+    "deletePartner": "حذف الشريك",
+    "partnerDetails": "تفاصيل الشريك",
+    "partnerList": "قائمة الشركاء",
+    "addPartner": "إضافة شريك",
+    "partnerName": "اسم الشريك",
+    "partnerEmail": "بريد الشريك الإلكتروني",
+    "partnerPhone": "هاتف الشريك",
+    "partnerCountry": "بلد الشريك",
+    "partnerDomain": "مجال الخبرة",
+    "partnerRole": "دور الشريك",
+    "partnerNotes": "ملاحظات الشريك",
+    "roles": {
+      "erpConsultant": "مستشار ERP",
+      "technical": "تقني",
+      "accounts": "حسابات",
+      "stockCount": "جرد المخزون",
+      "implementation": "تنفيذ",
+      "training": "تدريب",
+      "other": "أخرى"
+    }
   },
   "designSystem": {
     "title": "نظام التصميم",
@@ -229,5 +256,24 @@
       "unauthorized": "وصول غير مصرح به",
       "forbidden": "الوصول محظور"
     }
+  },
+  "contracts": {
+    "title": "العقود",
+    "create": "إنشاء عقد",
+    "send": "إرسال العقد",
+    "templates": "القوالب",
+    "companyProfiles": "ملفات الشركات",
+    "contractType": "نوع العقد",
+    "brand": "العلامة",
+    "industry": "القطاع",
+    "language": "اللغة",
+    "recipientEmail": "بريد المستلم",
+    "recipientName": "اسم المستلم",
+    "variables": "المتغيرات",
+    "aiProvider": "مزود الذكاء الاصطناعي",
+    "generate": "توليد",
+    "status": "الحالة",
+    "pdf": "ملف PDF",
+    "actions": "الإجراءات"
   }
 }

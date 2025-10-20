@@ -62,6 +62,19 @@ export interface ServicePlan {
   updatedAt: Date;
 }
 
+export interface Partner {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  country: string;
+  domain: string; // area of expertise e.g., Odoo, Stock Count
+  role: PartnerRole;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // Enums
 export enum UserRole {
   ADMIN = 'ADMIN',
@@ -126,4 +139,100 @@ export enum ServiceStatus {
   INACTIVE = 'INACTIVE',
   SUSPENDED = 'SUSPENDED',
   COMPLETED = 'COMPLETED',
+}
+
+export enum PartnerRole {
+  ERP_CONSULTANT = 'ERP_CONSULTANT',
+  TECHNICAL = 'TECHNICAL',
+  ACCOUNTS = 'ACCOUNTS',
+  STOCK_COUNT = 'STOCK_COUNT',
+  IMPLEMENTATION = 'IMPLEMENTATION',
+  TRAINING = 'TRAINING',
+  OTHER = 'OTHER',
+}
+
+// Contracts Domain
+export enum ContractType {
+  SERVICE_AGREEMENT = 'SERVICE_AGREEMENT',
+  NDA = 'NDA',
+  MSA = 'MSA',
+  SOW = 'SOW',
+  PROPOSAL = 'PROPOSAL',
+  CUSTOM = 'CUSTOM',
+}
+
+export enum ContractStatus {
+  DRAFT = 'DRAFT',
+  GENERATED = 'GENERATED',
+  SENT = 'SENT',
+  VIEWED = 'VIEWED',
+  SIGNED = 'SIGNED',
+  FAILED = 'FAILED',
+}
+
+export enum Brand {
+  GREENLINES = 'GREENLINES',
+  GLERP = 'GLERP',
+  OTHER = 'OTHER',
+}
+
+export enum AIProvider {
+  OPENAI = 'OPENAI',
+  GEMINI = 'GEMINI',
+  ANTHROPIC = 'ANTHROPIC',
+  CUSTOM = 'CUSTOM',
+}
+
+export interface CompanyProfile {
+  id: string;
+  name: string;
+  brand: Brand;
+  legalName: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  logoUrl?: string;
+  signerName?: string;
+  signerTitle?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ContractTemplate {
+  id: string;
+  name: string;
+  type: ContractType;
+  language: string; // 'en' | 'ar'
+  industry?: string;
+  brand?: Brand;
+  defaultContent: string;
+  variables?: string[] | Record<string, unknown>;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Contract {
+  id: string;
+  type: ContractType;
+  status: ContractStatus;
+  language: string; // 'en' | 'ar'
+  industry?: string;
+  variables?: Record<string, unknown>;
+  generatedContent?: string;
+  pdfPath?: string;
+  aiProvider?: AIProvider;
+  sentAt?: Date;
+  signedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+
+  templateId?: string;
+  senderCompanyId: string;
+  customerId?: string;
+  recipientEmail: string;
+  recipientName?: string;
+  createdById: string;
 }

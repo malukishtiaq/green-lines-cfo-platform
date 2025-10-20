@@ -1,13 +1,17 @@
 // Presentation Layer - Custom Hooks for state management
 import { useState, useEffect } from 'react';
-import { User, Customer, Task, TaskStatus, UserRole } from '../../domain/entities';
+import { User, Customer, Task, TaskStatus, UserRole, Partner } from '../../domain/entities';
 import { 
   GetDashboardStatsUseCase, 
   GetCustomersUseCase, 
   GetTasksUseCase,
   CreateCustomerUseCase,
   CreateTaskUseCase,
-  UpdateTaskStatusUseCase 
+  UpdateTaskStatusUseCase,
+  GetPartnersUseCase,
+  CreatePartnerUseCase,
+  UpdatePartnerUseCase,
+  DeletePartnerUseCase 
 } from '../../application/use-cases';
 import { RepositoryFactory } from '../../infrastructure/database';
 
@@ -137,6 +141,67 @@ export const useTasks = (filters?: { customerId?: string; status?: string; assig
   };
 
   return { tasks, loading, error, createTask, updateTaskStatus };
+};
+
+// Partners Hook
+export const usePartners = (filters?: { country?: string; domain?: string; role?: string }) => {
+  const [partners, setPartners] = useState<Partner[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchPartners = async () => {
+      try {
+        setLoading(true);
+        const useCase = new GetPartnersUseCase(RepositoryFactory.getPartnerRepository());
+        const data = await useCase.execute(filters);
+        setPartners(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch partners');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPartners();
+  }, [filters?.country, filters?.domain, filters?.role]);
+
+  const createPartner = async (partnerData: Omit<Partner, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      const useCase = new CreatePartnerUseCase(RepositoryFactory.getPartnerRepository());
+      const newPartner = await useCase.execute(partnerData);
+      setPartners(prev => [...prev, newPartner]);
+      return newPartner;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create partner');
+      throw err;
+    }
+  };
+
+  const updatePartner = async (id: string, data: Partial<Partner>) => {
+    try {
+      const useCase = new UpdatePartnerUseCase(RepositoryFactory.getPartnerRepository());
+      const updated = await useCase.execute(id, data);
+      setPartners(prev => prev.map(p => p.id === id ? updated : p));
+      return updated;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update partner');
+      throw err;
+    }
+  };
+
+  const deletePartner = async (id: string) => {
+    try {
+      const useCase = new DeletePartnerUseCase(RepositoryFactory.getPartnerRepository());
+      await useCase.execute(id);
+      setPartners(prev => prev.filter(p => p.id !== id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete partner');
+      throw err;
+    }
+  };
+
+  return { partners, loading, error, createPartner, updatePartner, deletePartner };
 };
 
 // Authentication Hook

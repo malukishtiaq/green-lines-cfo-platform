@@ -3,7 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AntdRegistry } from '@ant-design/nextjs-registry';
 import Providers from '@/components/Providers';
-import { useLocale } from 'next-intl';
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages } from 'next-intl/server';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,19 +21,20 @@ export const metadata: Metadata = {
   description: "Admin dashboard for Green Lines CFO Platform management",
 };
 
-export default function LocaleLayout({
+export default async function LocaleLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const messages = await getMessages();
   return (
-    <div
-      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-    >
+    <div className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
       <AntdRegistry>
-        <Providers>
-          {children}
-        </Providers>
+        <NextIntlClientProvider messages={messages}>
+          <Providers>
+            {children}
+          </Providers>
+        </NextIntlClientProvider>
       </AntdRegistry>
     </div>
   );

@@ -1,6 +1,7 @@
 // Application Use Cases - Business logic implementation
-import { User, Customer, Task, ServicePlan, TaskStatus, Priority } from '../../domain/entities';
-import { IUserRepository, ICustomerRepository, ITaskRepository, IServicePlanRepository } from '../../domain/repositories';
+import { User, Customer, Task, ServicePlan, TaskStatus, Priority, Partner, Contract, ContractType, ContractStatus } from '../../domain/entities';
+import { IUserRepository, ICustomerRepository, ITaskRepository, IServicePlanRepository, IPartnerRepository, IContractRepository, IContractTemplateRepository, ICompanyProfileRepository } from '../../domain/repositories';
+import { AIContentService, PDFService, ContractEmailService } from '../../infrastructure/services';
 
 // Dashboard Use Cases
 export class GetDashboardStatsUseCase {
@@ -150,5 +151,137 @@ export class AuthenticateUserUseCase {
     // Password validation would be handled by the infrastructure layer
     // This is just the business logic
     return user;
+  }
+}
+
+// Partner Use Cases
+export class CreatePartnerUseCase {
+  constructor(private partnerRepository: IPartnerRepository) {}
+
+  async execute(partnerData: Omit<Partner, 'id' | 'createdAt' | 'updatedAt'>): Promise<Partner> {
+    if (!partnerData.name || !partnerData.country || !partnerData.domain || !partnerData.role) {
+      throw new Error('Name, country, domain, and role are required');
+    }
+    return this.partnerRepository.create(partnerData);
+  }
+}
+
+export class GetPartnersUseCase {
+  constructor(private partnerRepository: IPartnerRepository) {}
+
+  async execute(filters?: { country?: string; domain?: string; role?: string }): Promise<Partner[]> {
+    if (filters?.country) return this.partnerRepository.findByCountry(filters.country);
+    if (filters?.domain) return this.partnerRepository.findByDomain(filters.domain);
+    if (filters?.role) return this.partnerRepository.findByRole(filters.role);
+    return this.partnerRepository.findAll();
+  }
+}
+
+export class UpdatePartnerUseCase {
+  constructor(private partnerRepository: IPartnerRepository) {}
+
+  async execute(id: string, data: Partial<Partner>): Promise<Partner> {
+    return this.partnerRepository.update(id, data);
+  }
+}
+
+export class DeletePartnerUseCase {
+  constructor(private partnerRepository: IPartnerRepository) {}
+
+  async execute(id: string): Promise<void> {
+    return this.partnerRepository.delete(id);
+  }
+}
+
+// Contracts Use Cases
+export class GenerateContractUseCase {
+  constructor(
+    private contractRepo: IContractRepository,
+    private templateRepo: IContractTemplateRepository,
+    private companyRepo: ICompanyProfileRepository,
+    private aiService: AIContentService,
+    private pdfService: PDFService
+  ) {}
+
+  async execute(input: {
+    templateId: string;
+    senderCompanyId: string;
+    recipientEmail: string;
+    recipientName?: string;
+    customerId?: string;
+    type: ContractType;
+    language: 'en' | 'ar';
+    industry?: string;
+    variables: Record<string, unknown>;
+    aiProvider: 'OPENAI' | 'GEMINI' | 'ANTHROPIC' | 'CUSTOM';
+    createdById: string;
+  }): Promise<Contract> {
+    const [template, company] = await Promise.all([
+      this.templateRepo.findById(input.templateId),
+      this.companyRepo.findById(input.senderCompanyId),
+    ]);
+    if (!template) throw new Error('Template not found');
+    if (!company) throw new Error('Company profile not found');
+
+    const content = await this.aiService.generateContractContent({
+      provider: input.aiProvider,
+      template: template.defaultContent,
+      variables: input.variables,
+      language: input.language,
+      industry: input.industry,
+    });
+
+    const pdfBytes = await this.pdfService.renderHtmlToPdf(content);
+    const pdfPath = await this.pdfService.savePdf(pdfBytes, `${input.type.toLowerCase()}_${Date.now()}.pdf`);
+
+    const contract = await this.contractRepo.create({
+      id: '' as any, // ignored by repo implementation
+      type: input.type,
+      status: ContractStatus.GENERATED,
+      language: input.language,
+      industry: input.industry,
+      variables: input.variables,
+      generatedContent: content,
+      pdfPath,
+      aiProvider: input.aiProvider as any,
+      sentAt: undefined,
+      signedAt: undefined,
+      templateId: input.templateId,
+      senderCompanyId: input.senderCompanyId,
+      customerId: input.customerId,
+      recipientEmail: input.recipientEmail,
+      recipientName: input.recipientName,
+      createdById: input.createdById,
+      createdAt: new Date() as any,
+      updatedAt: new Date() as any,
+    } as any);
+
+    return contract;
+  }
+}
+
+export class SendContractUseCase {
+  constructor(
+    private contractRepo: IContractRepository,
+    private emailService: ContractEmailService
+  ) {}
+
+  async execute(contractId: string, emailData?: { subject?: string; body?: string }): Promise<Contract> {
+    const contract = await this.contractRepo.findById(contractId);
+    if (!contract) throw new Error('Contract not found');
+    if (!contract.pdfPath) throw new Error('Contract PDF not generated');
+
+    const pdfUrl = contract.pdfPath || '';
+    await this.emailService.sendContractEmail(contract.recipientEmail, {
+      recipientName: contract.recipientName || 'Customer',
+      contractType: String(contract.type),
+      pdfUrl,
+    });
+
+    const updated = await this.contractRepo.update(contract.id, {
+      status: ContractStatus.SENT,
+      sentAt: new Date(),
+    });
+    return updated;
   }
 }

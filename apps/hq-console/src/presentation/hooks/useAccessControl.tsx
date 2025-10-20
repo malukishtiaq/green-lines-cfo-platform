@@ -1,42 +1,36 @@
-// Presentation Layer - Access Control Hook
-import { useState, useEffect } from 'react';
+"use client";
+
+import React, { useState } from 'react';
 import { UserRole, Permission } from '../../domain/entities/AccessControl';
 import { AccessControlService } from '../../application/services/AccessControlService';
 
 export const useAccessControl = (userRole?: UserRole) => {
   const [currentRole, setCurrentRole] = useState<UserRole>(userRole || UserRole.CUSTOMER);
 
-  // Check if user has specific permission
   const hasPermission = (permission: Permission): boolean => {
     return AccessControlService.hasPermission(currentRole, permission);
   };
 
-  // Check if user has any of the specified permissions
   const hasAnyPermission = (permissions: Permission[]): boolean => {
     return AccessControlService.hasAnyPermission(currentRole, permissions);
   };
 
-  // Check if user has all specified permissions
   const hasAllPermissions = (permissions: Permission[]): boolean => {
     return AccessControlService.hasAllPermissions(currentRole, permissions);
   };
 
-  // Check if user can access specific page
   const canAccessPage = (page: string): boolean => {
     return AccessControlService.canAccessPage(currentRole, page);
   };
 
-  // Check if user can perform specific action
   const canPerformAction = (action: string): boolean => {
     return AccessControlService.canPerformAction(currentRole, action);
   };
 
-  // Get user's access control info
   const getAccessControl = () => {
     return AccessControlService.getUserAccessControl(currentRole);
   };
 
-  // Update user role (useful when role changes)
   const updateRole = (newRole: UserRole) => {
     setCurrentRole(newRole);
   };
@@ -53,7 +47,6 @@ export const useAccessControl = (userRole?: UserRole) => {
   };
 };
 
-// Higher-order component for protecting routes
 export const withAccessControl = (
   WrappedComponent: React.ComponentType<any>,
   requiredPermissions: Permission[]
@@ -74,7 +67,6 @@ export const withAccessControl = (
   };
 };
 
-// Component for conditional rendering based on permissions
 interface PermissionGateProps {
   permission: Permission;
   permissions?: Permission[];
@@ -100,3 +92,5 @@ export const PermissionGate: React.FC<PermissionGateProps> = ({
 
   return hasAccess ? <>{children}</> : <>{fallback}</>;
 };
+
+

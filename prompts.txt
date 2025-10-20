@@ -1,0 +1,3 @@
+there is a place to list patners. now, we need to move on. we need a form. a form where we will create a plan builder. like we will click create plan for a customer from the customer list, then we will choose the kind of service he needs, the kind of parner he need etc.
+
+but, partner should be near to cusotmer locaiton base. if cusotmer is from jedah, partner should be from jedah as well or nearest possible location.  and then our guy will describe the kind of service he needs in the form, and once submit, we will put all this in a table. 

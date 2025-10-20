@@ -255,6 +255,45 @@ async function main() {
 
   console.log('✅ Demo communications created');
 
+  // Create demo partners
+  const partners = await Promise.all([
+    prisma.partner.create({
+      data: {
+        name: 'XYZ Consulting',
+        email: 'contact@xyzconsulting.om',
+        phone: '+968 90 123 456',
+        country: 'Oman',
+        domain: 'Odoo',
+        role: 'ERP_CONSULTANT',
+        notes: 'Specialized in Odoo implementations',
+      },
+    }),
+    prisma.partner.create({
+      data: {
+        name: 'ABC Tech',
+        email: 'info@abctech.eg',
+        phone: '+20 100 555 1234',
+        country: 'Egypt',
+        domain: 'Stock Count',
+        role: 'STOCK_COUNT',
+        notes: 'On-site inventory stock count services',
+      },
+    }),
+    prisma.partner.create({
+      data: {
+        name: 'FinancePro',
+        email: 'team@financepro.ae',
+        phone: '+971 50 111 2223',
+        country: 'UAE',
+        domain: 'Accounts',
+        role: 'ACCOUNTS',
+        notes: 'Outsourced accounting partner',
+      },
+    }),
+  ]);
+
+  console.log('✅ Demo partners created:', partners.length);
+
   console.log('🎉 Database seed completed successfully!');
 }
 

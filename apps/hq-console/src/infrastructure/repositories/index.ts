@@ -1,7 +1,7 @@
 // Infrastructure Layer - Database implementations
 import { PrismaClient } from '@prisma/client';
-import { User, Customer, Task, ServicePlan, CustomerStatus, ServiceType, TaskStatus } from '../../domain/entities';
-import { IUserRepository, ICustomerRepository, ITaskRepository, IServicePlanRepository } from '../../domain/repositories';
+import { User, Customer, Task, ServicePlan, CustomerStatus, ServiceType, TaskStatus, Partner, PartnerRole, Contract, ContractTemplate, CompanyProfile } from '../../domain/entities';
+import { IUserRepository, ICustomerRepository, ITaskRepository, IServicePlanRepository, IPartnerRepository, IContractRepository, IContractTemplateRepository, ICompanyProfileRepository } from '../../domain/repositories';
 
 // Prisma Client Singleton
 class PrismaService {
@@ -274,5 +274,207 @@ export class PrismaServicePlanRepository implements IServicePlanRepository {
 
   async delete(id: string): Promise<void> {
     await this.prisma.servicePlan.delete({ where: { id } });
+  }
+}
+
+// Partner Repository Implementation
+export class PrismaPartnerRepository implements IPartnerRepository {
+  private prisma = PrismaService.getInstance();
+
+  async findById(id: string): Promise<Partner | null> {
+    const partner = await this.prisma.partner.findUnique({ where: { id } });
+    return partner as Partner | null;
+  }
+
+  async findAll(): Promise<Partner[]> {
+    const partners = await this.prisma.partner.findMany();
+    return partners as Partner[];
+  }
+
+  async findByCountry(country: string): Promise<Partner[]> {
+    const partners = await this.prisma.partner.findMany({ where: { country } });
+    return partners as Partner[];
+  }
+
+  async findByDomain(domain: string): Promise<Partner[]> {
+    const partners = await this.prisma.partner.findMany({ where: { domain } });
+    return partners as Partner[];
+  }
+
+  async findByRole(role: string): Promise<Partner[]> {
+    const partners = await this.prisma.partner.findMany({ where: { role: role as unknown as PartnerRole } });
+    return partners as Partner[];
+  }
+
+  async create(partnerData: Omit<Partner, 'id' | 'createdAt' | 'updatedAt'>): Promise<Partner> {
+    const partner = await this.prisma.partner.create({
+      data: {
+        name: partnerData.name,
+        email: partnerData.email,
+        phone: partnerData.phone,
+        country: partnerData.country,
+        domain: partnerData.domain,
+        role: partnerData.role as unknown as PartnerRole,
+        notes: partnerData.notes,
+      },
+    });
+    return partner as Partner;
+  }
+
+  async update(id: string, partnerData: Partial<Partner>): Promise<Partner> {
+    const partner = await this.prisma.partner.update({
+      where: { id },
+      data: partnerData as any,
+    });
+    return partner as Partner;
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.partner.delete({ where: { id } });
+  }
+}
+
+// Company Profile Repository Implementation
+export class PrismaCompanyProfileRepository implements ICompanyProfileRepository {
+  private prisma = PrismaService.getInstance();
+
+  async findById(id: string): Promise<CompanyProfile | null> {
+    const profile = await this.prisma.companyProfile.findUnique({ where: { id } });
+    return profile as CompanyProfile | null;
+  }
+
+  async findAll(): Promise<CompanyProfile[]> {
+    const profiles = await this.prisma.companyProfile.findMany();
+    return profiles as CompanyProfile[];
+  }
+
+  async findByBrand(brand: string): Promise<CompanyProfile[]> {
+    const profiles = await this.prisma.companyProfile.findMany({ where: { brand: brand as any } });
+    return profiles as CompanyProfile[];
+  }
+
+  async create(profileData: Omit<CompanyProfile, 'id' | 'createdAt' | 'updatedAt'>): Promise<CompanyProfile> {
+    const profile = await this.prisma.companyProfile.create({
+      data: profileData as any,
+    });
+    return profile as CompanyProfile;
+  }
+
+  async update(id: string, profileData: Partial<CompanyProfile>): Promise<CompanyProfile> {
+    const profile = await this.prisma.companyProfile.update({
+      where: { id },
+      data: profileData as any,
+    });
+    return profile as CompanyProfile;
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.companyProfile.delete({ where: { id } });
+  }
+}
+
+// Contract Template Repository Implementation
+export class PrismaContractTemplateRepository implements IContractTemplateRepository {
+  private prisma = PrismaService.getInstance();
+
+  async findById(id: string): Promise<ContractTemplate | null> {
+    const template = await this.prisma.contractTemplate.findUnique({ where: { id } });
+    return template as ContractTemplate | null;
+  }
+
+  async findAll(): Promise<ContractTemplate[]> {
+    const templates = await this.prisma.contractTemplate.findMany();
+    return templates as ContractTemplate[];
+  }
+
+  async findActiveByType(type: string): Promise<ContractTemplate[]> {
+    const templates = await this.prisma.contractTemplate.findMany({
+      where: { type: type as any, isActive: true },
+    });
+    return templates as ContractTemplate[];
+  }
+
+  async create(templateData: Omit<ContractTemplate, 'id' | 'createdAt' | 'updatedAt'>): Promise<ContractTemplate> {
+    const template = await this.prisma.contractTemplate.create({
+      data: {
+        name: templateData.name,
+        type: templateData.type as any,
+        language: templateData.language,
+        industry: templateData.industry,
+        brand: templateData.brand as any,
+        defaultContent: templateData.defaultContent,
+        variables: templateData.variables as any,
+        isActive: templateData.isActive,
+      },
+    });
+    return template as ContractTemplate;
+  }
+
+  async update(id: string, templateData: Partial<ContractTemplate>): Promise<ContractTemplate> {
+    const template = await this.prisma.contractTemplate.update({
+      where: { id },
+      data: templateData as any,
+    });
+    return template as ContractTemplate;
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.contractTemplate.delete({ where: { id } });
+  }
+}
+
+// Contract Repository Implementation
+export class PrismaContractRepository implements IContractRepository {
+  private prisma = PrismaService.getInstance();
+
+  async findById(id: string): Promise<Contract | null> {
+    const contract = await this.prisma.contract.findUnique({ where: { id } });
+    return contract as Contract | null;
+  }
+
+  async findAll(): Promise<Contract[]> {
+    const contracts = await this.prisma.contract.findMany();
+    return contracts as Contract[];
+  }
+
+  async findByStatus(status: string): Promise<Contract[]> {
+    const contracts = await this.prisma.contract.findMany({ where: { status: status as any } });
+    return contracts as Contract[];
+  }
+
+  async create(contractData: Omit<Contract, 'id' | 'createdAt' | 'updatedAt'>): Promise<Contract> {
+    const contract = await this.prisma.contract.create({
+      data: {
+        type: contractData.type as any,
+        status: contractData.status as any,
+        language: contractData.language,
+        industry: contractData.industry,
+        variables: contractData.variables as any,
+        generatedContent: contractData.generatedContent,
+        pdfPath: contractData.pdfPath,
+        aiProvider: contractData.aiProvider as any,
+        sentAt: contractData.sentAt,
+        signedAt: contractData.signedAt,
+        templateId: contractData.templateId,
+        senderCompanyId: contractData.senderCompanyId,
+        customerId: contractData.customerId,
+        recipientEmail: contractData.recipientEmail,
+        recipientName: contractData.recipientName,
+        createdById: contractData.createdById,
+      },
+    });
+    return contract as Contract;
+  }
+
+  async update(id: string, contractData: Partial<Contract>): Promise<Contract> {
+    const contract = await this.prisma.contract.update({
+      where: { id },
+      data: contractData as any,
+    });
+    return contract as Contract;
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.contract.delete({ where: { id } });
   }
 }

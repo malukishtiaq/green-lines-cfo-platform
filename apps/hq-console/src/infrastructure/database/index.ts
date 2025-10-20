@@ -4,7 +4,11 @@ import {
   PrismaUserRepository,
   PrismaCustomerRepository,
   PrismaTaskRepository,
-  PrismaServicePlanRepository
+  PrismaServicePlanRepository,
+  PrismaPartnerRepository,
+  PrismaCompanyProfileRepository,
+  PrismaContractTemplateRepository,
+  PrismaContractRepository
 } from '../repositories';
 
 // Singleton pattern for Prisma Client
@@ -55,6 +59,10 @@ export class RepositoryFactory {
   private static customerRepository: PrismaCustomerRepository;
   private static taskRepository: PrismaTaskRepository;
   private static servicePlanRepository: PrismaServicePlanRepository;
+  private static partnerRepository: PrismaPartnerRepository;
+  private static companyProfileRepository: PrismaCompanyProfileRepository;
+  private static contractTemplateRepository: PrismaContractTemplateRepository;
+  private static contractRepository: PrismaContractRepository;
 
   static getUserRepository(): PrismaUserRepository {
     if (!this.userRepository) {
@@ -82,5 +90,33 @@ export class RepositoryFactory {
       this.servicePlanRepository = new PrismaServicePlanRepository();
     }
     return this.servicePlanRepository;
+  }
+
+  static getPartnerRepository(): PrismaPartnerRepository {
+    if (!this.partnerRepository) {
+      this.partnerRepository = new PrismaPartnerRepository();
+    }
+    return this.partnerRepository;
+  }
+
+  static getCompanyProfileRepository(): PrismaCompanyProfileRepository {
+    if (!this.companyProfileRepository) {
+      this.companyProfileRepository = new PrismaCompanyProfileRepository();
+    }
+    return this.companyProfileRepository;
+  }
+
+  static getContractTemplateRepository(): PrismaContractTemplateRepository {
+    if (!this.contractTemplateRepository) {
+      this.contractTemplateRepository = new PrismaContractTemplateRepository();
+    }
+    return this.contractTemplateRepository;
+  }
+
+  static getContractRepository(): PrismaContractRepository {
+    if (!this.contractRepository) {
+      this.contractRepository = new PrismaContractRepository();
+    }
+    return this.contractRepository;
   }
 }

@@ -1,0 +1,294 @@
+
+Prisma CLI Version : 6.17.1
+PS C:\Users\maluk\Documents\cfo_docs\apps\hq-console> npx prisma migrate dev -n add_partner
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "green_lines_cfo", schema "public" at "localhost:5432"
+
+
+Error: Prisma schema validation - (validate wasm)
+Error code: P1012
+error: Error validating field `customer` in model `Contract`: The relation field `customer` on model `Contract` is missing an opposite relation field on the model `Customer`. Either run `prisma format` or add it manually.
+  -->  prisma\schema.prisma:373
+   | 
+372 |   customerId      String?
+373 |   customer        Customer?        @relation(fields: [customerId], references: [id])
+374 | 
+   | 
+error: Error validating field `createdBy` in model `Contract`: The relation field `createdBy` on model `Contract` is missing an opposite relation field on the model `User`. Either run `prisma format` or add it manually.
+  -->  prisma\schema.prisma:378
+   | 
+377 |   createdById     String
+378 |   createdBy       User             @relation(fields: [createdById], references: [id])
+379 | 
+   | 
+
+Validation Error Count: 2
+[Context: validate]
+
+Prisma CLI Version : 6.17.1
+PS C:\Users\maluk\Documents\cfo_docs\apps\hq-console> npm run db:seed
+
+> hq-console@0.1.0 db:seed
+> tsx prisma/seed.ts
+
+🌱 Starting database seed...
+❌ Error during seed: PrismaClientKnownRequestError: 
+Invalid `prisma.user.upsert()` invocation in
+C:\Users\maluk\Documents\cfo_docs\apps\hq-console\prisma\seed.ts:12:39
+
+   9 // Create admin user
+  10 const hashedPassword = await bcrypt.hash('password123', 12);
+  11
+→ 12 const adminUser = await prisma.user.upsert(
+The table `public.users` does not exist in the current database.
+    at ei.handleRequestError (C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\@prisma\client\src\runtime\RequestHandler.ts:228:13)
+    at ei.handleAndLogRequestError (C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+    at ei.request (C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\@prisma\client\src\runtime\RequestHandler.ts:143:12)
+    at async a (C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:833:24)
+    at async main (C:\Users\maluk\Documents\cfo_docs\apps\hq-console\prisma\seed.ts:12:21) {
+  code: 'P2021',
+  meta: { modelName: 'User', table: 'public.users' },
+  clientVersion: '6.17.1'
+}
+npm error Lifecycle script `db:seed` failed with error:
+npm error code 1
+npm error path C:\Users\maluk\Documents\cfo_docs\apps\hq-console
+npm error workspace hq-console@0.1.0
+npm error location C:\Users\maluk\Documents\cfo_docs\apps\hq-console
+npm error command failed
+npm error command C:\Windows\system32\cmd.exe /d /s /c tsx prisma/seed.ts
+PS C:\Users\maluk\Documents\cfo_docs\apps\hq-console> npx prisma migrate reset --force
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "green_lines_cfo", schema "public" at "localhost:5432"
+
+Database reset successful
+
+
+✔ Generated Prisma Client (v6.17.1) to .\node_modules\@prisma\client in 119ms
+
+PS C:\Users\maluk\Documents\cfo_docs\apps\hq-console> npx prisma migrate dev -n add_partner
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "green_lines_cfo", schema "public" at "localhost:5432"
+
+Applying migration `20251020104635_add_partner`
+
+The following migration(s) have been created and applied from new schema changes:
+
+prisma\migrations/
+  └─ 20251020104635_add_partner/
+    └─ migration.sql
+
+Your database is now in sync with your schema.
+
+✔ Generated Prisma Client (v6.17.1) to .\node_modules\@prisma\client in 119ms
+
+
+PS C:\Users\maluk\Documents\cfo_docs\apps\hq-console> npm run db:seed
+
+> hq-console@0.1.0 db:seed
+> tsx prisma/seed.ts
+
+🌱 Starting database seed...
+✅ Admin user created: admin@greenlines.com
+✅ Demo customers created: 3
+✅ Service plans created: 3
+✅ Demo tasks created: 3
+✅ Task assignments created
+✅ Demo communications created
+✅ Demo partners created: 3
+🎉 Database seed completed successfully!
+PS C:\Users\maluk\Documents\cfo_docs\apps\hq-console> npm run dev
+
+> hq-console@0.1.0 dev
+> next dev --turbopack
+
+   ▲ Next.js 15.5.5 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://10.5.0.2:3000
+   - Environments: .env.local, .env
+
+ ✓ Starting...
+ ✓ Compiled middleware in 127ms
+ ✓ Ready in 1540ms
+ ○ Compiling / ...
+ ✓ Compiled / in 3s
+ GET / 404 in 3834ms
+ ✓ Compiled /favicon.ico in 295ms
+ GET /favicon.ico 200 in 760ms
+ ✓ Compiled middleware in 5ms
+ GET / 200 in 587ms
+ GET / 404 in 654ms
+ GET /favicon.ico 200 in 442ms
+ ✓ Compiled middleware in 5ms
+ ✓ Compiled / in 70ms
+ GET / 404 in 305ms
+ GET /favicon.ico 200 in 323ms
+ ✓ Compiled middleware in 6ms
+ ✓ Compiled in 6ms
+ ✓ Compiled / in 69ms
+ GET / 404 in 298ms
+ GET /favicon.ico 200 in 337ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 83ms
+ ✓ Compiled / in 80ms
+ GET / 307 in 355ms
+ ○ Compiling /[locale] ...
+Error: Can't resolve '../design-system/design-tokens.css' in 'C:\Users\maluk\Documents\cfo_docs\apps\hq-console\src\app\[locale]'
+    [at finishWithoutResolve (C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\enhanced-resolve\lib\Resolver.js:565:18)]
+    [at C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\enhanced-resolve\lib\Resolver.js:657:14]
+    [at C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\enhanced-resolve\lib\Resolver.js:718:5]
+    [at eval (eval at create (C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:15:1)]
+    [at C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\enhanced-resolve\lib\Resolver.js:718:5]
+    [at eval (eval at create (C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:27:1)]
+    [at C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\enhanced-resolve\lib\DescriptionFilePlugin.js:89:43]
+    [at C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\enhanced-resolve\lib\Resolver.js:718:5]
+    [at eval (eval at create (C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:15:1)]
+    [at C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\enhanced-resolve\lib\Resolver.js:718:5] {
+  details: "resolve '../design-system/design-tokens.css' in 'C:\\Users\\maluk\\Documents\\cfo_docs\\apps\\hq-console\\src\\app\\[locale]'\n" +
+    '  using description file: C:\\Users\\maluk\\Documents\\cfo_docs\\apps\\hq-console\\package.json (relative path: ./src/app/[locale])\n' +
+    '    using description file: C:\\Users\\maluk\\Documents\\cfo_docs\\apps\\hq-console\\package.json (relative path: ./src/app/design-system/design-tokens.css)\n' +
+    '      no extension\n' +
+    "        C:\\Users\\maluk\\Documents\\cfo_docs\\apps\\hq-console\\src\\app\\design-system\\design-tokens.css doesn't exist\n" +
+    '      .css\n' +
+    "        C:\\Users\\maluk\\Documents\\cfo_docs\\apps\\hq-console\\src\\app\\design-system\\design-tokens.css.css doesn't exist\n" +
+    '      as directory\n' +
+    "        C:\\Users\\maluk\\Documents\\cfo_docs\\apps\\hq-console\\src\\app\\design-system\\design-tokens.css doesn't exist"
+}
+ ✓ Compiled /[locale] in 2.7s
+ ⨯ ./src/app/[locale]/globals.css
+Error evaluating Node.js code
+CssSyntaxError: tailwindcss: C:\Users\maluk\Documents\cfo_docs\apps\hq-console\src\app\[locale]\globals.css:1:1: Can't resolve '../design-system/design-tokens.css' in 'C:\Users\maluk\Documents\cfo_docs\apps\hq-console\src\app\[locale]'
+    [at Input.error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at Root.error (turbopack:///[project]/node_modules/postcss/lib/node.js:146:32)]
+    [at Object.Once (C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\@tailwindcss\postcss\dist\index.js:10:6913)]
+    [at process.processTicksAndRejections (node:internal/process/task_queues:105:5)]
+    [at async LazyResult.runAsync (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:293:11)]
+    [at async transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:34)]
+    [at async run (turbopack:///[turbopack-node]/ipc/evaluate.ts:92:23)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/[locale]/globals.css [Client Component Browser]
+    ./src/app/[locale]/layout.tsx [Server Component]
+
+
+
+./src/presentation/hooks/useAccessControl.ts:66:14
+Parsing ecmascript source code failed
+  64 |     if (!hasAllPermissions(requiredPermissions)) {
+  65 |       return (
+> 66 |         <div className="p-lg text-center">
+     |              ^^^^^^^^^
+  67 |           <h2>Access Denied</h2>
+  68 |           <p>You don't have permission to access this page.</p>
+  69 |         </div>
+
+Expected '>', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/presentation/hooks/useAccessControl.ts [Client Component Browser]
+    ./src/components/DashboardLayout.tsx [Client Component Browser]
+    ./src/components/DashboardLayout.tsx [Server Component]
+    ./src/app/[locale]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/presentation/hooks/useAccessControl.ts [Client Component SSR]
+    ./src/components/DashboardLayout.tsx [Client Component SSR]
+    ./src/components/DashboardLayout.tsx [Server Component]
+    ./src/app/[locale]/page.tsx [Server Component]
+
+
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 1544ms
+ GET /en 500 in 4599ms
+ GET /favicon.ico 500 in 121ms
+PS C:\Users\maluk\Documents\cfo_docs\apps\hq-console> ^C
+PS C:\Users\maluk\Documents\cfo_docs\apps\hq-console> npm run dev
+
+> hq-console@0.1.0 dev
+> next dev --turbopack
+
+   ▲ Next.js 15.5.5 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://10.5.0.2:3000
+   - Environments: .env.local, .env
+
+ ✓ Starting...
+ ✓ Compiled middleware in 132ms
+ ✓ Ready in 1659ms
+ ○ Compiling /[locale] ...
+Error: Can't resolve '../design-system/design-tokens.css' in 'C:\Users\maluk\Documents\cfo_docs\apps\hq-console\src\app\[locale]'
+    [at finishWithoutResolve (C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\enhanced-resolve\lib\Resolver.js:565:18)]
+    [at C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\enhanced-resolve\lib\Resolver.js:657:14]
+    [at C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\enhanced-resolve\lib\Resolver.js:718:5]
+    [at eval (eval at create (C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:15:1)]
+    [at C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\enhanced-resolve\lib\Resolver.js:718:5]
+    [at eval (eval at create (C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:27:1)]
+    [at C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\enhanced-resolve\lib\DescriptionFilePlugin.js:89:43]
+    [at C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\enhanced-resolve\lib\Resolver.js:718:5]
+    [at eval (eval at create (C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:15:1)]
+    [at C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\enhanced-resolve\lib\Resolver.js:718:5] {
+  details: "resolve '../design-system/design-tokens.css' in 'C:\\Users\\maluk\\Documents\\cfo_docs\\apps\\hq-console\\src\\app\\[locale]'\n" +
+    '  using description file: C:\\Users\\maluk\\Documents\\cfo_docs\\apps\\hq-console\\package.json (relative path: ./src/app/[locale])\n' +
+    '    using description file: C:\\Users\\maluk\\Documents\\cfo_docs\\apps\\hq-console\\package.json (relative path: ./src/app/design-system/design-tokens.css)\n' +
+    '      no extension\n' +
+    "        C:\\Users\\maluk\\Documents\\cfo_docs\\apps\\hq-console\\src\\app\\design-system\\design-tokens.css doesn't exist\n" +  
+    '      .css\n' +
+    "        C:\\Users\\maluk\\Documents\\cfo_docs\\apps\\hq-console\\src\\app\\design-system\\design-tokens.css.css doesn't exist\n" +
+    '      as directory\n' +
+    "        C:\\Users\\maluk\\Documents\\cfo_docs\\apps\\hq-console\\src\\app\\design-system\\design-tokens.css doesn't exist"      
+}
+ ✓ Compiled /[locale] in 3.8s
+ ⨯ ./src/app/[locale]/globals.css
+Error evaluating Node.js code
+CssSyntaxError: tailwindcss: C:\Users\maluk\Documents\cfo_docs\apps\hq-console\src\app\[locale]\globals.css:1:1: Can't resolve '../design-system/design-tokens.css' in 'C:\Users\maluk\Documents\cfo_docs\apps\hq-console\src\app\[locale]'
+    [at Input.error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at Root.error (turbopack:///[project]/node_modules/postcss/lib/node.js:146:32)]
+    [at Object.Once (C:\Users\maluk\Documents\cfo_docs\apps\hq-console\node_modules\@tailwindcss\postcss\dist\index.js:10:6913)]     
+    [at process.processTicksAndRejections (node:internal/process/task_queues:105:5)]
+    [at async LazyResult.runAsync (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:293:11)]
+    [at async transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:34)]
+    [at async run (turbopack:///[turbopack-node]/ipc/evaluate.ts:92:23)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/[locale]/globals.css [Client Component Browser]
+    ./src/app/[locale]/layout.tsx [Server Component]
+
+
+
+./src/presentation/hooks/useAccessControl.ts:66:14
+Parsing ecmascript source code failed
+  64 |     if (!hasAllPermissions(requiredPermissions)) {
+  65 |       return (
+> 66 |         <div className="p-lg text-center">
+     |              ^^^^^^^^^
+  67 |           <h2>Access Denied</h2>
+  68 |           <p>You don't have permission to access this page.</p>
+  69 |         </div>
+
+Expected '>', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/presentation/hooks/useAccessControl.ts [Client Component Browser]
+    ./src/components/DashboardLayout.tsx [Client Component Browser]
+    ./src/components/DashboardLayout.tsx [Server Component]
+    ./src/app/[locale]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/presentation/hooks/useAccessControl.ts [Client Component SSR]
+    ./src/components/DashboardLayout.tsx [Client Component SSR]
+    ./src/components/DashboardLayout.tsx [Server Component]
+    ./src/app/[locale]/page.tsx [Server Component]
+
+
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 1173ms
+ GET /en 500 in 5189ms
+ ✓ Compiled /favicon.ico in 182ms
+ GET /favicon.ico 500 in 221ms

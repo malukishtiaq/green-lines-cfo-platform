@@ -248,6 +248,18 @@ src/
 
 ---
 
+### October 20, 2025
+- ✅ Added Contracts feature scaffolding following Clean Architecture:
+  - Prisma: `CompanyProfile`, `ContractTemplate`, `Contract` models + enums
+  - Domain: entities and repository interfaces for contracts
+  - Infrastructure: Prisma repositories, AIContentService, PDFService, ContractEmailService
+  - Use Cases: `GenerateContractUseCase`, `SendContractUseCase`
+  - API: `POST /api/contracts` for generate/send actions
+  - i18n: Added `contracts` keys to `messages/en.json` and `messages/ar.json`
+- 🔧 Next: UI tables/forms to manage templates, company profiles, contract generation & sending
+
+---
+
 ## 📚 Resources
 
 ### **Documentation**

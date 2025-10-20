@@ -35,6 +35,7 @@
   "navigation": {
     "dashboard": "Dashboard",
     "customers": "Customers",
+    "partners": "Partners",
     "servicePlans": "Service Plans",
     "tasks": "Tasks & Assignment",
     "settings": "Settings",
@@ -54,6 +55,32 @@
     "thisMonth": "This Month",
     "fromLastMonth": "from last month",
     "currentRating": "Current Rating"
+  },
+  "partner": {
+    "title": "Partner",
+    "partners": "Partners",
+    "createPartner": "Create Partner",
+    "editPartner": "Edit Partner",
+    "deletePartner": "Delete Partner",
+    "partnerDetails": "Partner Details",
+    "partnerList": "Partner List",
+    "addPartner": "Add Partner",
+    "partnerName": "Partner Name",
+    "partnerEmail": "Partner Email",
+    "partnerPhone": "Partner Phone",
+    "partnerCountry": "Partner Country",
+    "partnerDomain": "Expertise Domain",
+    "partnerRole": "Partner Role",
+    "partnerNotes": "Partner Notes",
+    "roles": {
+      "erpConsultant": "ERP Consultant",
+      "technical": "Technical",
+      "accounts": "Accounts",
+      "stockCount": "Stock Count",
+      "implementation": "Implementation",
+      "training": "Training",
+      "other": "Other"
+    }
   },
   "designSystem": {
     "title": "Design System",
@@ -229,5 +256,24 @@
       "unauthorized": "Unauthorized access",
       "forbidden": "Access forbidden"
     }
+  },
+  "contracts": {
+    "title": "Contracts",
+    "create": "Create Contract",
+    "send": "Send Contract",
+    "templates": "Templates",
+    "companyProfiles": "Company Profiles",
+    "contractType": "Contract Type",
+    "brand": "Brand",
+    "industry": "Industry",
+    "language": "Language",
+    "recipientEmail": "Recipient Email",
+    "recipientName": "Recipient Name",
+    "variables": "Variables",
+    "aiProvider": "AI Provider",
+    "generate": "Generate",
+    "status": "Status",
+    "pdf": "PDF",
+    "actions": "Actions"
   }
 }
