@@ -2,7 +2,32 @@
 
 A comprehensive digital-first CFO Services platform spanning three main applications: HQ Console, Customer CFO App, and Agent/Partner App.
 
-## 🚀 Quick Start for Developers
+## 🚀 HOW TO START THE APP (ALWAYS DO THIS FIRST!)
+
+### **Method 1: Startup Script (EASIEST - RECOMMENDED)**
+1. Go to project folder: `C:\Users\maluk\Documents\cfo_docs`
+2. **Double-click `START-APP.bat`**
+3. Wait 10-15 seconds
+4. Open browser:
+   - **Main App**: http://localhost:3000
+   - **Database**: http://localhost:5555
+
+### **Method 2: Manual Terminal**
+```bash
+cd C:\Users\maluk\Documents\cfo_docs\apps\hq-console
+npm run dev
+```
+
+### **To Stop:**
+- Double-click `STOP-APP.bat` OR close terminal windows
+
+## 🔑 Login Credentials
+- Email: `admin@greenlines.com`
+- Password: `admin123`
+
+---
+
+## 📖 For Developers - Additional Documentation
 
 **⚠️ IMPORTANT**: If you're starting a new development session, **START HERE**:
 
