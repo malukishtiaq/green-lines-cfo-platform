@@ -67,6 +67,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       icon: <DashboardOutlined />,
       label: t('navigation.dashboard'),
     },
+    {
+      key: 'plans/new',
+      icon: <FileTextOutlined />,
+      label: 'New Plan',
+    },
     // Temporarily commented out until routes are created
     // {
     //   key: 'multi-tenant',

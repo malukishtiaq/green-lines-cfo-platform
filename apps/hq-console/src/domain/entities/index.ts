@@ -68,8 +68,17 @@ export interface Partner {
   email?: string;
   phone?: string;
   country: string;
+  city?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
   domain: string; // area of expertise e.g., Odoo, Stock Count
   role: PartnerRole;
+  specialties?: string[]; // Array of service specialties
+  rating?: number; // 0-5 star rating
+  activeEngagements: number; // Current workload
+  availability: PartnerAvailability;
+  remoteOk: boolean;
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -149,6 +158,13 @@ export enum PartnerRole {
   IMPLEMENTATION = 'IMPLEMENTATION',
   TRAINING = 'TRAINING',
   OTHER = 'OTHER',
+}
+
+export enum PartnerAvailability {
+  AVAILABLE = 'AVAILABLE',     // Within 24 hours
+  MODERATE = 'MODERATE',        // Within 48 hours
+  BUSY = 'BUSY',                // Within 72 hours
+  UNAVAILABLE = 'UNAVAILABLE',  // Not available
 }
 
 // Contracts Domain

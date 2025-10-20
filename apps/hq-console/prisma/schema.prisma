@@ -257,15 +257,26 @@ model Partner {
   email     String?
   phone     String?
   country   String
+  city      String?     // City for same-city matching
+  address   String?     // Full address
+  latitude  Float?      // For distance calculation
+  longitude Float?      // For distance calculation
   domain    String      // Area of expertise e.g., Odoo, Stock Count
   role      PartnerRole // Functional role e.g., Technical, Accounts, ERP Consultant
+  specialties Json?     // Array of service specialties e.g., ["Network Infrastructure", "Security Systems"]
+  rating    Float?      @default(0) // 0-5 star rating
+  activeEngagements Int @default(0) // Current workload
+  availability      PartnerAvailability @default(AVAILABLE)
+  remoteOk  Boolean     @default(false) // Can work remotely
   notes     String?
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 
   @@index([country])
+  @@index([city])
   @@index([domain])
   @@index([role])
+  @@index([latitude, longitude])
   @@map("partners")
 }
 
@@ -277,6 +288,13 @@ enum PartnerRole {
   IMPLEMENTATION
   TRAINING
   OTHER
+}
+
+enum PartnerAvailability {
+  AVAILABLE       // Within 24 hours
+  MODERATE        // Within 48 hours
+  BUSY            // Within 72 hours
+  UNAVAILABLE     // Not available
 }
 
 // Contracts & Templates
