@@ -23,9 +23,10 @@ import {
   BellOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { useTranslations, useLocale } from 'next-intl';
-import LanguageSwitcher from './LanguageSwitcher';
-import ThemeSwitcher from './ThemeSwitcher';
+// Temporarily disabled internationalization
+// import { useTranslations, useLocale } from 'next-intl';
+// import LanguageSwitcher from './LanguageSwitcher';
+// import ThemeSwitcher from './ThemeSwitcher';
 import { useAccessControl } from '@/presentation/hooks/useAccessControl';
 import { UserRole, Permission } from '@/domain/entities/AccessControl';
 
@@ -38,8 +39,23 @@ interface DashboardLayoutProps {
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
-  const t = useTranslations('navigation');
-  const locale = useLocale();
+  
+  // Hardcoded translations for now
+  const t = (key: string) => {
+    const translations: Record<string, string> = {
+      'navigation.dashboard': 'Dashboard',
+      'navigation.customers': 'Customers',
+      'navigation.partners': 'Partners',
+      'navigation.contracts': 'Contracts',
+      'navigation.settings': 'Settings',
+      'navigation.logout': 'Logout',
+      'navigation.profile': 'Profile',
+    };
+    return translations[key] || key;
+  };
+  
+  // Hardcoded locale for now
+  const locale = 'en' as 'en' | 'ar';
   const isRTL = locale === 'ar';
   
   // Access control - in real app, this would come from user session
@@ -49,44 +65,49 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     {
       key: 'dashboard',
       icon: <DashboardOutlined />,
-      label: t('dashboard'),
+      label: t('navigation.dashboard'),
     },
-    // Only show customers if user has permission
+    {
+      key: 'multi-tenant',
+      icon: <BarChartOutlined />,
+      label: 'Multi-Tenant Dashboard',
+    },
     ...(canAccessPage('customers') ? [{
       key: 'customers',
       icon: <TeamOutlined />,
-      label: t('customers'),
+      label: t('navigation.customers'),
     }] : []),
-    // Only show service plans if user has permission
-    ...(canAccessPage('service-plans') ? [{
-      key: 'service-plans',
+    ...(canAccessPage('partners') ? [{
+      key: 'partners',
+      icon: <UserOutlined />,
+      label: t('navigation.partners'),
+    }] : []),
+    ...(canAccessPage('contracts') ? [{
+      key: 'contracts',
       icon: <FileTextOutlined />,
-      label: t('servicePlans'),
+      label: t('navigation.contracts'),
     }] : []),
-    // Only show tasks if user has permission
-    ...(canAccessPage('tasks') ? [{
-      key: 'tasks',
-      icon: <BarChartOutlined />,
-      label: t('tasks'),
-    }] : []),
-    // Only show settings if user has permission
     ...(canAccessPage('settings') ? [{
       key: 'settings',
       icon: <SettingOutlined />,
-      label: t('settings'),
+      label: t('navigation.settings'),
     }] : []),
   ];
+
+  const handleMenuClick = ({ key }: { key: string }) => {
+    // Simple navigation
+    if (key === 'dashboard') {
+      window.location.href = '/';
+    } else {
+      window.location.href = `/${key}`;
+    }
+  };
 
   const userMenuItems: MenuProps['items'] = [
     {
       key: 'profile',
       icon: <UserOutlined />,
-      label: t('profile'),
-    },
-    {
-      key: 'settings',
-      icon: <SettingOutlined />,
-      label: t('settings'),
+      label: t('navigation.profile'),
     },
     {
       type: 'divider',
@@ -94,62 +115,56 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     {
       key: 'logout',
       icon: <LogoutOutlined />,
-      label: t('logout'),
+      label: t('navigation.logout'),
+      onClick: () => {
+        // Handle logout
+        window.location.href = '/auth/signin';
+      },
     },
   ];
 
   return (
-    <Layout style={{ minHeight: '100vh', direction: isRTL ? 'rtl' : 'ltr' }}>
-      <Sider
-        trigger={null}
-        collapsible
+    <Layout style={{ minHeight: '100vh' }}>
+      <Sider 
+        trigger={null} 
+        collapsible 
         collapsed={collapsed}
         style={{
-          background: '#fff',
-          boxShadow: isRTL ? '-2px 0 8px 0 rgba(29,35,41,.05)' : '2px 0 8px 0 rgba(29,35,41,.05)',
+          background: '#001529',
+          direction: isRTL ? 'rtl' : 'ltr',
         }}
       >
-        <div
-          style={{
-            height: '64px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderBottom: '1px solid #f0f0f0',
-          }}
-        >
-          <Title
-            level={4}
-            style={{
-              margin: 0,
-              color: '#1890ff',
-              fontSize: collapsed ? '16px' : '20px',
-            }}
-          >
-            {collapsed ? 'GL' : 'Green Lines CFO'}
-          </Title>
+        <div style={{ 
+          height: 32, 
+          margin: 16, 
+          background: 'rgba(255, 255, 255, 0.3)',
+          borderRadius: 6,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
+          fontWeight: 'bold'
+        }}>
+          {collapsed ? 'GL' : 'Green Lines'}
         </div>
         <Menu
+          theme="dark"
           mode="inline"
           defaultSelectedKeys={['dashboard']}
           items={menuItems}
-          style={{
-            borderRight: 0,
-            marginTop: '16px',
-          }}
+          onClick={handleMenuClick}
+          style={{ direction: isRTL ? 'rtl' : 'ltr' }}
         />
       </Sider>
       <Layout>
-        <Header
-          style={{
-            padding: '0 24px',
-            background: '#fff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            boxShadow: '0 2px 8px 0 rgba(29,35,41,.05)',
-          }}
-        >
+        <Header style={{ 
+          padding: 0, 
+          background: '#fff',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          direction: isRTL ? 'rtl' : 'ltr'
+        }}>
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
@@ -160,21 +175,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               height: 64,
             }}
           />
-                 <Space>
-                   <LanguageSwitcher />
-                   <ThemeSwitcher />
-                   <Button
-                     type="text"
-                     icon={<BellOutlined />}
-                     style={{ fontSize: '16px' }}
-                   />
-            <Dropdown
-              menu={{ items: userMenuItems }}
-              placement="bottomRight"
-              arrow
-            >
+          
+          <Space size="middle" style={{ marginRight: 24 }}>
+            <BellOutlined style={{ fontSize: 18 }} />
+            {/* Temporarily disabled ThemeSwitcher and LanguageSwitcher */}
+            {/* <ThemeSwitcher /> */}
+            {/* <LanguageSwitcher /> */}
+            
+            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
               <Space style={{ cursor: 'pointer' }}>
-                <Avatar icon={<UserOutlined />} />
+                <Avatar size="small" icon={<UserOutlined />} />
                 <span>Admin User</span>
               </Space>
             </Dropdown>
@@ -182,11 +192,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         </Header>
         <Content
           style={{
-            margin: '24px',
-            padding: '24px',
+            margin: '24px 16px',
+            padding: 24,
+            minHeight: 280,
             background: '#fff',
-            borderRadius: '8px',
-            minHeight: 'calc(100vh - 112px)',
+            borderRadius: 8,
+            direction: isRTL ? 'rtl' : 'ltr'
           }}
         >
           {children}

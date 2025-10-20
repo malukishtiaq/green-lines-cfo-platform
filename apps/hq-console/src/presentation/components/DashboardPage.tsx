@@ -26,16 +26,45 @@ import {
 } from '@ant-design/icons';
 import { useDashboard, useTasks } from '../hooks';
 import { TaskStatus, Priority } from '../../domain/entities';
-import { useTranslations } from 'next-intl';
+// import { useTranslations } from 'next-intl';
 
 const { Title } = Typography;
+
+// Hardcoded translations
+const t = (key: string) => {
+  const translations: Record<string, string> = {
+    'dashboard.title': 'Dashboard Overview',
+    'dashboard.totalCustomers': 'Total Customers',
+    'dashboard.activeContracts': 'Active Contracts',
+    'dashboard.pendingTasks': 'Pending Tasks',
+    'dashboard.completedTasks': 'Completed Tasks',
+    'dashboard.taskCompletion': 'Task Completion Rate',
+    'dashboard.recentTasks': 'Recent Tasks',
+    'dashboard.task': 'Task',
+    'dashboard.customer': 'Customer',
+    'dashboard.agent': 'Agent',
+    'dashboard.status': 'Status',
+    'dashboard.priority': 'Priority',
+    'dashboard.dueDate': 'Due Date',
+    'dashboard.actions': 'Actions',
+    'dashboard.viewAll': 'View All Tasks',
+    'common.loading': 'Loading...',
+    'common.error': 'Error',
+    'task.status.PENDING': 'Pending',
+    'task.status.IN_PROGRESS': 'In Progress',
+    'task.status.COMPLETED': 'Completed',
+    'task.status.CANCELLED': 'Cancelled',
+    'task.priority.LOW': 'Low',
+    'task.priority.MEDIUM': 'Medium',
+    'task.priority.HIGH': 'High',
+    'task.priority.URGENT': 'Urgent',
+  };
+  return translations[key] || key;
+};
 
 const DashboardPage: React.FC = () => {
   const { stats, loading: statsLoading, error: statsError } = useDashboard();
   const { tasks, loading: tasksLoading, error: tasksError } = useTasks();
-  const t = useTranslations('dashboard');
-  const tCommon = useTranslations('common');
-  const tTask = useTranslations('task');
 
   // Get recent tasks (first 5)
   const recentTasks = tasks.slice(0, 5).map(task => ({
@@ -50,22 +79,22 @@ const DashboardPage: React.FC = () => {
 
   const columns = [
     {
-      title: tTask('title'),
+      title: t('dashboard.task'),
       dataIndex: 'task',
       key: 'task',
     },
     {
-      title: tCommon('customer'),
+      title: t('dashboard.customer'),
       dataIndex: 'customer',
       key: 'customer',
     },
     {
-      title: tCommon('agent'),
+      title: t('dashboard.agent'),
       dataIndex: 'agent',
       key: 'agent',
     },
     {
-      title: tCommon('status'),
+      title: t('dashboard.status'),
       dataIndex: 'status',
       key: 'status',
       render: (status: TaskStatus) => {
@@ -75,7 +104,7 @@ const DashboardPage: React.FC = () => {
       },
     },
     {
-      title: tCommon('priority'),
+      title: t('dashboard.priority'),
       dataIndex: 'priority',
       key: 'priority',
       render: (priority: Priority) => {
@@ -85,7 +114,7 @@ const DashboardPage: React.FC = () => {
       },
     },
     {
-      title: tCommon('dueDate'),
+      title: t('dashboard.dueDate'),
       dataIndex: 'dueDate',
       key: 'dueDate',
     },
@@ -95,7 +124,7 @@ const DashboardPage: React.FC = () => {
     return (
       <div style={{ textAlign: 'center', padding: '50px' }}>
         <Spin size="large" />
-        <p>{tCommon('loading')}</p>
+        <p>{t('common.loading')}</p>
       </div>
     );
   }
@@ -103,7 +132,7 @@ const DashboardPage: React.FC = () => {
   if (statsError) {
     return (
       <Alert
-        message={tCommon('error')}
+        message={t('common.error')}
         description={statsError}
         type="error"
         showIcon
