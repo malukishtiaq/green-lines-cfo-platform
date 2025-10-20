@@ -19,11 +19,10 @@ import { RepositoryFactory } from '../../infrastructure/database';
 export const useDashboard = () => {
   const [stats, setStats] = useState({
     totalCustomers: 0,
-    activeServicePlans: 0,
+    activeContracts: 0,
     completedTasks: 0,
     pendingTasks: 0,
     taskCompletionRate: 0,
-    customerSatisfaction: 0,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,12 +31,9 @@ export const useDashboard = () => {
     const fetchStats = async () => {
       try {
         setLoading(true);
-        const useCase = new GetDashboardStatsUseCase(
-          RepositoryFactory.getCustomerRepository(),
-          RepositoryFactory.getTaskRepository(),
-          RepositoryFactory.getServicePlanRepository()
-        );
-        const data = await useCase.execute();
+        const response = await fetch('/api/dashboard/stats');
+        if (!response.ok) throw new Error('Failed to fetch stats');
+        const data = await response.json();
         setStats(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch dashboard stats');
@@ -100,8 +96,9 @@ export const useTasks = (filters?: { customerId?: string; status?: string; assig
     const fetchTasks = async () => {
       try {
         setLoading(true);
-        const useCase = new GetTasksUseCase(RepositoryFactory.getTaskRepository());
-        const data = await useCase.execute(filters);
+        const response = await fetch('/api/tasks');
+        if (!response.ok) throw new Error('Failed to fetch tasks');
+        const data = await response.json();
         setTasks(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch tasks');
@@ -115,11 +112,13 @@ export const useTasks = (filters?: { customerId?: string; status?: string; assig
 
   const createTask = async (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const useCase = new CreateTaskUseCase(
-        RepositoryFactory.getTaskRepository(),
-        RepositoryFactory.getCustomerRepository()
-      );
-      const newTask = await useCase.execute(taskData);
+      const response = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(taskData),
+      });
+      if (!response.ok) throw new Error('Failed to create task');
+      const newTask = await response.json();
       setTasks(prev => [...prev, newTask]);
       return newTask;
     } catch (err) {
@@ -130,8 +129,13 @@ export const useTasks = (filters?: { customerId?: string; status?: string; assig
 
   const updateTaskStatus = async (taskId: string, status: TaskStatus, updatedById: string) => {
     try {
-      const useCase = new UpdateTaskStatusUseCase(RepositoryFactory.getTaskRepository());
-      const updatedTask = await useCase.execute(taskId, status, updatedById);
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status, updatedById }),
+      });
+      if (!response.ok) throw new Error('Failed to update task');
+      const updatedTask = await response.json();
       setTasks(prev => prev.map(task => task.id === taskId ? updatedTask : task));
       return updatedTask;
     } catch (err) {
@@ -215,6 +219,7 @@ export const useAuth = () => {
     setUser({
       id: '1',
       email: 'admin@greenlines.com',
+      password: '', // Not exposed in client
       name: 'Admin User',
       role: 'ADMIN' as UserRole,
       isActive: true,

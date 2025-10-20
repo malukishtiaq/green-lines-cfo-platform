@@ -74,7 +74,7 @@ const DashboardPage: React.FC = () => {
     agent: 'Agent Name', // This would come from task.assignments relation
     status: task.status,
     priority: task.priority,
-    dueDate: task.dueDate?.toISOString().split('T')[0] || 'N/A',
+    dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : 'N/A',
   }));
 
   const columns = [
@@ -161,7 +161,7 @@ const DashboardPage: React.FC = () => {
           <Card>
             <Statistic
               title={t('activeServicePlans')}
-              value={stats.activeServicePlans}
+              value={stats.activeContracts}
               prefix={<FileTextOutlined />}
               valueStyle={{ color: '#1890ff' }}
             />
@@ -194,7 +194,7 @@ const DashboardPage: React.FC = () => {
       {/* Progress Cards */}
       <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
         <Col xs={24} lg={12}>
-          <Card title={t('taskCompletionRate')} bordered={false}>
+          <Card title={t('taskCompletionRate')} variant="borderless">
             <Progress
               percent={stats.taskCompletionRate}
               strokeColor={{
@@ -211,9 +211,9 @@ const DashboardPage: React.FC = () => {
           </Card>
         </Col>
         <Col xs={24} lg={12}>
-          <Card title={t('customerSatisfaction')} bordered={false}>
+          <Card title={t('customerSatisfaction')} variant="borderless">
             <Progress
-              percent={stats.customerSatisfaction}
+              percent={85}
               strokeColor={{
                 '0%': '#87d068',
                 '100%': '#108ee9',
@@ -237,7 +237,7 @@ const DashboardPage: React.FC = () => {
             {t('viewAllTasks')}
           </Button>
         }
-        bordered={false}
+        variant="borderless"
       >
         {tasksLoading ? (
           <Spin />

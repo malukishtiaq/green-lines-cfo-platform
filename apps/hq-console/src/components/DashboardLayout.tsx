@@ -67,31 +67,32 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       icon: <DashboardOutlined />,
       label: t('navigation.dashboard'),
     },
-    {
-      key: 'multi-tenant',
-      icon: <BarChartOutlined />,
-      label: 'Multi-Tenant Dashboard',
-    },
-    ...(canAccessPage('customers') ? [{
-      key: 'customers',
-      icon: <TeamOutlined />,
-      label: t('navigation.customers'),
-    }] : []),
-    ...(canAccessPage('partners') ? [{
-      key: 'partners',
-      icon: <UserOutlined />,
-      label: t('navigation.partners'),
-    }] : []),
-    ...(canAccessPage('contracts') ? [{
-      key: 'contracts',
-      icon: <FileTextOutlined />,
-      label: t('navigation.contracts'),
-    }] : []),
-    ...(canAccessPage('settings') ? [{
-      key: 'settings',
-      icon: <SettingOutlined />,
-      label: t('navigation.settings'),
-    }] : []),
+    // Temporarily commented out until routes are created
+    // {
+    //   key: 'multi-tenant',
+    //   icon: <BarChartOutlined />,
+    //   label: 'Multi-Tenant Dashboard',
+    // },
+    // ...(canAccessPage('customers') ? [{
+    //   key: 'customers',
+    //   icon: <TeamOutlined />,
+    //   label: t('navigation.customers'),
+    // }] : []),
+    // ...(canAccessPage('partners') ? [{
+    //   key: 'partners',
+    //   icon: <UserOutlined />,
+    //   label: t('navigation.partners'),
+    // }] : []),
+    // ...(canAccessPage('contracts') ? [{
+    //   key: 'contracts',
+    //   icon: <FileTextOutlined />,
+    //   label: t('navigation.contracts'),
+    // }] : []),
+    // ...(canAccessPage('settings') ? [{
+    //   key: 'settings',
+    //   icon: <SettingOutlined />,
+    //   label: t('navigation.settings'),
+    // }] : []),
   ];
 
   const handleMenuClick = ({ key }: { key: string }) => {
