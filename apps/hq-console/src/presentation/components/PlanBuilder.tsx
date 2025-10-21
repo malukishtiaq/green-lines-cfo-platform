@@ -320,10 +320,15 @@ const PlanBuilder: React.FC = () => {
       };
 
       console.log('Sending plan data:', planData);
+      console.log('Basic form values:', basicValues);
+      console.log('Form validation status:', basicForm.getFieldsError());
 
-      // Validate required fields before sending
-      if (!planData.name || !planData.industry || !planData.companySize) {
-        message.error('Please fill in all required fields (Plan Name, Industry, Company Size)');
+      // Validate form before sending
+      try {
+        await basicForm.validateFields();
+      } catch (error) {
+        console.log('Form validation failed:', error);
+        message.error('Please fill in all required fields');
         return;
       }
 
