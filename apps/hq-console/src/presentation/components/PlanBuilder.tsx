@@ -266,18 +266,24 @@ const PlanBuilder: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    console.log('🚀 Submit button clicked!');
     // Show confirmation dialog
     Modal.confirm({
       title: 'Submit Plan?',
       content: `Are you sure you want to submit this plan? It will be saved to the database and you'll be redirected to the plans list.`,
       onOk: async () => {
+        console.log('✅ User confirmed submission');
         await submitPlan();
+      },
+      onCancel: () => {
+        console.log('❌ User cancelled submission');
       },
     });
   };
 
   const submitPlan = async () => {
     try {
+      console.log('📝 Starting plan submission...');
       setSubmitting(true);
       const basicValues = basicForm.getFieldsValue();
       
@@ -334,6 +340,7 @@ const PlanBuilder: React.FC = () => {
 
       let response;
       if (isEditMode && planId) {
+        console.log('🔄 Updating existing plan:', planId);
         // Update existing plan
         response = await fetch(`/api/plans/${planId}`, {
           method: 'PUT',
@@ -343,6 +350,7 @@ const PlanBuilder: React.FC = () => {
           body: JSON.stringify(planData),
         });
       } else {
+        console.log('🆕 Creating new plan...');
         // Create new plan
         response = await fetch('/api/plans', {
           method: 'POST',
@@ -352,24 +360,30 @@ const PlanBuilder: React.FC = () => {
           body: JSON.stringify(planData),
         });
       }
+      
+      console.log('📡 API Response status:', response.status);
 
       const result = await response.json();
       
       if (result.success) {
+        console.log('✅ Plan saved successfully!', result.data);
         message.success(isEditMode ? 'Plan updated successfully!' : 'Plan created successfully!');
         
         // Clear draft after successful submission
+        console.log('🗑️ Clearing draft...');
         localStorage.removeItem(DRAFT_KEY);
         
         // Reset form
+        console.log('🔄 Resetting form...');
         basicForm.resetFields();
         setMilestones([]);
         setCurrent(0);
         
         // Navigate to plans list
+        console.log('🚀 Redirecting to plans list...');
         window.location.href = '/plans';
       } else {
-        console.error('API Error:', result);
+        console.error('❌ API Error:', result);
         message.error(result.error || 'Failed to save plan');
       }
     } catch (error) {
