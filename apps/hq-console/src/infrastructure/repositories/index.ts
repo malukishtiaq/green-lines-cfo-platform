@@ -4,7 +4,7 @@ import { User, Customer, Task, ServicePlan, CustomerStatus, ServiceType, TaskSta
 import { IUserRepository, ICustomerRepository, ITaskRepository, IServicePlanRepository, IPartnerRepository, IContractRepository, IContractTemplateRepository, ICompanyProfileRepository } from '../../domain/repositories';
 
 // Prisma Client Singleton
-class PrismaService {
+export class PrismaService {
   private static instance: PrismaClient;
 
   static getInstance(): PrismaClient {

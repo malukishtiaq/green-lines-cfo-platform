@@ -4,11 +4,11 @@ import { PrismaService } from '@/infrastructure/repositories';
 // GET /api/plans/[id] - Get specific plan
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const prisma = PrismaService.getInstance();
-    const planId = params.id;
+    const { id: planId } = await params;
 
     const plan = await prisma.plan.findUnique({
       where: { id: planId },
@@ -53,11 +53,11 @@ export async function GET(
 // PUT /api/plans/[id] - Update plan
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const prisma = PrismaService.getInstance();
-    const planId = params.id;
+    const { id: planId } = await params;
     const body = await request.json();
 
     // Check if plan exists
@@ -124,11 +124,11 @@ export async function PUT(
 // DELETE /api/plans/[id] - Delete plan
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const prisma = PrismaService.getInstance();
-    const planId = params.id;
+    const { id: planId } = await params;
 
     // Check if plan exists
     const existingPlan = await prisma.plan.findUnique({
