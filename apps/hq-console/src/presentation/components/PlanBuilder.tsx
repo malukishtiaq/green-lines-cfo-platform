@@ -352,8 +352,10 @@ const PlanBuilder: React.FC = () => {
       }
       
       console.log('📡 API Response status:', response.status);
+      console.log('📡 API Response headers:', Object.fromEntries(response.headers.entries()));
 
       const result = await response.json();
+      console.log('📡 API Response body:', result);
       
       if (result.success) {
         console.log('✅ Plan saved successfully!', result.data);
@@ -374,6 +376,13 @@ const PlanBuilder: React.FC = () => {
         window.location.href = '/plans';
       } else {
         console.error('❌ API Error:', result);
+        console.error('❌ Error details:', {
+          success: result.success,
+          error: result.error,
+          message: result.message,
+          status: response.status,
+          statusText: response.statusText
+        });
         message.error(result.error || 'Failed to save plan');
       }
     } catch (error) {
