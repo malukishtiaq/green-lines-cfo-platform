@@ -266,24 +266,87 @@ const PlanBuilder: React.FC = () => {
 
   const handleSubmit = async () => {
     try {
-      // TODO: Implement actual submission logic
+      const basicValues = basicForm.getFieldsValue();
+      
+      // Check if we're in edit mode
+      const existingDraft = localStorage.getItem(DRAFT_KEY);
+      let isEditMode = false;
+      let planId = null;
+      let customerId = null;
+      
+      if (existingDraft) {
+        try {
+          const parsed = JSON.parse(existingDraft);
+          isEditMode = parsed.isEdit;
+          planId = parsed.planId;
+          customerId = parsed.customerId;
+        } catch (e) {
+          // Ignore parsing errors
+        }
+      }
+
+      // Prepare the plan data for API
       const planData = {
-        basic: basicForm.getFieldsValue(),
-        milestones,
+        name: basicValues.planName,
+        description: basicValues.description,
+        industry: basicValues.industry,
+        companySize: basicValues.companySize,
+        durationType: basicValues.durationType,
+        durationWeeks: basicValues.durationWeeks,
+        startDate: basicValues.startDate,
+        workingDays: basicValues.workingDays,
+        address: basicValues.address,
+        siteType: basicValues.siteType,
+        accessRequirements: basicValues.accessRequirements,
+        totalBudget: milestones.reduce((sum, m) => sum + m.budgetPercent, 0),
+        currency: 'SAR',
+        notes: `Plan created with ${milestones.length} milestones`,
+        status: 'ACTIVE',
+        currentStage: 2, // We've completed stages 1 and 2
+        totalStages: 7,
       };
-      console.log('Plan Data:', planData);
-      message.success('Plan submitted successfully!');
+
+      let response;
+      if (isEditMode && planId) {
+        // Update existing plan
+        response = await fetch(`/api/plans/${planId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(planData),
+        });
+      } else {
+        // Create new plan
+        response = await fetch('/api/plans', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(planData),
+        });
+      }
+
+      const result = await response.json();
       
-      // Clear draft after successful submission
-      localStorage.removeItem(DRAFT_KEY);
-      
-      // Reset form
-      basicForm.resetFields();
-      setMilestones([]);
-      setCurrent(0);
-      
-      // TODO: Navigate to plans list or plan detail page
+      if (result.success) {
+        message.success(isEditMode ? 'Plan updated successfully!' : 'Plan created successfully!');
+        
+        // Clear draft after successful submission
+        localStorage.removeItem(DRAFT_KEY);
+        
+        // Reset form
+        basicForm.resetFields();
+        setMilestones([]);
+        setCurrent(0);
+        
+        // Navigate to plans list
+        window.location.href = '/plans';
+      } else {
+        message.error(result.error || 'Failed to save plan');
+      }
     } catch (error) {
+      console.error('Error submitting plan:', error);
       message.error('Failed to submit plan');
     }
   };

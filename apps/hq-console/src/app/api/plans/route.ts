@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Validate required fields
-    const requiredFields = ['name', 'customerId', 'industry', 'companySize'];
+    const requiredFields = ['name', 'industry', 'companySize'];
     for (const field of requiredFields) {
       if (!body[field]) {
         return NextResponse.json(
@@ -87,6 +87,20 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
+    }
+
+    // Use demo customer if no customerId provided
+    let customerId = body.customerId;
+    if (!customerId) {
+      // Get the first customer from the database as a demo
+      const firstCustomer = await prisma.customer.findFirst();
+      if (!firstCustomer) {
+        return NextResponse.json(
+          { success: false, error: 'No customers found. Please create a customer first.' },
+          { status: 400 }
+        );
+      }
+      customerId = firstCustomer.id;
     }
 
     // Create plan

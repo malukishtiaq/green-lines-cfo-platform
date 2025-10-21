@@ -131,9 +131,9 @@ const statusLabels = {
 };
 
 export default function PlansPage() {
-  const [plans, setPlans] = useState(mockPlans);
-  const [filteredPlans, setFilteredPlans] = useState(mockPlans);
-  const [loading, setLoading] = useState(false);
+  const [plans, setPlans] = useState<any[]>([]);
+  const [filteredPlans, setFilteredPlans] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [industryFilter, setIndustryFilter] = useState('all');
@@ -141,7 +141,49 @@ export default function PlansPage() {
 
   useEffect(() => {
     CleanArchitectureConfig.initialize();
+    fetchPlans();
   }, []);
+
+  const fetchPlans = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/plans');
+      const data = await response.json();
+      
+      if (data.success) {
+        // Transform API data to match the expected format
+        const transformedPlans = data.data.map((plan: any) => ({
+          id: plan.id,
+          name: plan.name,
+          customer: plan.customer?.name || 'Unknown Customer',
+          status: plan.status.toLowerCase(),
+          stage: plan.currentStage,
+          totalStages: plan.totalStages,
+          budget: Number(plan.totalBudget),
+          currency: plan.currency,
+          startDate: plan.startDate,
+          endDate: plan.endDate,
+          createdAt: plan.createdAt,
+          lastModified: plan.updatedAt,
+          progress: Math.round((plan.currentStage / plan.totalStages) * 100),
+          industry: plan.industry,
+          companySize: plan.companySize,
+          durationWeeks: plan.durationWeeks,
+        }));
+        
+        setPlans(transformedPlans);
+      } else {
+        message.error('Failed to fetch plans');
+        setPlans([]);
+      }
+    } catch (error) {
+      console.error('Error fetching plans:', error);
+      message.error('Network error occurred');
+      setPlans([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Filter plans based on search and filters
   useEffect(() => {
@@ -193,8 +235,9 @@ export default function PlansPage() {
           const result = await response.json();
           
           if (result.success) {
-            setPlans(plans.filter(plan => plan.id !== planId));
             message.success('Plan deleted successfully');
+            // Refresh the plans list
+            fetchPlans();
           } else {
             message.error(result.error || 'Failed to delete plan');
           }
