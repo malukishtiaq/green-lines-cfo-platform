@@ -294,7 +294,7 @@ const PlanBuilder: React.FC = () => {
         durationType: basicValues.durationType,
         durationWeeks: basicValues.durationWeeks,
         startDate: basicValues.startDate,
-        workingDays: basicValues.workingDays,
+        workingDays: basicValues.workingDays || 5,
         address: basicValues.address,
         siteType: basicValues.siteType,
         accessRequirements: basicValues.accessRequirements,
@@ -305,6 +305,14 @@ const PlanBuilder: React.FC = () => {
         currentStage: 2, // We've completed stages 1 and 2
         totalStages: 7,
       };
+
+      console.log('Sending plan data:', planData);
+
+      // Validate required fields before sending
+      if (!planData.name || !planData.industry || !planData.companySize) {
+        message.error('Please fill in all required fields (Plan Name, Industry, Company Size)');
+        return;
+      }
 
       let response;
       if (isEditMode && planId) {
@@ -343,6 +351,7 @@ const PlanBuilder: React.FC = () => {
         // Navigate to plans list
         window.location.href = '/plans';
       } else {
+        console.error('API Error:', result);
         message.error(result.error || 'Failed to save plan');
       }
     } catch (error) {

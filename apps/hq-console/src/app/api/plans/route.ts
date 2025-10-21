@@ -77,11 +77,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    console.log('Received plan data:', body);
 
     // Validate required fields
     const requiredFields = ['name', 'industry', 'companySize'];
     for (const field of requiredFields) {
       if (!body[field]) {
+        console.log(`Missing required field: ${field}, value:`, body[field]);
         return NextResponse.json(
           { success: false, error: `Missing required field: ${field}` },
           { status: 400 }
@@ -95,20 +97,29 @@ export async function POST(request: NextRequest) {
       // Get the first customer from the database as a demo
       const firstCustomer = await prisma.customer.findFirst();
       if (!firstCustomer) {
+        console.log('No customers found in database');
         return NextResponse.json(
           { success: false, error: 'No customers found. Please create a customer first.' },
           { status: 400 }
         );
       }
       customerId = firstCustomer.id;
+      console.log('Using customer:', customerId);
     }
 
     // Create plan
+    console.log('Creating plan with data:', {
+      name: body.name,
+      customerId: customerId,
+      industry: body.industry,
+      companySize: body.companySize,
+    });
+    
     const plan = await prisma.plan.create({
       data: {
         name: body.name,
         description: body.description,
-        customerId: body.customerId,
+        customerId: customerId,
         industry: body.industry,
         companySize: body.companySize,
         durationType: body.durationType || 'WEEKS',
