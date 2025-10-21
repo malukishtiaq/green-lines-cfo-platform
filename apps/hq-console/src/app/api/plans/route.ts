@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/infrastructure/database';
+import { PrismaService } from '@/infrastructure/repositories';
 
 // GET /api/plans - Get all plans
 export async function GET(request: NextRequest) {
   try {
+    const prisma = PrismaService.getInstance();
     
     // Get query parameters
     const { searchParams } = new URL(request.url);
@@ -76,6 +77,7 @@ export async function GET(request: NextRequest) {
 // POST /api/plans - Create new plan
 export async function POST(request: NextRequest) {
   try {
+    const prisma = PrismaService.getInstance();
     const body = await request.json();
 
     // Validate required fields
