@@ -16,7 +16,6 @@ import {
   LockOutlined,
   MailOutlined,
 } from '@ant-design/icons';
-import { useTranslations } from 'next-intl';
 
 const { Title, Text } = Typography;
 
@@ -24,7 +23,6 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
-  const t = useTranslations('auth');
 
   const onFinish = async (values: { email: string; password: string }) => {
     setLoading(true);
@@ -38,7 +36,7 @@ export default function SignInPage() {
       });
 
       if (result?.error) {
-        setError(t('invalidCredentials'));
+        setError('Invalid email or password');
       } else {
         // Check if user is authenticated
         const session = await getSession();
@@ -47,7 +45,7 @@ export default function SignInPage() {
         }
       }
     } catch (err) {
-      setError(t('signInError'));
+      setError('An error occurred during sign in');
     } finally {
       setLoading(false);
     }
@@ -95,7 +93,7 @@ export default function SignInPage() {
         >
           <Form.Item
             name="email"
-            label={t('email')}
+            label="Email"
             rules={[
               { required: true, message: 'Please input your email!' },
               { type: 'email', message: 'Please enter a valid email!' },
@@ -103,20 +101,20 @@ export default function SignInPage() {
           >
             <Input
               prefix={<MailOutlined />}
-              placeholder={t('enterEmail')}
+              placeholder="Enter your email"
             />
           </Form.Item>
 
           <Form.Item
             name="password"
-            label={t('password')}
+            label="Password"
             rules={[
               { required: true, message: 'Please input your password!' },
             ]}
           >
             <Input.Password
               prefix={<LockOutlined />}
-              placeholder={t('enterPassword')}
+              placeholder="Enter your password"
             />
           </Form.Item>
 
@@ -127,7 +125,7 @@ export default function SignInPage() {
               loading={loading}
               style={{ width: '100%' }}
             >
-              {t('signIn')}
+              Sign In
             </Button>
           </Form.Item>
         </Form>
@@ -136,7 +134,7 @@ export default function SignInPage() {
 
         <div style={{ textAlign: 'center' }}>
           <Text type="secondary">
-            {t('demoCredentials')}:
+            Demo Credentials:
           </Text>
           <br />
           <Text code>admin@greenlines.com</Text>
