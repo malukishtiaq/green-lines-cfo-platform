@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaService } from '@/infrastructure/repositories';
+import { prisma } from '@/infrastructure/database';
 
 // GET /api/plans/[id] - Get specific plan
 export async function GET(
@@ -7,7 +7,6 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const prisma = PrismaService.getInstance();
     const { id: planId } = await params;
 
     const plan = await prisma.plan.findUnique({
@@ -56,7 +55,6 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const prisma = PrismaService.getInstance();
     const { id: planId } = await params;
     const body = await request.json();
 
@@ -127,7 +125,6 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const prisma = PrismaService.getInstance();
     const { id: planId } = await params;
 
     // Check if plan exists
