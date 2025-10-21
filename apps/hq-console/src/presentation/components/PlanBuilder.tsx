@@ -55,6 +55,7 @@ const PlanBuilder: React.FC = () => {
   const [milestoneForm] = Form.useForm();
   const [editingMilestone, setEditingMilestone] = useState<Milestone | null>(null);
   const [milestoneModalVisible, setMilestoneModalVisible] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
 
@@ -265,7 +266,19 @@ const PlanBuilder: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    // Show confirmation dialog
+    Modal.confirm({
+      title: 'Submit Plan?',
+      content: `Are you sure you want to submit this plan? It will be saved to the database and you'll be redirected to the plans list.`,
+      onOk: async () => {
+        await submitPlan();
+      },
+    });
+  };
+
+  const submitPlan = async () => {
     try {
+      setSubmitting(true);
       const basicValues = basicForm.getFieldsValue();
       
       // Check if we're in edit mode
@@ -300,9 +313,9 @@ const PlanBuilder: React.FC = () => {
         accessRequirements: basicValues.accessRequirements,
         totalBudget: milestones.reduce((sum, m) => sum + m.budgetPercent, 0),
         currency: 'SAR',
-        notes: `Plan created with ${milestones.length} milestones`,
-        status: 'ACTIVE',
-        currentStage: 2, // We've completed stages 1 and 2
+        notes: `Plan created with ${milestones.length} milestones. Completed up to stage ${current + 1}.`,
+        status: milestones.length > 0 ? 'ACTIVE' : 'DRAFT',
+        currentStage: current + 1, // Current stage (1-based)
         totalStages: 7,
       };
 
@@ -357,6 +370,8 @@ const PlanBuilder: React.FC = () => {
     } catch (error) {
       console.error('Error submitting plan:', error);
       message.error('Failed to submit plan');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -551,11 +566,6 @@ const PlanBuilder: React.FC = () => {
         </div>
       )}
 
-      {stages[current].key !== 'basic' && stages[current].key !== 'milestones' && (
-        <Card size="small" style={{ marginTop: 12 }}>
-          <Paragraph>Stage "{stages[current].title}" coming next.</Paragraph>
-        </Card>
-      )}
 
       <Modal
         open={milestoneModalVisible}
@@ -609,9 +619,9 @@ const PlanBuilder: React.FC = () => {
             )}
           </>
         )}
-        {current === stages.length - 1 && (
-          <Button type="primary" onClick={handleSubmit}>Submit Plan</Button>
-        )}
+        <Button type="primary" onClick={handleSubmit} loading={submitting}>
+          {submitting ? 'Saving...' : 'Submit Plan'}
+        </Button>
       </Space>
     </Card>
   );
