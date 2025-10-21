@@ -267,18 +267,8 @@ const PlanBuilder: React.FC = () => {
 
   const handleSubmit = async () => {
     console.log('🚀 Submit button clicked!');
-    // Show confirmation dialog
-    Modal.confirm({
-      title: 'Submit Plan?',
-      content: `Are you sure you want to submit this plan? It will be saved to the database and you'll be redirected to the plans list.`,
-      onOk: async () => {
-        console.log('✅ User confirmed submission');
-        await submitPlan();
-      },
-      onCancel: () => {
-        console.log('❌ User cancelled submission');
-      },
-    });
+    console.log('📝 Starting plan submission directly...');
+    await submitPlan();
   };
 
   const submitPlan = async () => {
