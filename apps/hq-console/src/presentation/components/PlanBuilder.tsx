@@ -354,10 +354,24 @@ const PlanBuilder: React.FC = () => {
       console.log('📡 API Response status:', response.status);
       console.log('📡 API Response headers:', Object.fromEntries(response.headers.entries()));
 
-      const result = await response.json();
-      console.log('📡 API Response body:', result);
+      let result;
+      try {
+        const responseText = await response.text();
+        console.log('📡 Raw response text:', responseText);
+        
+        if (responseText) {
+          result = JSON.parse(responseText);
+          console.log('📡 Parsed response:', result);
+        } else {
+          result = null;
+          console.log('📡 Empty response');
+        }
+      } catch (parseError) {
+        console.error('❌ Failed to parse response:', parseError);
+        result = { success: false, error: 'Invalid response from server' };
+      }
       
-      if (result.success) {
+      if (result && result.success) {
         console.log('✅ Plan saved successfully!', result.data);
         message.success(isEditMode ? 'Plan updated successfully!' : 'Plan created successfully!');
         
@@ -377,13 +391,16 @@ const PlanBuilder: React.FC = () => {
       } else {
         console.error('❌ API Error:', result);
         console.error('❌ Error details:', {
-          success: result.success,
-          error: result.error,
-          message: result.message,
+          success: result?.success,
+          error: result?.error,
+          message: result?.message,
           status: response.status,
           statusText: response.statusText
         });
-        message.error(result.error || 'Failed to save plan');
+        
+        // Safe error message extraction
+        const errorMessage = result?.error || result?.message || 'Failed to save plan';
+        message.error(errorMessage);
       }
     } catch (error) {
       console.error('Error submitting plan:', error);
