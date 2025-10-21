@@ -64,6 +64,9 @@ model Customer {
 
   // Contract relations
   contracts     Contract[]
+  
+  // Plan Builder relations
+  plans         Plan[]
 
   @@map("customers")
 }
@@ -406,4 +409,120 @@ model Contract {
   @@index([senderCompanyId])
   @@index([customerId])
   @@map("contracts")
+}
+
+// Plan Builder - Service Plans
+model Plan {
+  id                String   @id @default(cuid())
+  name              String
+  description       String?
+  customerId        String
+  customer          Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
+  // Basic Information (Stage 1)
+  industry          String
+  companySize       String
+  durationType      String   @default("WEEKS")
+  durationWeeks     Int?
+  startDate         DateTime?
+  workingDays       Int      @default(5)
+  address           String?
+  siteType          String?
+  accessRequirements String?
+  
+  // Plan Status
+  status            PlanStatus @default(DRAFT)
+  currentStage      Int        @default(1)
+  totalStages       Int        @default(7)
+  totalBudget       Decimal    @default(0)
+  currency          String     @default("SAR")
+  notes             String?
+  
+  // Timestamps
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  // Relations
+  milestones        Milestone[]
+  resources         Resource[]
+  attachments       Attachment[]
+
+  @@map("plans")
+}
+
+enum PlanStatus {
+  DRAFT
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+// Plan Milestones (Stage 2)
+model Milestone {
+  id              String   @id @default(cuid())
+  planId          String
+  plan            Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  
+  sequence        Int
+  name            String
+  description     String?
+  durationWeeks   Int
+  budgetAllocation Decimal // Percentage (0-100)
+  deliverables    String?
+  dependencies    String?  // JSON array of milestone IDs
+  isCriticalPath  Boolean  @default(false)
+  
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("milestones")
+}
+
+// Plan Resources (Stage 3)
+model Resource {
+  id          String   @id @default(cuid())
+  planId      String
+  plan        Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  
+  name        String
+  type        ResourceType
+  quantity    Int        @default(1)
+  cost        Decimal?
+  currency    String     @default("SAR")
+  description String?
+  
+  // Timestamps
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("resources")
+}
+
+enum ResourceType {
+  HUMAN_RESOURCE
+  EQUIPMENT
+  SOFTWARE
+  MATERIAL
+  OTHER
+}
+
+// Plan Attachments (Stage 6)
+model Attachment {
+  id          String   @id @default(cuid())
+  planId      String
+  plan        Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  
+  name        String
+  type        String
+  size        Int
+  url         String
+  description String?
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("attachments")
 }

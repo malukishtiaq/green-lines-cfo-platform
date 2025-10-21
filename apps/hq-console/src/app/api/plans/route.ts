@@ -1,0 +1,137 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { PrismaService } from '@/infrastructure/database';
+
+// GET /api/plans - Get all plans
+export async function GET(request: NextRequest) {
+  try {
+    const prisma = PrismaService.getInstance();
+    
+    // Get query parameters
+    const { searchParams } = new URL(request.url);
+    const status = searchParams.get('status');
+    const industry = searchParams.get('industry');
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const search = searchParams.get('search');
+
+    // Build where clause
+    const where: any = {};
+    
+    if (status && status !== 'all') {
+      where.status = status;
+    }
+    
+    if (industry && industry !== 'all') {
+      where.industry = industry;
+    }
+    
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { customer: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    // Get plans with pagination
+    const [plans, total] = await Promise.all([
+      prisma.plan.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          customer: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          milestones: {
+            orderBy: { sequence: 'asc' },
+          },
+        },
+      }),
+      prisma.plan.count({ where }),
+    ]);
+
+    return NextResponse.json({
+      success: true,
+      data: plans,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching plans:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch plans' },
+      { status: 500 }
+    );
+  }
+}
+
+// POST /api/plans - Create new plan
+export async function POST(request: NextRequest) {
+  try {
+    const prisma = PrismaService.getInstance();
+    const body = await request.json();
+
+    // Validate required fields
+    const requiredFields = ['name', 'customerId', 'industry', 'companySize'];
+    for (const field of requiredFields) {
+      if (!body[field]) {
+        return NextResponse.json(
+          { success: false, error: `Missing required field: ${field}` },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Create plan
+    const plan = await prisma.plan.create({
+      data: {
+        name: body.name,
+        description: body.description,
+        customerId: body.customerId,
+        industry: body.industry,
+        companySize: body.companySize,
+        durationType: body.durationType || 'WEEKS',
+        durationWeeks: body.durationWeeks,
+        startDate: body.startDate ? new Date(body.startDate) : null,
+        workingDays: body.workingDays || 5,
+        address: body.address,
+        siteType: body.siteType,
+        accessRequirements: body.accessRequirements,
+        status: body.status || 'draft',
+        currentStage: body.currentStage || 1,
+        totalBudget: body.totalBudget || 0,
+        currency: body.currency || 'SAR',
+        notes: body.notes,
+      },
+      include: {
+        customer: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: plan,
+    });
+  } catch (error) {
+    console.error('Error creating plan:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to create plan' },
+      { status: 500 }
+    );
+  }
+}

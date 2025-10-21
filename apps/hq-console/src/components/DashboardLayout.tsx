@@ -43,6 +43,23 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [hasDraft, setHasDraft] = useState(false);
   const [draftInfo, setDraftInfo] = useState<{ lastSaved?: string; stage?: number } | null>(null);
+  const [selectedKey, setSelectedKey] = useState('dashboard');
+
+  // Set selected key based on current path
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname;
+      if (path === '/' || path === '/dashboard') {
+        setSelectedKey('dashboard');
+      } else if (path === '/plans/new') {
+        setSelectedKey('plans/new');
+      } else if (path === '/plans') {
+        setSelectedKey('plans');
+      } else if (path === '/partners') {
+        setSelectedKey('partners');
+      }
+    }
+  }, []);
 
   // Check for draft on mount and periodically
   useEffect(() => {
@@ -101,29 +118,36 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       label: t('navigation.dashboard'),
     },
     {
-      key: 'plans/new',
+      key: 'plans',
       icon: <FileTextOutlined />,
-      label: (
-        <Badge dot={hasDraft} offset={[10, 0]}>
-          <span>New Plan</span>
-        </Badge>
-      ),
+      label: 'Plans',
+      children: [
+        {
+          key: 'plans/list',
+          icon: <FileTextOutlined />,
+          label: 'All Plans',
+        },
+        {
+          key: 'plans/new',
+          icon: <FileTextOutlined />,
+          label: (
+            <Badge dot={hasDraft} offset={[10, 0]}>
+              <span>New Plan</span>
+            </Badge>
+          ),
+        },
+      ],
     },
+    ...(canAccessPage('partners') ? [{
+      key: 'partners',
+      icon: <TeamOutlined />,
+      label: t('navigation.partners'),
+    }] : []),
     // Temporarily commented out until routes are created
-    // {
-    //   key: 'multi-tenant',
-    //   icon: <BarChartOutlined />,
-    //   label: 'Multi-Tenant Dashboard',
-    // },
     // ...(canAccessPage('customers') ? [{
     //   key: 'customers',
     //   icon: <TeamOutlined />,
     //   label: t('navigation.customers'),
-    // }] : []),
-    // ...(canAccessPage('partners') ? [{
-    //   key: 'partners',
-    //   icon: <UserOutlined />,
-    //   label: t('navigation.partners'),
     // }] : []),
     // ...(canAccessPage('contracts') ? [{
     //   key: 'contracts',
@@ -138,9 +162,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   ];
 
   const handleMenuClick = ({ key }: { key: string }) => {
-    // Simple navigation
+    setSelectedKey(key);
+    
+    // Navigation logic
     if (key === 'dashboard') {
       window.location.href = '/';
+    } else if (key === 'plans/list') {
+      window.location.href = '/plans';
+    } else if (key === 'plans/new') {
+      window.location.href = '/plans/new';
+    } else if (key === 'partners') {
+      window.location.href = '/partners';
     } else {
       window.location.href = `/${key}`;
     }
@@ -193,7 +225,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <Menu
           theme="dark"
           mode="inline"
-          defaultSelectedKeys={['dashboard']}
+          selectedKeys={[selectedKey]}
           items={menuItems}
           onClick={handleMenuClick}
           style={{ direction: isRTL ? 'rtl' : 'ltr' }}

@@ -142,6 +142,148 @@ async function main() {
 
   console.log('✅ Service plans created:', servicePlans.length);
 
+  // Create demo Plan Builder plans
+  const plans = await Promise.all([
+    prisma.plan.create({
+      data: {
+        name: 'ERP Implementation - ABC Corp',
+        description: 'Complete ERP system implementation for manufacturing company',
+        customerId: customers[0].id,
+        industry: 'Manufacturing',
+        companySize: 'Large',
+        durationType: 'WEEKS',
+        durationWeeks: 20,
+        startDate: new Date('2024-01-15'),
+        workingDays: 5,
+        address: 'Dubai Industrial City, UAE',
+        siteType: 'Office',
+        accessRequirements: 'Security clearance required',
+        status: 'ACTIVE',
+        currentStage: 3,
+        totalStages: 7,
+        totalBudget: 50000,
+        currency: 'SAR',
+        notes: 'High priority project with tight deadline',
+      },
+    }),
+    prisma.plan.create({
+      data: {
+        name: 'Stock Count System - XYZ Ltd',
+        description: 'Inventory management system implementation',
+        customerId: customers[1].id,
+        industry: 'Retail',
+        companySize: 'Medium',
+        durationType: 'WEEKS',
+        durationWeeks: 8,
+        startDate: new Date('2024-02-01'),
+        workingDays: 6,
+        address: 'Abu Dhabi Mall, UAE',
+        siteType: 'Retail',
+        accessRequirements: 'Mall hours only',
+        status: 'DRAFT',
+        currentStage: 2,
+        totalStages: 7,
+        totalBudget: 25000,
+        currency: 'SAR',
+        notes: 'Waiting for client approval',
+      },
+    }),
+    prisma.plan.create({
+      data: {
+        name: 'Financial System Upgrade - DEF Inc',
+        description: 'Legacy system modernization and migration',
+        customerId: customers[2].id,
+        industry: 'Finance',
+        companySize: 'Large',
+        durationType: 'WEEKS',
+        durationWeeks: 15,
+        startDate: new Date('2023-10-01'),
+        workingDays: 5,
+        address: 'DIFC, Dubai, UAE',
+        siteType: 'Office',
+        accessRequirements: 'Banking security protocols',
+        status: 'COMPLETED',
+        currentStage: 7,
+        totalStages: 7,
+        totalBudget: 75000,
+        currency: 'SAR',
+        notes: 'Successfully completed ahead of schedule',
+      },
+    }),
+  ]);
+
+  // Create milestones for the first plan
+  const milestones = await Promise.all([
+    prisma.milestone.create({
+      data: {
+        planId: plans[0].id,
+        sequence: 1,
+        name: 'Requirements Analysis',
+        description: 'Gather and analyze business requirements',
+        durationWeeks: 2,
+        budgetAllocation: 15,
+        deliverables: 'Requirements document, Process maps',
+        dependencies: '[]',
+        isCriticalPath: true,
+      },
+    }),
+    prisma.milestone.create({
+      data: {
+        planId: plans[0].id,
+        sequence: 2,
+        name: 'System Design',
+        description: 'Design system architecture and database schema',
+        durationWeeks: 3,
+        budgetAllocation: 20,
+        deliverables: 'System design document, Database schema',
+        dependencies: '["1"]',
+        isCriticalPath: true,
+      },
+    }),
+    prisma.milestone.create({
+      data: {
+        planId: plans[0].id,
+        sequence: 3,
+        name: 'Development Phase 1',
+        description: 'Core module development',
+        durationWeeks: 6,
+        budgetAllocation: 35,
+        deliverables: 'Core modules, Unit tests',
+        dependencies: '["2"]',
+        isCriticalPath: true,
+      },
+    }),
+    prisma.milestone.create({
+      data: {
+        planId: plans[0].id,
+        sequence: 4,
+        name: 'Testing & QA',
+        description: 'Comprehensive testing and quality assurance',
+        durationWeeks: 3,
+        budgetAllocation: 20,
+        deliverables: 'Test reports, Bug fixes',
+        dependencies: '["3"]',
+        isCriticalPath: false,
+      },
+    }),
+    prisma.milestone.create({
+      data: {
+        planId: plans[0].id,
+        sequence: 5,
+        name: 'Deployment & Go-Live',
+        description: 'System deployment and production launch',
+        durationWeeks: 2,
+        budgetAllocation: 10,
+        deliverables: 'Live system, User training',
+        dependencies: '["4"]',
+        isCriticalPath: true,
+      },
+    }),
+  ]);
+
+  console.log('✅ Plan Builder plans created:', plans.length);
+  console.log('✅ Milestones created:', milestones.length);
+
   // Create demo tasks
   const tasks = await Promise.all([
     prisma.task.create({

@@ -65,12 +65,46 @@ const PlanBuilder: React.FC = () => {
       if (savedDraft) {
         try {
           const draft = JSON.parse(savedDraft);
+          
+          // Handle both old format (basic/milestones) and new format (direct fields)
           if (draft.basic) {
+            // Old format
             basicForm.setFieldsValue(draft.basic);
+            if (draft.milestones) {
+              setMilestones(draft.milestones);
+            }
+          } else {
+            // New format from edit page
+            basicForm.setFieldsValue({
+              planName: draft.planName,
+              description: draft.description,
+              industry: draft.industry,
+              companySize: draft.companySize,
+              durationType: draft.durationType,
+              durationWeeks: draft.durationWeeks,
+              startDate: draft.startDate,
+              workingDays: draft.workingDays,
+              address: draft.address,
+              siteType: draft.siteType,
+              accessRequirements: draft.accessRequirements,
+            });
+            
+            if (draft.milestones) {
+              // Convert milestone format if needed
+              const convertedMilestones = draft.milestones.map((m: any) => ({
+                id: m.id,
+                sequence: m.sequence,
+                name: m.name,
+                durationWeeks: m.durationWeeks,
+                budgetPercent: m.budgetAllocation,
+                deliverables: m.deliverables || '',
+                dependencies: m.dependencies ? (typeof m.dependencies === 'string' ? JSON.parse(m.dependencies) : m.dependencies) : [],
+                criticalPath: m.isCriticalPath || false,
+              }));
+              setMilestones(convertedMilestones);
+            }
           }
-          if (draft.milestones) {
-            setMilestones(draft.milestones);
-          }
+          
           if (draft.currentStage !== undefined) {
             setCurrent(draft.currentStage);
           }
@@ -78,7 +112,12 @@ const PlanBuilder: React.FC = () => {
             setLastSaved(draft.lastSaved);
           }
           setDraftLoaded(true);
-          message.info('Draft loaded. Continue where you left off!');
+          
+          if (draft.isEdit) {
+            message.info('Plan data loaded. You can now edit your plan.');
+          } else {
+            message.info('Draft loaded. Continue where you left off!');
+          }
         } catch (error) {
           console.error('Failed to load draft:', error);
         }
@@ -90,12 +129,61 @@ const PlanBuilder: React.FC = () => {
   React.useEffect(() => {
     if (draftLoaded || milestones.length > 0) {
       const timestamp = new Date().toISOString();
-      const draft = {
-        basic: basicForm.getFieldsValue(),
+      const basicValues = basicForm.getFieldsValue();
+      
+      // Check if we're in edit mode by looking for existing draft
+      const existingDraft = localStorage.getItem(DRAFT_KEY);
+      let isEditMode = false;
+      let planId = null;
+      let customerId = null;
+      
+      if (existingDraft) {
+        try {
+          const parsed = JSON.parse(existingDraft);
+          isEditMode = parsed.isEdit;
+          planId = parsed.planId;
+          customerId = parsed.customerId;
+        } catch (e) {
+          // Ignore parsing errors
+        }
+      }
+      
+      const draft = isEditMode ? {
+        // Edit mode format
+        planName: basicValues.planName,
+        description: basicValues.description,
+        industry: basicValues.industry,
+        companySize: basicValues.companySize,
+        durationType: basicValues.durationType,
+        durationWeeks: basicValues.durationWeeks,
+        startDate: basicValues.startDate,
+        workingDays: basicValues.workingDays,
+        address: basicValues.address,
+        siteType: basicValues.siteType,
+        accessRequirements: basicValues.accessRequirements,
+        milestones: milestones.map(m => ({
+          id: m.id,
+          sequence: m.sequence,
+          name: m.name,
+          durationWeeks: m.durationWeeks,
+          budgetAllocation: m.budgetPercent,
+          deliverables: m.deliverables,
+          dependencies: JSON.stringify(m.dependencies),
+          isCriticalPath: m.criticalPath,
+        })),
+        planId,
+        customerId,
+        currentStage: current,
+        lastSaved: timestamp,
+        isEdit: true,
+      } : {
+        // New plan format
+        basic: basicValues,
         milestones,
         currentStage: current,
         lastSaved: timestamp,
       };
+      
       localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
       setLastSaved(timestamp);
     }
