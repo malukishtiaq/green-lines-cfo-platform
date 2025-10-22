@@ -25,6 +25,8 @@
     "next-auth": "^4.24.11",
     "next-intl": "^4.3.12",
     "lightningcss": "^1.26.0",
+    "lightningcss-linux-x64-gnu": "^1.26.0",
+    "lightningcss-linux-x64-musl": "^1.26.0",
     "prisma": "^6.17.1",
     "react": "19.1.0",
     "react-dom": "19.1.0"
