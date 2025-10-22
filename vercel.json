@@ -1,0 +1,7 @@
+{
+  "buildCommand": "cd apps/hq-console && npm install && npm run build",
+  "devCommand": "cd apps/hq-console && npm run dev",
+  "installCommand": "cd apps/hq-console && npm install",
+  "outputDirectory": "apps/hq-console/.next",
+  "framework": "nextjs"
+}
