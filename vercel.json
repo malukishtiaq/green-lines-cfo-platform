@@ -1,7 +1,15 @@
 {
-  "buildCommand": "cd apps/hq-console && npm install && npm run build",
-  "devCommand": "cd apps/hq-console && npm run dev",
-  "installCommand": "cd apps/hq-console && npm install",
-  "outputDirectory": "apps/hq-console/.next",
-  "framework": "nextjs"
+  "version": 2,
+  "builds": [
+    {
+      "src": "apps/hq-console/package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "apps/hq-console/$1"
+    }
+  ]
 }
