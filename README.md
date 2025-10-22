@@ -11,6 +11,7 @@ A comprehensive digital-first CFO Services platform spanning three main applicat
 4. Open browser:
    - **Main App**: http://localhost:3000
    - **Database**: http://localhost:5555
+   -- APP
 
 ### **Method 2: Manual Terminal**
 ```bash
