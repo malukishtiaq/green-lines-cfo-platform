@@ -258,6 +258,19 @@ src/
   - i18n: Added `contracts` keys to `messages/en.json` and `messages/ar.json`
 - 🔧 Next: UI tables/forms to manage templates, company profiles, contract generation & sending
 
+### October 22, 2025 - Vercel Deployment Configuration
+- ✅ Fixed Vercel deployment configuration issues:
+  - Updated `package.json`: Moved Prisma dependencies to production dependencies
+  - Added build scripts: `prisma generate` before build and postinstall hook
+  - Updated `next.config.js`: Added external package configuration for Prisma and bcryptjs
+  - Created `.env.example`: Documented required environment variables
+  - Created comprehensive deployment guide: `docs/Vercel_Deployment_Fix.md`
+- 📝 Required environment variables for Vercel:
+  - `DATABASE_URL`: PostgreSQL connection string
+  - `NEXTAUTH_SECRET`: Authentication secret (generate with OpenSSL)
+  - `NEXTAUTH_URL`: Deployment URL
+- 🔧 Next: Configure environment variables in Vercel and redeploy
+
 ---
 
 ## 📚 Resources
