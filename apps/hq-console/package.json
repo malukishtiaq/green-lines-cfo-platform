@@ -12,8 +12,7 @@
     "db:studio": "prisma studio",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "db:migrate": "prisma migrate deploy",
-    "postinstall": "node scripts/generate-prisma.js"
+    "db:migrate": "prisma migrate deploy"
   },
   "dependencies": {
     "@ant-design/icons": "^6.1.0",
