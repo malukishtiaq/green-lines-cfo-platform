@@ -31,7 +31,7 @@ export const useDashboard = () => {
     const fetchStats = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/dashboard/stats');
+        const response = await fetch('/api/dashboard/metrics');
         if (!response.ok) throw new Error('Failed to fetch stats');
         const data = await response.json();
         setStats(data);

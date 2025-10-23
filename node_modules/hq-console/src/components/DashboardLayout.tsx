@@ -69,13 +69,23 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         if (draft) {
           try {
             const parsed = JSON.parse(draft);
-            setHasDraft(true);
-            setDraftInfo({
-              lastSaved: parsed.lastSaved,
-              stage: parsed.currentStage
-            });
+            // Only show draft notification for NEW plans, not for editing existing plans
+            const isNewPlanDraft = !parsed.isEdit && !parsed.planId;
+            
+            if (isNewPlanDraft) {
+              setHasDraft(true);
+              setDraftInfo({
+                lastSaved: parsed.lastSaved,
+                stage: parsed.currentStage
+              });
+            } else {
+              // This is an edit draft, don't show the notification
+              setHasDraft(false);
+              setDraftInfo(null);
+            }
           } catch (e) {
             setHasDraft(false);
+            setDraftInfo(null);
           }
         } else {
           setHasDraft(false);
@@ -114,25 +124,44 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const menuItems: MenuProps['items'] = [
     {
       key: 'dashboard',
-      icon: <DashboardOutlined />,
-      label: t('navigation.dashboard'),
+      icon: <DashboardOutlined style={{ fontSize: 18 }} />,
+      label: (
+        <span style={{ fontWeight: 500, fontSize: 15 }}>
+          {t('navigation.dashboard')}
+        </span>
+      ),
     },
     {
       key: 'plans',
-      icon: <FileTextOutlined />,
-      label: 'Plans',
+      icon: <FileTextOutlined style={{ fontSize: 18 }} />,
+      label: (
+        <span style={{ fontWeight: 500, fontSize: 15 }}>
+          Plans
+        </span>
+      ),
       children: [
         {
           key: 'plans/list',
-          icon: <FileTextOutlined />,
-          label: 'All Plans',
+          icon: <FileTextOutlined style={{ fontSize: 16 }} />,
+          label: (
+            <span style={{ fontWeight: 400, fontSize: 14 }}>
+              All Plans
+            </span>
+          ),
         },
         {
           key: 'plans/new',
-          icon: <FileTextOutlined />,
+          icon: <FileTextOutlined style={{ fontSize: 16 }} />,
           label: (
-            <Badge dot={hasDraft} offset={[10, 0]}>
-              <span>New Plan</span>
+            <Badge dot={hasDraft} offset={[10, 0]} color="#f59e0b">
+              <span style={{ 
+                fontWeight: 600, 
+                fontSize: 14,
+                color: '#f59e0b',
+                textShadow: '0 0 8px rgba(245, 158, 11, 0.3)'
+              }}>
+                ✨ New Plan
+              </span>
             </Badge>
           ),
         },
@@ -140,8 +169,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     },
     ...(canAccessPage('partners') ? [{
       key: 'partners',
-      icon: <TeamOutlined />,
-      label: t('navigation.partners'),
+      icon: <TeamOutlined style={{ fontSize: 18 }} />,
+      label: (
+        <span style={{ fontWeight: 500, fontSize: 15 }}>
+          {t('navigation.partners')}
+        </span>
+      ),
     }] : []),
     // Temporarily commented out until routes are created
     // ...(canAccessPage('customers') ? [{
@@ -204,23 +237,46 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         trigger={null} 
         collapsible 
         collapsed={collapsed}
+        width={280}
         style={{
-          background: '#001529',
+          background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)',
+          borderRight: '1px solid #334155',
+          boxShadow: '4px 0 12px rgba(0, 0, 0, 0.15)',
           direction: isRTL ? 'rtl' : 'ltr',
         }}
       >
         <div style={{ 
-          height: 32, 
-          margin: 16, 
-          background: 'rgba(255, 255, 255, 0.3)',
-          borderRadius: 6,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'white',
-          fontWeight: 'bold'
+          padding: '24px 20px',
+          borderBottom: '1px solid #334155',
+          marginBottom: 32
         }}>
-          {collapsed ? 'GL' : 'Green Lines'}
+          <div style={{
+            height: 52,
+            background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+            borderRadius: 12,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#ffffff',
+            fontWeight: 700,
+            fontSize: collapsed ? 16 : 18,
+            letterSpacing: '0.5px',
+            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease'
+          }}
+          onClick={() => window.location.href = '/'}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow = '0 6px 16px rgba(59, 130, 246, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
+          }}
+          >
+            {collapsed ? '🏢' : '🏢 Green Lines'}
+          </div>
         </div>
         <Menu
           theme="dark"
@@ -228,13 +284,22 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           selectedKeys={[selectedKey]}
           items={menuItems}
           onClick={handleMenuClick}
-          style={{ direction: isRTL ? 'rtl' : 'ltr' }}
+          style={{ 
+            direction: isRTL ? 'rtl' : 'ltr',
+            background: 'transparent',
+            border: 'none',
+            fontSize: 15,
+            fontWeight: 500,
+            padding: '0 16px'
+          }}
         />
       </Sider>
       <Layout>
         <Header style={{ 
           padding: 0, 
-          background: '#fff',
+          background: 'linear-gradient(90deg, #ffffff 0%, #f8fafc 100%)',
+          borderBottom: '1px solid #e2e8f0',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -245,22 +310,63 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             onClick={() => setCollapsed(!collapsed)}
             style={{
-              fontSize: '16px',
+              fontSize: '18px',
               width: 64,
               height: 64,
+              color: '#64748b',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#3b82f6';
+              e.currentTarget.style.backgroundColor = '#f1f5f9';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '#64748b';
+              e.currentTarget.style.backgroundColor = 'transparent';
             }}
           />
           
           <Space size="middle" style={{ marginRight: 24 }}>
-            <BellOutlined style={{ fontSize: 18 }} />
-            {/* Temporarily disabled ThemeSwitcher and LanguageSwitcher */}
-            {/* <ThemeSwitcher /> */}
-            {/* <LanguageSwitcher /> */}
+            <Button
+              type="text"
+              icon={<BellOutlined />}
+              style={{
+                fontSize: 18,
+                color: '#64748b',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#3b82f6';
+                e.currentTarget.style.backgroundColor = '#f1f5f9';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#64748b';
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+            />
             
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
-              <Space style={{ cursor: 'pointer' }}>
-                <Avatar size="small" icon={<UserOutlined />} />
-                <span>Admin User</span>
+              <Space style={{ 
+                cursor: 'pointer',
+                padding: '8px 12px',
+                borderRadius: 8,
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#f1f5f9';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+              >
+                <Avatar 
+                  size="small" 
+                  icon={<UserOutlined />}
+                  style={{
+                    background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)'
+                  }}
+                />
+                <span style={{ fontWeight: 500, color: '#374151' }}>Admin User</span>
               </Space>
             </Dropdown>
           </Space>
@@ -277,13 +383,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         >
           {hasDraft && typeof window !== 'undefined' && !window.location.pathname.includes('/plans/new') && (
             <Alert
-              message="You have an unfinished plan draft"
+              message="You have an unfinished new plan draft"
               description={
                 <span>
                   {draftInfo?.lastSaved && (
                     <>Last saved: {new Date(draftInfo.lastSaved).toLocaleString()}. </>
                   )}
-                  Click "New Plan" in the sidebar to continue editing.
+                  Click "New Plan" in the sidebar to continue creating your plan.
                 </span>
               }
               type="info"

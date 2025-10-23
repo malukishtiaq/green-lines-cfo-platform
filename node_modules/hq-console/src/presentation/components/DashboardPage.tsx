@@ -66,6 +66,8 @@ const DashboardPage: React.FC = () => {
   const { stats, loading: statsLoading, error: statsError } = useDashboard();
   const { tasks, loading: tasksLoading, error: tasksError } = useTasks();
 
+  console.log('Dashboard stats:', stats); // Debug log
+
   // Get recent tasks (first 5)
   const recentTasks = tasks.slice(0, 5).map(task => ({
     key: task.id,
@@ -142,14 +144,14 @@ const DashboardPage: React.FC = () => {
 
   return (
     <div>
-      <Title level={2}>{t('title')}</Title>
+      <Title level={2}>Dashboard Overview</Title>
 
       {/* KPI Cards */}
       <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title={t('totalCustomers')}
+              title="Total Customers"
               value={stats.totalCustomers}
               prefix={<UserOutlined />}
               valueStyle={{ color: '#3f8600' }}
@@ -160,7 +162,7 @@ const DashboardPage: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title={t('activeServicePlans')}
+              title="Active Service Plans"
               value={stats.activeContracts}
               prefix={<FileTextOutlined />}
               valueStyle={{ color: '#1890ff' }}
@@ -170,7 +172,7 @@ const DashboardPage: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title={t('completedTasks')}
+              title="Completed Tasks"
               value={stats.completedTasks}
               prefix={<CheckCircleOutlined />}
               valueStyle={{ color: '#3f8600' }}
@@ -181,7 +183,7 @@ const DashboardPage: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title={t('pendingTasks')}
+              title="Pending Tasks"
               value={stats.pendingTasks}
               prefix={<ClockCircleOutlined />}
               valueStyle={{ color: '#cf1322' }}

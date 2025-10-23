@@ -16,6 +16,7 @@ import {
   Descriptions,
   Alert,
   Spin,
+  Modal,
 } from 'antd';
 import {
   ArrowLeftOutlined,
@@ -25,6 +26,11 @@ import {
   TeamOutlined,
   FileTextOutlined,
   ClockCircleOutlined,
+  EyeOutlined,
+  DeleteOutlined,
+  ExclamationCircleOutlined,
+  CheckCircleOutlined,
+  SyncOutlined,
 } from '@ant-design/icons';
 import DashboardLayout from '@/components/DashboardLayout';
 import { CleanArchitectureConfig } from '@/application';
@@ -93,6 +99,7 @@ export default function PlanDetailsPage({ params }: { params: Promise<{ id: stri
   const [plan, setPlan] = useState<PlanDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [viewingMilestone, setViewingMilestone] = useState<any | null>(null);
 
   useEffect(() => {
     CleanArchitectureConfig.initialize();
@@ -106,6 +113,8 @@ export default function PlanDetailsPage({ params }: { params: Promise<{ id: stri
       const data = await response.json();
       
       if (data.success) {
+        console.log('Plan details from API:', data.data);
+        console.log('Milestones from API:', data.data.milestones);
         setPlan(data.data);
       } else {
         setError(data.error || 'Failed to fetch plan details');
@@ -124,6 +133,64 @@ export default function PlanDetailsPage({ params }: { params: Promise<{ id: stri
 
   const handleBack = () => {
     window.history.back();
+  };
+
+  const handleViewMilestone = (milestoneId: string) => {
+    // Find and show milestone details in a modal
+    const milestone = plan?.milestones.find(m => m.id === milestoneId);
+    if (milestone) {
+      setViewingMilestone(milestone);
+    }
+  };
+
+  const handleEditMilestone = (milestoneId: string) => {
+    // Navigate to edit mode with specific milestone
+    window.location.href = `/plans/edit/${id}?milestone=${milestoneId}`;
+  };
+
+  const handleDeleteMilestone = async (milestoneId: string, milestoneName: string) => {
+    // Show confirmation and delete milestone
+    if (confirm(`Are you sure you want to delete milestone "${milestoneName}"?`)) {
+      try {
+        const response = await fetch(`/api/milestones/${milestoneId}`, {
+          method: 'DELETE',
+        });
+        if (response.ok) {
+          // Refresh the page to show updated data
+          window.location.reload();
+        } else {
+          alert('Failed to delete milestone');
+        }
+      } catch (error) {
+        console.error('Error deleting milestone:', error);
+        alert('Failed to delete milestone');
+      }
+    }
+  };
+
+  // Enhanced color coding for milestones
+  const getMilestoneColor = (milestone: any, index: number) => {
+    if (milestone.isCriticalPath) return 'red';
+    
+    // Color based on budget allocation
+    const budgetPercent = milestone.budgetAllocation;
+    if (budgetPercent >= 30) return 'volcano'; // High budget - orange/red
+    if (budgetPercent >= 20) return 'orange';  // Medium-high budget - orange
+    if (budgetPercent >= 10) return 'blue';    // Medium budget - blue
+    if (budgetPercent >= 5) return 'green';    // Low-medium budget - green
+    return 'cyan'; // Very low budget - cyan
+  };
+
+  const getMilestoneIcon = (milestone: any, index: number) => {
+    if (milestone.isCriticalPath) return <ExclamationCircleOutlined />;
+    
+    // Icon based on budget allocation
+    const budgetPercent = milestone.budgetAllocation;
+    if (budgetPercent >= 30) return <DollarOutlined />; // High budget
+    if (budgetPercent >= 20) return <TeamOutlined />;   // Medium-high budget
+    if (budgetPercent >= 10) return <ClockCircleOutlined />; // Medium budget
+    if (budgetPercent >= 5) return <CheckCircleOutlined />;  // Low-medium budget
+    return <SyncOutlined />; // Very low budget
   };
 
   if (loading) {
@@ -270,42 +337,91 @@ export default function PlanDetailsPage({ params }: { params: Promise<{ id: stri
             </Card>
 
             {/* Milestones Timeline */}
-            <Card title="Project Timeline">
-              <Timeline>
-                {plan.milestones
-                  .sort((a, b) => a.sequence - b.sequence)
-                  .map((milestone, index) => (
-                    <Timeline.Item
-                      key={milestone.id}
-                      color={milestone.isCriticalPath ? 'red' : 'blue'}
-                      dot={milestone.isCriticalPath ? <ClockCircleOutlined /> : undefined}
-                    >
-                      <div>
-                        <Text strong>{milestone.name}</Text>
-                        {milestone.isCriticalPath && (
-                          <Tag color="red" style={{ marginLeft: '8px' }}>Critical Path</Tag>
-                        )}
-                        <br />
-                        <Text type="secondary">
-                          Duration: {milestone.durationWeeks} weeks | 
-                          Budget: {milestone.budgetAllocation}%
-                        </Text>
-                        {milestone.description && (
-                          <div style={{ marginTop: '4px' }}>
-                            <Text>{milestone.description}</Text>
+            <Card 
+              title="Project Timeline" 
+              extra={
+                <Button type="primary" size="small" onClick={handleEdit}>
+                  Edit Milestones
+                </Button>
+              }
+            >
+              {plan.milestones.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px 0', color: '#999' }}>
+                  <FileTextOutlined style={{ fontSize: '48px', marginBottom: '16px' }} />
+                  <div>No milestones defined yet</div>
+                  <Button type="primary" size="small" onClick={handleEdit} style={{ marginTop: '16px' }}>
+                    Add Milestones
+                  </Button>
+                </div>
+              ) : (
+                <Timeline>
+                  {plan.milestones
+                    .sort((a, b) => a.sequence - b.sequence)
+                    .map((milestone, index) => {
+                      const milestoneColor = getMilestoneColor(milestone, index);
+                      const milestoneIcon = getMilestoneIcon(milestone, index);
+                      
+                      return (
+                        <Timeline.Item
+                          key={milestone.id}
+                          color={milestoneColor}
+                          dot={milestoneIcon}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                <Text strong>{milestone.name}</Text>
+                                {milestone.isCriticalPath && (
+                                  <Tag color="red">Critical Path</Tag>
+                                )}
+                                <Tag color={milestoneColor}>
+                                  {milestone.budgetAllocation}% Budget
+                                </Tag>
+                              </div>
+                              <Text type="secondary">
+                                Duration: {milestone.durationWeeks} weeks | 
+                                Budget: {milestone.budgetAllocation}%
+                              </Text>
+                              {milestone.description && (
+                                <div style={{ marginTop: '4px' }}>
+                                  <Text>{milestone.description}</Text>
+                                </div>
+                              )}
+                              {milestone.deliverables && (
+                                <div style={{ marginTop: '4px' }}>
+                                  <Text type="secondary">
+                                    <strong>Deliverables:</strong> {milestone.deliverables}
+                                  </Text>
+                                </div>
+                              )}
+                            </div>
+                            <Space>
+                              <Button 
+                                size="small" 
+                                icon={<EyeOutlined />} 
+                                title="View Details"
+                                onClick={() => handleViewMilestone(milestone.id)}
+                              />
+                              <Button 
+                                size="small" 
+                                icon={<EditOutlined />} 
+                                title="Edit Milestone"
+                                onClick={() => handleEditMilestone(milestone.id)}
+                              />
+                              <Button 
+                                size="small" 
+                                danger 
+                                icon={<DeleteOutlined />} 
+                                title="Delete Milestone"
+                                onClick={() => handleDeleteMilestone(milestone.id, milestone.name)}
+                              />
+                            </Space>
                           </div>
-                        )}
-                        {milestone.deliverables && (
-                          <div style={{ marginTop: '4px' }}>
-                            <Text type="secondary">
-                              <strong>Deliverables:</strong> {milestone.deliverables}
-                            </Text>
-                          </div>
-                        )}
-                      </div>
-                    </Timeline.Item>
-                  ))}
-              </Timeline>
+                        </Timeline.Item>
+                      );
+                    })}
+                </Timeline>
+              )}
             </Card>
           </Col>
 
@@ -347,6 +463,81 @@ export default function PlanDetailsPage({ params }: { params: Promise<{ id: stri
             </Card>
           </Col>
         </Row>
+
+        {/* Milestone View Modal */}
+        <Modal
+          title="Milestone Details"
+          open={!!viewingMilestone}
+          onCancel={() => setViewingMilestone(null)}
+          footer={[
+            <Button key="edit" type="primary" onClick={() => {
+              if (viewingMilestone) {
+                handleEditMilestone(viewingMilestone.id);
+              }
+            }}>
+              Edit Milestone
+            </Button>,
+            <Button key="close" onClick={() => setViewingMilestone(null)}>
+              Close
+            </Button>,
+          ]}
+          width={600}
+        >
+          {viewingMilestone && (
+            <div>
+              <div style={{ marginBottom: '16px' }}>
+                <Title level={4} style={{ margin: 0 }}>
+                  {viewingMilestone.name}
+                  {viewingMilestone.isCriticalPath && (
+                    <Tag color="red" style={{ marginLeft: '8px' }}>Critical Path</Tag>
+                  )}
+                </Title>
+              </div>
+              
+              <Descriptions column={2} bordered size="small">
+                <Descriptions.Item label="Sequence" span={1}>
+                  {viewingMilestone.sequence}
+                </Descriptions.Item>
+                <Descriptions.Item label="Duration">
+                  {viewingMilestone.durationWeeks} weeks
+                </Descriptions.Item>
+                <Descriptions.Item label="Budget Allocation" span={1}>
+                  <Tag color={getMilestoneColor(viewingMilestone, 0)}>
+                    {viewingMilestone.budgetAllocation}%
+                  </Tag>
+                </Descriptions.Item>
+                <Descriptions.Item label="Critical Path">
+                  {viewingMilestone.isCriticalPath ? (
+                    <Tag color="red">Yes</Tag>
+                  ) : (
+                    <Tag color="green">No</Tag>
+                  )}
+                </Descriptions.Item>
+              </Descriptions>
+
+              {viewingMilestone.description && (
+                <div style={{ marginTop: '16px' }}>
+                  <Title level={5}>Description</Title>
+                  <Paragraph>{viewingMilestone.description}</Paragraph>
+                </div>
+              )}
+
+              {viewingMilestone.deliverables && (
+                <div style={{ marginTop: '16px' }}>
+                  <Title level={5}>Deliverables</Title>
+                  <Paragraph>{viewingMilestone.deliverables}</Paragraph>
+                </div>
+              )}
+
+              {viewingMilestone.dependencies && (
+                <div style={{ marginTop: '16px' }}>
+                  <Title level={5}>Dependencies</Title>
+                  <Paragraph>{viewingMilestone.dependencies}</Paragraph>
+                </div>
+              )}
+            </div>
+          )}
+        </Modal>
       </div>
     </DashboardLayout>
   );
