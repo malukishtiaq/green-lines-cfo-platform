@@ -6,6 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "prisma generate && prisma migrate deploy && next build",
     "build:local": "node ../../node_modules/prisma/build/index.js generate && next build",
+    "build:vercel": "prisma generate && prisma migrate deploy && next build",
     "start": "next start",
     "lint": "eslint",
     "db:seed": "tsx prisma/seed.ts",
