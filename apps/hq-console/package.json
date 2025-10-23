@@ -4,16 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "prisma generate && prisma migrate deploy && next build",
+    "build": "npx prisma generate && npx prisma migrate deploy && next build",
     "build:local": "node ../../node_modules/prisma/build/index.js generate && next build",
-    "build:vercel": "prisma generate && prisma migrate deploy && next build",
     "start": "next start",
     "lint": "eslint",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "db:generate": "prisma generate",
-    "db:push": "prisma db push",
-    "postinstall": "prisma generate"
+    "db:push": "prisma db push"
   },
   "dependencies": {
     "@ant-design/icons": "^6.1.0",
