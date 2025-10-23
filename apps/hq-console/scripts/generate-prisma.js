@@ -4,7 +4,7 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-console.log('🚀 Starting custom build process...');
+console.log('🔧 Generating Prisma client...');
 
 try {
   // Check if we're in a Vercel environment
@@ -13,8 +13,7 @@ try {
   if (isVercel) {
     console.log('📦 Vercel environment detected');
     
-    // Generate Prisma client using Node.js directly
-    console.log('🔧 Generating Prisma client...');
+    // Try to generate Prisma client using Node.js directly
     const prismaPath = path.join(__dirname, '../node_modules/prisma/build/index.js');
     
     if (fs.existsSync(prismaPath)) {
@@ -22,8 +21,8 @@ try {
         execSync(`node ${prismaPath} generate`, { stdio: 'inherit' });
         console.log('✅ Prisma client generated successfully');
       } catch (error) {
-        console.log('⚠️ Prisma client generation failed, but continuing build...');
-        console.log('Error:', error.message);
+        console.log('⚠️ Prisma client generation failed:', error.message);
+        // Don't fail the build, just continue
       }
     } else {
       console.log('⚠️ Prisma binary not found, skipping client generation');
@@ -33,19 +32,12 @@ try {
     // Use regular prisma command for local development
     try {
       execSync('npx prisma generate', { stdio: 'inherit' });
+      console.log('✅ Prisma client generated successfully');
     } catch (error) {
-      console.log('⚠️ Prisma client generation failed, but continuing build...');
-      console.log('Error:', error.message);
+      console.log('⚠️ Prisma client generation failed:', error.message);
     }
   }
-  
-  // Run Next.js build
-  console.log('🏗️ Building Next.js application...');
-  execSync('next build', { stdio: 'inherit' });
-  
-  console.log('✅ Build completed successfully!');
-  
 } catch (error) {
-  console.error('❌ Build failed:', error.message);
-  process.exit(1);
+  console.log('⚠️ Prisma client generation failed:', error.message);
+  // Don't fail the build, just continue
 }

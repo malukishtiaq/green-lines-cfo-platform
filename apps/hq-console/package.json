@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "node scripts/build.js",
+    "build": "next build",
     "build:local": "node ../../node_modules/prisma/build/index.js generate && next build",
     "start": "next start",
     "lint": "eslint",
@@ -12,7 +12,8 @@
     "db:studio": "prisma studio",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "db:migrate": "prisma migrate deploy"
+    "db:migrate": "prisma migrate deploy",
+    "postinstall": "node scripts/generate-prisma.js"
   },
   "dependencies": {
     "@ant-design/icons": "^6.1.0",
