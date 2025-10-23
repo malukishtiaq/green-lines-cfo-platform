@@ -17,12 +17,16 @@ try {
     console.log('🔧 Generating Prisma client...');
     const prismaPath = path.join(__dirname, '../node_modules/prisma/build/index.js');
     
-    try {
-      execSync('npx prisma generate', { stdio: 'inherit' });
-      console.log('✅ Prisma client generated successfully');
-    } catch (error) {
-      console.log('⚠️ Prisma client generation failed, but continuing build...');
-      console.log('Error:', error.message);
+    if (fs.existsSync(prismaPath)) {
+      try {
+        execSync(`node ${prismaPath} generate`, { stdio: 'inherit' });
+        console.log('✅ Prisma client generated successfully');
+      } catch (error) {
+        console.log('⚠️ Prisma client generation failed, but continuing build...');
+        console.log('Error:', error.message);
+      }
+    } else {
+      console.log('⚠️ Prisma binary not found, skipping client generation');
     }
   } else {
     console.log('💻 Local environment detected');
