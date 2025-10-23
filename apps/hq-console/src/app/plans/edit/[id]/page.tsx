@@ -72,6 +72,8 @@ export default function EditPlanPage({ params }: { params: Promise<{ id: string 
       const data = await response.json();
       
       if (data.success) {
+        console.log('Plan data from API:', data.data);
+        console.log('Milestones from API:', data.data.milestones);
         setPlan(data.data);
         // Load the plan data into localStorage for the PlanBuilder to use
         const planBuilderData = {
@@ -93,12 +95,11 @@ export default function EditPlanPage({ params }: { params: Promise<{ id: string 
             id: milestone.id,
             sequence: milestone.sequence,
             name: milestone.name,
-            description: milestone.description || '',
             durationWeeks: milestone.durationWeeks,
-            budgetAllocation: milestone.budgetAllocation,
+            budgetPercent: milestone.budgetAllocation || milestone.budgetPercent || 0,
             deliverables: milestone.deliverables || '',
-            dependencies: milestone.dependencies || '',
-            isCriticalPath: milestone.isCriticalPath,
+            dependencies: milestone.dependencies ? milestone.dependencies.split(',').filter(Boolean) : [],
+            criticalPath: milestone.isCriticalPath || milestone.criticalPath || false,
           })),
           
           // Plan metadata
@@ -112,6 +113,7 @@ export default function EditPlanPage({ params }: { params: Promise<{ id: string 
           isEdit: true,
         };
         
+        console.log('Storing planBuilderData in localStorage:', planBuilderData);
         localStorage.setItem('planBuilderDraft', JSON.stringify(planBuilderData));
       } else {
         setError(data.error || 'Failed to fetch plan data');

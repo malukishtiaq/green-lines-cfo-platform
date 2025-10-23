@@ -227,6 +227,24 @@ src/
 
 ## 🔄 Recent Updates
 
+### October 23, 2025 – Phase 2 Work Log (Preview)
+- ✅ Vercel build pipeline stabilized (JSON5, Prisma, PostCSS/lightningcss)
+- ✅ Supabase (Preview) connected; migrations + seed completed
+- ✅ Dashboard KPIs (Week 3):
+  - [x] Add GET `/api/dashboard/metrics` (Prisma counts/sums)
+  - [x] Wire KPI cards to endpoint and verify locally
+  - [x] Add loading/error states for KPIs
+        - ✅ Milestone Persistence Fix:
+          - [x] Fixed PlanBuilder to send milestones data to API
+          - [x] Fixed plan creation API to save milestones to database
+          - [x] Fixed plan update API to handle milestones updates
+          - [x] Enhanced plan details page with milestone display and action buttons
+        - 🚧 Next: Charts & Analytics (Week 3 Day 3-4):
+          - [ ] Add revenue trend chart (Line chart)
+          - [ ] Add task completion progress chart (Bar chart)
+          - [ ] Add customer satisfaction metrics
+          - [ ] Deploy to Preview and verify charts render
+
 ### **October 17, 2025**
 - ✅ Implemented complete service architecture
 - ✅ Added HTTP client with logging (like Dio printing)

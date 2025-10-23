@@ -18,6 +18,8 @@ import {
   message,
   Tooltip,
   Badge,
+  Skeleton,
+  Alert,
 } from 'antd';
 import {
   PlusOutlined,
@@ -134,6 +136,7 @@ export default function PlansPage() {
   const [plans, setPlans] = useState<any[]>([]);
   const [filteredPlans, setFilteredPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [industryFilter, setIndustryFilter] = useState('all');
@@ -147,6 +150,7 @@ export default function PlansPage() {
   const fetchPlans = async () => {
     try {
       setLoading(true);
+      setError(null);
       const response = await fetch('/api/plans');
       const data = await response.json();
       
@@ -173,12 +177,12 @@ export default function PlansPage() {
         
         setPlans(transformedPlans);
       } else {
-        message.error('Failed to fetch plans');
+        setError(data.error || 'Failed to fetch plans');
         setPlans([]);
       }
     } catch (error) {
       console.error('Error fetching plans:', error);
-      message.error('Network error occurred');
+      setError('Network error occurred');
       setPlans([]);
     } finally {
       setLoading(false);
@@ -367,6 +371,27 @@ export default function PlansPage() {
   const completedPlans = plans.filter(p => p.status === 'completed').length;
   const totalBudget = plans.reduce((sum, plan) => sum + plan.budget, 0);
 
+  // Show error state
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div style={{ padding: '24px' }}>
+          <Alert
+            message="Error Loading Plans"
+            description={error}
+            type="error"
+            showIcon
+            action={
+              <Button size="small" onClick={fetchPlans}>
+                Retry
+              </Button>
+            }
+          />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div style={{ padding: '24px' }}>
@@ -383,39 +408,39 @@ export default function PlansPage() {
         {/* Statistics Cards */}
         <Row gutter={16} style={{ marginBottom: '24px' }}>
           <Col span={6}>
-            <Card>
+            <Card loading={loading}>
               <Statistic
                 title="Total Plans"
-                value={totalPlans}
+                value={loading ? 0 : totalPlans}
                 prefix={<FileTextOutlined />}
               />
             </Card>
           </Col>
           <Col span={6}>
-            <Card>
+            <Card loading={loading}>
               <Statistic
                 title="Active Plans"
-                value={activePlans}
+                value={loading ? 0 : activePlans}
                 valueStyle={{ color: '#1890ff' }}
                 prefix={<CalendarOutlined />}
               />
             </Card>
           </Col>
           <Col span={6}>
-            <Card>
+            <Card loading={loading}>
               <Statistic
                 title="Draft Plans"
-                value={draftPlans}
+                value={loading ? 0 : draftPlans}
                 valueStyle={{ color: '#faad14' }}
                 prefix={<EditOutlined />}
               />
             </Card>
           </Col>
           <Col span={6}>
-            <Card>
+            <Card loading={loading}>
               <Statistic
                 title="Total Budget"
-                value={totalBudget}
+                value={loading ? 0 : totalBudget}
                 precision={0}
                 suffix="SAR"
                 prefix={<DollarOutlined />}

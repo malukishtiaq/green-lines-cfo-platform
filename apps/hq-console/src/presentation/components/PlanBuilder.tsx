@@ -59,6 +59,18 @@ const PlanBuilder: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
+  const [autoEditMilestone, setAutoEditMilestone] = useState<string | null>(null);
+
+  // Check for milestone parameter in URL
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const milestoneId = urlParams.get('milestone');
+      if (milestoneId) {
+        setAutoEditMilestone(milestoneId);
+      }
+    }
+  }, []);
 
   // Load draft on mount
   React.useEffect(() => {
@@ -91,17 +103,19 @@ const PlanBuilder: React.FC = () => {
           });
           
           if (draft.milestones && Array.isArray(draft.milestones)) {
-            // Handle milestones - they're already in the correct format
+            console.log('Loading milestones from draft:', draft.milestones);
+            // Handle milestones - convert from database format to component format
             const convertedMilestones = draft.milestones.map((m: any) => ({
               id: m.id || `milestone-${Date.now()}-${Math.random()}`,
               sequence: m.sequence || 1,
               name: m.name || '',
               durationWeeks: m.durationWeeks || 0,
-              budgetPercent: m.budgetPercent || 0,
+              budgetPercent: parseFloat(m.budgetAllocation || m.budgetPercent || 0),
               deliverables: m.deliverables || '',
               dependencies: Array.isArray(m.dependencies) ? m.dependencies : [],
-              criticalPath: m.criticalPath || false,
+              criticalPath: m.isCriticalPath || m.criticalPath || false,
             }));
+            console.log('Converted milestones:', convertedMilestones);
             setMilestones(convertedMilestones);
           }
           
@@ -131,6 +145,30 @@ const PlanBuilder: React.FC = () => {
       }
     }
   }, [basicForm]);
+
+  // Auto-open milestone edit modal when milestone parameter is present and milestones are loaded
+  React.useEffect(() => {
+    if (autoEditMilestone && milestones.length > 0 && draftLoaded) {
+      const milestoneToEdit = milestones.find(m => m.id === autoEditMilestone);
+      if (milestoneToEdit) {
+        console.log('Auto-opening milestone edit modal for:', milestoneToEdit.name);
+        // Set current stage to milestones (stage 1)
+        setCurrent(1);
+        // Open the milestone edit modal
+        setEditingMilestone(milestoneToEdit);
+        milestoneForm.setFieldsValue(milestoneToEdit);
+        setMilestoneModalVisible(true);
+        // Clear the auto-edit flag
+        setAutoEditMilestone(null);
+        // Clean up URL parameter
+        const url = new URL(window.location.href);
+        url.searchParams.delete('milestone');
+        window.history.replaceState({}, '', url.toString());
+        // Show success message
+        message.success(`Editing milestone: ${milestoneToEdit.name}`);
+      }
+    }
+  }, [autoEditMilestone, milestones, draftLoaded, milestoneForm]);
 
   // Auto-save draft on changes
   React.useEffect(() => {
@@ -193,11 +231,6 @@ const PlanBuilder: React.FC = () => {
   const stages: { key: StageKey; title: string }[] = useMemo(() => ([
     { key: 'basic', title: 'Basic Information' },
     { key: 'milestones', title: 'Milestones' },
-    { key: 'resources', title: 'Resources' },
-    { key: 'cfo', title: 'CFO Analysis' },
-    { key: 'services', title: 'Services & Partners' },
-    { key: 'attachments', title: 'Attachments' },
-    { key: 'review', title: 'Review' },
   ]), []);
 
   const clamped = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
@@ -348,7 +381,18 @@ const PlanBuilder: React.FC = () => {
         notes: `Plan created with ${milestones.length} milestones. Completed up to stage ${current + 1}.`,
         status: 'ACTIVE', // Always ACTIVE when submitting (not DRAFT)
         currentStage: current + 1,
-        totalStages: 7,
+        totalStages: 2, // Updated total stages
+        // Include milestones data for API
+        milestones: milestones.map(m => ({
+          sequence: m.sequence,
+          name: m.name,
+          description: m.deliverables, // Use deliverables as description
+          durationWeeks: m.durationWeeks,
+          budgetPercent: m.budgetPercent, // Send as budgetPercent for API to map to budgetAllocation
+          deliverables: m.deliverables,
+          dependencies: m.dependencies,
+          criticalPath: m.criticalPath,
+        })),
       };
 
       console.log('📤 Sending plan data:', planData);
@@ -621,14 +665,22 @@ const PlanBuilder: React.FC = () => {
       )}
 
 
-      <Modal
-        open={milestoneModalVisible}
-        title={editingMilestone ? 'Edit Milestone' : 'Add Milestone'}
-        onCancel={() => setMilestoneModalVisible(false)}
-        onOk={saveMilestone}
-        okText="Save"
-        width={600}
-      >
+
+
+
+
+              <Modal
+                open={milestoneModalVisible}
+                title={
+                  editingMilestone ? 
+                    `Edit Milestone: ${editingMilestone.name}` : 
+                    'Add Milestone'
+                }
+                onCancel={() => setMilestoneModalVisible(false)}
+                onOk={saveMilestone}
+                okText="Save"
+                width={600}
+              >
         <Form form={milestoneForm} layout="vertical" style={{ marginTop: 16 }}>
           <Form.Item name="sequence" label="Sequence Number" rules={[{ required: true }]}>
             <InputNumber min={1} style={{ width: '100%' }} />
@@ -673,9 +725,17 @@ const PlanBuilder: React.FC = () => {
             )}
           </>
         )}
-        <Button type="primary" onClick={handleSubmit} loading={submitting}>
-          {submitting ? 'Saving...' : 'Submit Plan'}
-        </Button>
+        {totalBudget === 100 ? (
+          <Button type="primary" onClick={handleSubmit} loading={submitting}>
+            {submitting ? 'Saving...' : 'Submit Plan'}
+          </Button>
+        ) : (
+          <Tooltip title={`Budget must total 100% (currently ${totalBudget.toFixed(1)}%). Add more milestones to reach 100%.`}>
+            <Button type="primary" disabled>
+              Submit Plan
+            </Button>
+          </Tooltip>
+        )}
       </Space>
     </Card>
   );

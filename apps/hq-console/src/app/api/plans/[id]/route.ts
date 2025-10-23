@@ -70,7 +70,7 @@ export async function PUT(
       );
     }
 
-    // Update plan
+    // Update plan with milestones
     const updatedPlan = await prisma.plan.update({
       where: { id: planId },
       data: {
@@ -91,6 +91,20 @@ export async function PUT(
         currency: body.currency,
         notes: body.notes,
         updatedAt: new Date(),
+        // Update milestones if provided
+        milestones: body.milestones ? {
+          deleteMany: {}, // Delete existing milestones
+          create: body.milestones.map((milestone: any) => ({
+            sequence: milestone.sequence || 1,
+            name: milestone.name,
+            description: milestone.description,
+            durationWeeks: milestone.durationWeeks || 1,
+            budgetAllocation: parseFloat(milestone.budgetPercent || milestone.budgetAllocation || 0),
+            deliverables: milestone.deliverables,
+            dependencies: Array.isArray(milestone.dependencies) ? milestone.dependencies.join(',') : milestone.dependencies,
+            isCriticalPath: milestone.criticalPath || milestone.isCriticalPath || false,
+          }))
+        } : undefined,
       },
       include: {
         customer: {

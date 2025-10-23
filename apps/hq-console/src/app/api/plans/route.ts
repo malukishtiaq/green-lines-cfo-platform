@@ -107,12 +107,13 @@ export async function POST(request: NextRequest) {
       console.log('Using customer:', customerId);
     }
 
-    // Create plan
+    // Create plan with milestones
     console.log('Creating plan with data:', {
       name: body.name,
       customerId: customerId,
       industry: body.industry,
       companySize: body.companySize,
+      milestones: body.milestones?.length || 0,
     });
     
     const plan = await prisma.plan.create({
@@ -134,6 +135,19 @@ export async function POST(request: NextRequest) {
         totalBudget: body.totalBudget || 0,
         currency: body.currency || 'SAR',
         notes: body.notes,
+        // Create milestones if provided
+        milestones: body.milestones ? {
+          create: body.milestones.map((milestone: any) => ({
+            sequence: milestone.sequence || 1,
+            name: milestone.name,
+            description: milestone.description,
+            durationWeeks: milestone.durationWeeks || 1,
+            budgetAllocation: parseFloat(milestone.budgetPercent || milestone.budgetAllocation || 0),
+            deliverables: milestone.deliverables,
+            dependencies: Array.isArray(milestone.dependencies) ? milestone.dependencies.join(',') : milestone.dependencies,
+            isCriticalPath: milestone.criticalPath || milestone.isCriticalPath || false,
+          }))
+        } : undefined,
       },
       include: {
         customer: {
@@ -142,6 +156,9 @@ export async function POST(request: NextRequest) {
             name: true,
             email: true,
           },
+        },
+        milestones: {
+          orderBy: { sequence: 'asc' },
         },
       },
     });
