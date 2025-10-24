@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "node scripts/vercel-build.js",
+    "build": "next build",
+    "vercel-build": "node scripts/vercel-build.js",
     "build:local": "node ../../node_modules/prisma/build/index.js generate && next build",
     "start": "next start",
     "lint": "eslint",
