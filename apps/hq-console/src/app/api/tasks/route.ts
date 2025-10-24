@@ -18,7 +18,15 @@ export async function GET() {
       }
     });
 
-    return NextResponse.json(tasks);
+    // Prisma Decimal fields (budget, actualCost) serialize as objects/strings.
+    // Normalize to plain numbers for the client to consume safely.
+    const normalized = tasks.map((t: any) => ({
+      ...t,
+      budget: t.budget != null ? Number(t.budget) : null,
+      actualCost: t.actualCost != null ? Number(t.actualCost) : null,
+    }));
+
+    return NextResponse.json(normalized);
   } catch (error) {
     console.error('Error fetching tasks:', error);
     return NextResponse.json(

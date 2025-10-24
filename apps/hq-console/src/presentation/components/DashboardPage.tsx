@@ -73,11 +73,12 @@ const DashboardPage: React.FC = () => {
   const recentTasks = tasks.slice(0, 5).map(task => ({
     key: task.id,
     task: task.title,
-    customer: 'Customer Name', // This would come from task.customer relation
-    agent: 'Agent Name', // This would come from task.assignments relation
+    customer: task as any && (task as any).customer ? (task as any).customer.name : 'N/A',
+    agent: (task as any).assignments && (task as any).assignments.length > 0 ? (task as any).assignments[0].user.name : 'N/A',
     status: task.status,
     priority: task.priority,
     dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : 'N/A',
+    budget: (task as any).budget ?? null,
   }));
 
   const columns = [
@@ -85,6 +86,12 @@ const DashboardPage: React.FC = () => {
       title: t('dashboard.task'),
       dataIndex: 'task',
       key: 'task',
+    },
+    {
+      title: 'Budget (SAR)',
+      dataIndex: 'budget',
+      key: 'budget',
+      render: (value: number | null) => value != null ? value.toLocaleString() : '—',
     },
     {
       title: t('dashboard.customer'),

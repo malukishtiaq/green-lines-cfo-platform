@@ -57,6 +57,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         setSelectedKey('plans');
       } else if (path === '/partners') {
         setSelectedKey('partners');
+      } else if (path === '/tasks') {
+        setSelectedKey('tasks');
       }
     }
   }, []);
@@ -167,6 +169,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         },
       ],
     },
+    {
+      key: 'tasks',
+      icon: <BarChartOutlined style={{ fontSize: 18 }} />,
+      label: (
+        <span style={{ fontWeight: 500, fontSize: 15 }}>
+          Tasks
+        </span>
+      ),
+    },
     ...(canAccessPage('partners') ? [{
       key: 'partners',
       icon: <TeamOutlined style={{ fontSize: 18 }} />,
@@ -206,6 +217,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       window.location.href = '/plans/new';
     } else if (key === 'partners') {
       window.location.href = '/partners';
+    } else if (key === 'tasks') {
+      window.location.href = '/tasks';
     } else {
       window.location.href = `/${key}`;
     }

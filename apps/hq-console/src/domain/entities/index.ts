@@ -35,6 +35,9 @@ export interface Task {
   type: TaskType;
   priority: Priority;
   status: TaskStatus;
+  // Financials
+  budget?: number | null;      // agreed total budget for the task
+  actualCost?: number | null;  // actual cost incurred so far
   dueDate?: Date;
   completedAt?: Date;
   estimatedHours?: number;
