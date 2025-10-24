@@ -17,7 +17,21 @@ try {
       execSync(`node ${prismaPath} generate`, { stdio: 'inherit' });
       console.log('✅ Prisma client generated successfully');
     } else {
-      console.log('⚠️ Prisma binary not found, skipping client generation');
+      console.log('⚠️ Prisma binary not found, trying alternative approach...');
+      // Try using npx prisma generate
+      try {
+        execSync('npx prisma generate', { stdio: 'inherit' });
+        console.log('✅ Prisma client generated successfully with npx');
+      } catch (npxError) {
+        console.log('⚠️ npx prisma generate failed, trying direct prisma command...');
+        try {
+          execSync('prisma generate', { stdio: 'inherit' });
+          console.log('✅ Prisma client generated successfully with direct command');
+        } catch (directError) {
+          console.log('⚠️ All Prisma generation methods failed, but continuing build...');
+          console.log('Error:', directError.message);
+        }
+      }
     }
   } catch (prismaError) {
     console.log('⚠️ Prisma client generation failed, but continuing build...');
