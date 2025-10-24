@@ -33,7 +33,7 @@ const { Title } = Typography;
 // Hardcoded translations
 const t = (key: string) => {
   const translations: Record<string, string> = {
-    'dashboard.title': 'Dashboard Overview',
+    'dashboard.title': 'Dashboard Overview - Connected to Neon DB',
     'dashboard.totalCustomers': 'Total Customers',
     'dashboard.activeContracts': 'Active Contracts',
     'dashboard.pendingTasks': 'Pending Tasks',
