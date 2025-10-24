@@ -5,7 +5,6 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "vercel-build": "node scripts/vercel-build.js",
     "build:local": "node ../../node_modules/prisma/build/index.js generate && next build",
     "start": "next start",
     "lint": "eslint",
@@ -30,12 +29,8 @@
     "prisma": "^6.17.1",
     "tailwindcss": "^3.4.13",
     "autoprefixer": "^10.4.20",
-    "@tailwindcss/postcss": "^4.0.0",
     "react": "19.1.0",
     "react-dom": "19.1.0"
-  },
-  "optionalDependencies": {
-    "lightningcss-linux-x64-gnu": "^1.26.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
