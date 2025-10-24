@@ -26,6 +26,7 @@ import {
 } from '@ant-design/icons';
 import { useDashboard, useTasks } from '../hooks';
 import { TaskStatus, Priority } from '../../domain/entities';
+import { RevenueChart, CustomerDistribution, TaskCompletion } from './charts';
 // import { useTranslations } from 'next-intl';
 
 const { Title } = Typography;
@@ -196,7 +197,7 @@ const DashboardPage: React.FC = () => {
       {/* Progress Cards */}
       <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
         <Col xs={24} lg={12}>
-          <Card title={t('taskCompletionRate')} variant="borderless">
+          <Card title="Task Completion Rate" variant="borderless">
             <Progress
               percent={stats.taskCompletionRate}
               strokeColor={{
@@ -206,14 +207,14 @@ const DashboardPage: React.FC = () => {
             />
             <div style={{ marginTop: '16px' }}>
               <Space>
-                <span>{t('thisMonth')}: {stats.taskCompletionRate}%</span>
-                <span style={{ color: '#3f8600' }}>↑ 5% {t('fromLastMonth')}</span>
+                <span>This Month: {stats.taskCompletionRate}%</span>
+                <span style={{ color: '#3f8600' }}>↑ 5% from last month</span>
               </Space>
             </div>
           </Card>
         </Col>
         <Col xs={24} lg={12}>
-          <Card title={t('customerSatisfaction')} variant="borderless">
+          <Card title="Customer Satisfaction" variant="borderless">
             <Progress
               percent={85}
               strokeColor={{
@@ -223,8 +224,34 @@ const DashboardPage: React.FC = () => {
             />
             <div style={{ marginTop: '16px' }}>
               <Space>
-                <span>{t('currentRating')}: 4.6/5</span>
-                <span style={{ color: '#3f8600' }}>↑ 0.2 {t('fromLastMonth')}</span>
+                <span>Current Rating: 4.6/5</span>
+                <span style={{ color: '#3f8600' }}>↑ 0.2 from last month</span>
+              </Space>
+            </div>
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Charts Section */}
+      <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+        <Col xs={24} lg={12}>
+          <RevenueChart />
+        </Col>
+        <Col xs={24} lg={12}>
+          <TaskCompletion />
+        </Col>
+      </Row>
+
+      <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+        <Col xs={24} lg={12}>
+          <CustomerDistribution />
+        </Col>
+        <Col xs={24} lg={12}>
+          <Card title="Performance Metrics" style={{ height: 400 }}>
+            <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>
+              <Space direction="vertical" align="center">
+                <FileTextOutlined style={{ fontSize: 48 }} />
+                <span>Additional metrics coming soon</span>
               </Space>
             </div>
           </Card>

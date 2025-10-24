@@ -28,7 +28,8 @@
     "next-intl": "^4.3.12",
     "prisma": "^6.17.1",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "recharts": "^2.15.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

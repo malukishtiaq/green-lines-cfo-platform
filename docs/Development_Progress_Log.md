@@ -227,23 +227,36 @@ src/
 
 ## 🔄 Recent Updates
 
+### October 24, 2025 – Database Connection Fix ✅
+- ✅ Migrated from Supabase to **Neon Postgres** (Vercel Storage)
+- ✅ Updated Vercel environment variables to point to Neon
+- ✅ Fixed build issues - removed Tailwind CSS completely due to Next.js 15 incompatibility
+- ✅ Fixed Prisma binary targets for Vercel deployment
+- ✅ Seeded Neon database successfully:
+  - Admin user: `admin@greenlines.com` / `password123`
+  - 3 Demo customers
+  - 3 Service plans
+  - 3 Plan Builder plans with 5 milestones
+  - 3 Demo tasks with assignments
+  - 5 Demo partners
+- ✅ **Application fully functional on Vercel with Neon database!**
+
 ### October 23, 2025 – Phase 2 Work Log (Preview)
 - ✅ Vercel build pipeline stabilized (JSON5, Prisma, PostCSS/lightningcss)
-- ✅ Supabase (Preview) connected; migrations + seed completed
 - ✅ Dashboard KPIs (Week 3):
   - [x] Add GET `/api/dashboard/metrics` (Prisma counts/sums)
   - [x] Wire KPI cards to endpoint and verify locally
   - [x] Add loading/error states for KPIs
-        - ✅ Milestone Persistence Fix:
-          - [x] Fixed PlanBuilder to send milestones data to API
-          - [x] Fixed plan creation API to save milestones to database
-          - [x] Fixed plan update API to handle milestones updates
-          - [x] Enhanced plan details page with milestone display and action buttons
-        - 🚧 Next: Charts & Analytics (Week 3 Day 3-4):
-          - [ ] Add revenue trend chart (Line chart)
-          - [ ] Add task completion progress chart (Bar chart)
-          - [ ] Add customer satisfaction metrics
-          - [ ] Deploy to Preview and verify charts render
+- ✅ Milestone Persistence Fix:
+  - [x] Fixed PlanBuilder to send milestones data to API
+  - [x] Fixed plan creation API to save milestones to database
+  - [x] Fixed plan update API to handle milestones updates
+  - [x] Enhanced plan details page with milestone display and action buttons
+- 🚧 Next: Charts & Analytics (Week 3 Day 3-4):
+  - [ ] Add revenue trend chart (Line chart)
+  - [ ] Add task completion progress chart (Bar chart)
+  - [ ] Add customer satisfaction metrics
+  - [ ] Deploy to Preview and verify charts render
 
 ### **October 17, 2025**
 - ✅ Implemented complete service architecture

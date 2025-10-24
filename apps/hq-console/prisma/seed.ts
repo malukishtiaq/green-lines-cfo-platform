@@ -70,7 +70,7 @@ async function main() {
         address: 'Silicon Oasis, Dubai',
         city: 'Dubai',
         country: 'UAE',
-        industry: 'Startup',
+        industry: 'Retail',
         size: 'STARTUP',
         status: 'PROSPECT',
         notes: 'New startup looking for basic CFO services',
@@ -85,17 +85,16 @@ async function main() {
     prisma.servicePlan.create({
       data: {
         name: 'Basic CFO Package',
-        description: 'Essential financial management services for small businesses',
+        description: 'Essential financial management services',
         type: 'BASIC_CFO',
         status: 'ACTIVE',
-        price: 5000,
-        currency: 'AED',
+        price: 15000,
+        currency: 'SAR',
         duration: 12,
         features: {
-          monthlyFinancialReports: true,
+          monthlyReports: true,
           taxPreparation: true,
-          basicConsulting: true,
-          emailSupport: true,
+          consultation: true,
         },
         customerId: customers[0].id,
       },
@@ -103,198 +102,55 @@ async function main() {
     prisma.servicePlan.create({
       data: {
         name: 'Premium CFO Package',
-        description: 'Comprehensive financial management with advanced analytics',
+        description: 'Comprehensive financial management',
         type: 'PREMIUM_CFO',
         status: 'ACTIVE',
-        price: 12000,
-        currency: 'AED',
+        price: 35000,
+        currency: 'SAR',
         duration: 12,
         features: {
-          monthlyFinancialReports: true,
+          monthlyReports: true,
           taxPreparation: true,
-          advancedConsulting: true,
-          prioritySupport: true,
-          businessIntelligence: true,
-          cashFlowForecasting: true,
+          consultation: true,
+          strategy: true,
         },
         customerId: customers[1].id,
       },
     }),
     prisma.servicePlan.create({
       data: {
-        name: 'Startup Package',
-        description: 'Tailored financial services for growing startups',
-        type: 'CONSULTING',
+        name: 'Enterprise CFO',
+        description: 'Full-service financial leadership',
+        type: 'ENTERPRISE_CFO',
         status: 'ACTIVE',
-        price: 3000,
-        currency: 'AED',
-        duration: 6,
+        price: 75000,
+        currency: 'SAR',
+        duration: 12,
         features: {
-          quarterlyReports: true,
-          basicConsulting: true,
-          emailSupport: true,
-          startupGuidance: true,
+          dedicated: true,
+          fullService: true,
         },
-        customerId: customers[2].id,
+        customerId: customers[1].id,
       },
     }),
   ]);
 
   console.log('✅ Service plans created:', servicePlans.length);
 
-  // Create demo Plan Builder plans
-  const plans = await Promise.all([
-    prisma.plan.create({
-      data: {
-        name: 'ERP Implementation - ABC Corp',
-        description: 'Complete ERP system implementation for manufacturing company',
-        customerId: customers[0].id,
-        industry: 'Manufacturing',
-        companySize: 'Large',
-        durationType: 'WEEKS',
-        durationWeeks: 20,
-        startDate: new Date('2024-01-15'),
-        workingDays: 5,
-        address: 'Dubai Industrial City, UAE',
-        siteType: 'Office',
-        accessRequirements: 'Security clearance required',
-        status: 'ACTIVE',
-        currentStage: 3,
-        totalStages: 7,
-        totalBudget: 50000,
-        currency: 'SAR',
-        notes: 'High priority project with tight deadline',
-      },
-    }),
-    prisma.plan.create({
-      data: {
-        name: 'Stock Count System - XYZ Ltd',
-        description: 'Inventory management system implementation',
-        customerId: customers[1].id,
-        industry: 'Retail',
-        companySize: 'Medium',
-        durationType: 'WEEKS',
-        durationWeeks: 8,
-        startDate: new Date('2024-02-01'),
-        workingDays: 6,
-        address: 'Abu Dhabi Mall, UAE',
-        siteType: 'Retail',
-        accessRequirements: 'Mall hours only',
-        status: 'DRAFT',
-        currentStage: 2,
-        totalStages: 7,
-        totalBudget: 25000,
-        currency: 'SAR',
-        notes: 'Waiting for client approval',
-      },
-    }),
-    prisma.plan.create({
-      data: {
-        name: 'Financial System Upgrade - DEF Inc',
-        description: 'Legacy system modernization and migration',
-        customerId: customers[2].id,
-        industry: 'Finance',
-        companySize: 'Large',
-        durationType: 'WEEKS',
-        durationWeeks: 15,
-        startDate: new Date('2023-10-01'),
-        workingDays: 5,
-        address: 'DIFC, Dubai, UAE',
-        siteType: 'Office',
-        accessRequirements: 'Banking security protocols',
-        status: 'COMPLETED',
-        currentStage: 7,
-        totalStages: 7,
-        totalBudget: 75000,
-        currency: 'SAR',
-        notes: 'Successfully completed ahead of schedule',
-      },
-    }),
-  ]);
-
-  // Create milestones for the first plan
-  const milestones = await Promise.all([
-    prisma.milestone.create({
-      data: {
-        planId: plans[0].id,
-        sequence: 1,
-        name: 'Requirements Analysis',
-        description: 'Gather and analyze business requirements',
-        durationWeeks: 2,
-        budgetAllocation: 15,
-        deliverables: 'Requirements document, Process maps',
-        dependencies: '[]',
-        isCriticalPath: true,
-      },
-    }),
-    prisma.milestone.create({
-      data: {
-        planId: plans[0].id,
-        sequence: 2,
-        name: 'System Design',
-        description: 'Design system architecture and database schema',
-        durationWeeks: 3,
-        budgetAllocation: 20,
-        deliverables: 'System design document, Database schema',
-        dependencies: '["1"]',
-        isCriticalPath: true,
-      },
-    }),
-    prisma.milestone.create({
-      data: {
-        planId: plans[0].id,
-        sequence: 3,
-        name: 'Development Phase 1',
-        description: 'Core module development',
-        durationWeeks: 6,
-        budgetAllocation: 35,
-        deliverables: 'Core modules, Unit tests',
-        dependencies: '["2"]',
-        isCriticalPath: true,
-      },
-    }),
-    prisma.milestone.create({
-      data: {
-        planId: plans[0].id,
-        sequence: 4,
-        name: 'Testing & QA',
-        description: 'Comprehensive testing and quality assurance',
-        durationWeeks: 3,
-        budgetAllocation: 20,
-        deliverables: 'Test reports, Bug fixes',
-        dependencies: '["3"]',
-        isCriticalPath: false,
-      },
-    }),
-    prisma.milestone.create({
-      data: {
-        planId: plans[0].id,
-        sequence: 5,
-        name: 'Deployment & Go-Live',
-        description: 'System deployment and production launch',
-        durationWeeks: 2,
-        budgetAllocation: 10,
-        deliverables: 'Live system, User training',
-        dependencies: '["4"]',
-        isCriticalPath: true,
-      },
-    }),
-  ]);
-
-  console.log('✅ Plan Builder plans created:', plans.length);
-  console.log('✅ Milestones created:', milestones.length);
-
-  // Create demo tasks
+  // Create Tasks with Budgets (Following the new flow)
   const tasks = await Promise.all([
     prisma.task.create({
       data: {
-        title: 'Q4 Financial Review',
-        description: 'Comprehensive review of Q4 financial performance and year-end reporting',
-        type: 'FINANCIAL_REVIEW',
+        title: 'Financial System Implementation',
+        description: 'Complete financial management system setup for ABC Company',
+        type: 'BUDGET_PLANNING',
         priority: 'HIGH',
         status: 'IN_PROGRESS',
-        dueDate: new Date('2025-10-20'),
-        estimatedHours: 8,
+        budget: 100000, // SAR 100,000 agreed with customer
+        actualCost: 25000, // SAR 25,000 spent so far
+        dueDate: new Date('2025-12-31'),
+        estimatedHours: 200,
+        actualHours: 50,
         customerId: customers[0].id,
         servicePlanId: servicePlans[0].id,
         createdById: adminUser.id,
@@ -302,15 +158,16 @@ async function main() {
     }),
     prisma.task.create({
       data: {
-        title: 'Tax Filing Preparation',
-        description: 'Prepare and file annual tax returns for XYZ Corporation',
+        title: 'Tax Compliance & Filing',
+        description: 'Annual tax preparation and compliance for XYZ Corp',
         type: 'TAX_PREPARATION',
         priority: 'URGENT',
-        status: 'COMPLETED',
-        dueDate: new Date('2025-10-18'),
-        completedAt: new Date('2025-10-17'),
-        estimatedHours: 12,
-        actualHours: 10,
+        status: 'IN_PROGRESS',
+        budget: 50000, // SAR 50,000
+        actualCost: 15000, // SAR 15,000 spent
+        dueDate: new Date('2025-11-30'),
+        estimatedHours: 100,
+        actualHours: 30,
         customerId: customers[1].id,
         servicePlanId: servicePlans[1].id,
         createdById: adminUser.id,
@@ -318,79 +175,258 @@ async function main() {
     }),
     prisma.task.create({
       data: {
-        title: 'Budget Planning Session',
-        description: 'Conduct budget planning session for DEF Startup',
+        title: 'Q4 Financial Review',
+        description: 'Quarterly financial review and reporting',
+        type: 'FINANCIAL_REVIEW',
+        priority: 'MEDIUM',
+        status: 'COMPLETED',
+        budget: 25000, // SAR 25,000
+        actualCost: 23000, // SAR 23,000 actual (under budget!)
+        dueDate: new Date('2025-10-15'),
+        completedAt: new Date('2025-10-14'),
+        estimatedHours: 40,
+        actualHours: 38,
+        customerId: customers[1].id,
+        servicePlanId: servicePlans[2].id,
+        createdById: adminUser.id,
+      },
+    }),
+    prisma.task.create({
+      data: {
+        title: 'Startup Financial Setup',
+        description: 'Initial financial system setup for DEF Startup',
         type: 'BUDGET_PLANNING',
         priority: 'MEDIUM',
         status: 'PENDING',
-        dueDate: new Date('2025-10-25'),
-        estimatedHours: 4,
+        budget: 30000, // SAR 30,000
+        actualCost: 0, // Not started yet
+        dueDate: new Date('2026-01-31'),
+        estimatedHours: 60,
         customerId: customers[2].id,
-        servicePlanId: servicePlans[2].id,
         createdById: adminUser.id,
       },
     }),
   ]);
 
-  console.log('✅ Demo tasks created:', tasks.length);
+  console.log('✅ Tasks created with budgets:', tasks.length);
 
-  // Create task assignments
-  await Promise.all([
-    prisma.taskAssignment.create({
+  // Create Plans linked to Tasks
+  const plans = await Promise.all([
+    prisma.plan.create({
       data: {
-        taskId: tasks[0].id,
-        userId: adminUser.id,
-        status: 'IN_PROGRESS',
-        notes: 'Assigned to admin for Q4 review',
+        name: 'Financial System Implementation Plan',
+        description: 'Step-by-step plan for ABC Company financial system',
+        customerId: customers[0].id,
+        taskId: tasks[0].id, // Linked to Task!
+        industry: 'Technology',
+        companySize: 'MEDIUM',
+        durationType: 'WEEKS',
+        durationWeeks: 24,
+        startDate: new Date('2025-10-01'),
+        workingDays: 5,
+        address: 'Business Bay, Dubai',
+        siteType: 'Office',
+        status: 'ACTIVE',
+        currentStage: 2,
+        totalStages: 7,
+        totalBudget: 100000, // Same as task budget
+        currency: 'SAR',
       },
     }),
-    prisma.taskAssignment.create({
+    prisma.plan.create({
       data: {
-        taskId: tasks[1].id,
-        userId: adminUser.id,
-        status: 'COMPLETED',
-        notes: 'Tax filing completed successfully',
-      },
-    }),
-    prisma.taskAssignment.create({
-      data: {
-        taskId: tasks[2].id,
-        userId: adminUser.id,
-        status: 'ASSIGNED',
-        notes: 'Scheduled for next week',
+        name: 'Tax Compliance Plan',
+        description: 'Tax preparation and filing plan for XYZ Corp',
+        customerId: customers[1].id,
+        taskId: tasks[1].id, // Linked to Task!
+        industry: 'Finance',
+        companySize: 'LARGE',
+        durationType: 'WEEKS',
+        durationWeeks: 12,
+        startDate: new Date('2025-10-15'),
+        workingDays: 5,
+        status: 'ACTIVE',
+        currentStage: 2,
+        totalStages: 4,
+        totalBudget: 50000,
+        currency: 'SAR',
       },
     }),
   ]);
 
+  console.log('✅ Plans created (linked to tasks):', plans.length);
+
+  // Create Milestones with Budget Allocation and Status
+  const milestones = await Promise.all([
+    // Plan 1 Milestones (Financial System Implementation)
+    prisma.milestone.create({
+      data: {
+        planId: plans[0].id,
+        sequence: 1,
+        name: 'Requirements Analysis',
+        description: 'Gather requirements and assess current state',
+        durationWeeks: 2,
+        budgetAllocation: 10, // 10% = SAR 10,000
+        deliverables: 'Requirements document, Gap analysis',
+        isCriticalPath: true,
+        status: 'COMPLETED',
+        startDate: new Date('2025-10-01'),
+        completedDate: new Date('2025-10-14'),
+        actualCost: 9500, // Actual cost
+      },
+    }),
+    prisma.milestone.create({
+      data: {
+        planId: plans[0].id,
+        sequence: 2,
+        name: 'System Design',
+        description: 'Design financial system architecture',
+        durationWeeks: 4,
+        budgetAllocation: 15, // 15% = SAR 15,000
+        deliverables: 'System design, Process flows',
+        isCriticalPath: true,
+        status: 'IN_PROGRESS',
+        startDate: new Date('2025-10-15'),
+        actualCost: 12000, // Partial cost so far
+      },
+    }),
+    prisma.milestone.create({
+      data: {
+        planId: plans[0].id,
+        sequence: 3,
+        name: 'Implementation',
+        description: 'Build and configure the system',
+        durationWeeks: 8,
+        budgetAllocation: 40, // 40% = SAR 40,000
+        deliverables: 'Configured system, Integration',
+        isCriticalPath: true,
+        status: 'PENDING',
+      },
+    }),
+    prisma.milestone.create({
+      data: {
+        planId: plans[0].id,
+        sequence: 4,
+        name: 'Testing & Training',
+        description: 'UAT and staff training',
+        durationWeeks: 6,
+        budgetAllocation: 20, // 20% = SAR 20,000
+        deliverables: 'Test reports, Training materials',
+        isCriticalPath: false,
+        status: 'PENDING',
+      },
+    }),
+    prisma.milestone.create({
+      data: {
+        planId: plans[0].id,
+        sequence: 5,
+        name: 'Go-Live & Support',
+        description: 'Launch and initial support',
+        durationWeeks: 4,
+        budgetAllocation: 15, // 15% = SAR 15,000
+        deliverables: 'Live system, Support documentation',
+        isCriticalPath: true,
+        status: 'PENDING',
+      },
+    }),
+    // Plan 2 Milestones (Tax Compliance)
+    prisma.milestone.create({
+      data: {
+        planId: plans[1].id,
+        sequence: 1,
+        name: 'Document Collection',
+        description: 'Gather all tax documents',
+        durationWeeks: 2,
+        budgetAllocation: 20, // 20% = SAR 10,000
+        deliverables: 'Complete document set',
+        isCriticalPath: true,
+        status: 'COMPLETED',
+        startDate: new Date('2025-10-15'),
+        completedDate: new Date('2025-10-28'),
+        actualCost: 9800,
+      },
+    }),
+    prisma.milestone.create({
+      data: {
+        planId: plans[1].id,
+        sequence: 2,
+        name: 'Tax Calculation',
+        description: 'Calculate tax obligations',
+        durationWeeks: 4,
+        budgetAllocation: 35, // 35% = SAR 17,500
+        deliverables: 'Tax calculations, Worksheets',
+        isCriticalPath: true,
+        status: 'IN_PROGRESS',
+        startDate: new Date('2025-10-29'),
+        actualCost: 8000, // Partial
+      },
+    }),
+    prisma.milestone.create({
+      data: {
+        planId: plans[1].id,
+        sequence: 3,
+        name: 'Filing Preparation',
+        description: 'Prepare tax returns',
+        durationWeeks: 3,
+        budgetAllocation: 25, // 25% = SAR 12,500
+        deliverables: 'Draft returns',
+        isCriticalPath: true,
+        status: 'PENDING',
+      },
+    }),
+    prisma.milestone.create({
+      data: {
+        planId: plans[1].id,
+        sequence: 4,
+        name: 'Submission & Follow-up',
+        description: 'Submit and track status',
+        durationWeeks: 3,
+        budgetAllocation: 20, // 20% = SAR 10,000
+        deliverables: 'Filed returns, Confirmation',
+        isCriticalPath: true,
+        status: 'PENDING',
+      },
+    }),
+  ]);
+
+  console.log('✅ Milestones created with status tracking:', milestones.length);
+
+  // Create task assignments
+  await Promise.all(
+    tasks.slice(0, 3).map((task) =>
+      prisma.taskAssignment.create({
+        data: {
+          taskId: task.id,
+          userId: adminUser.id,
+          status: 'ASSIGNED',
+          notes: 'Primary assignee',
+        },
+      })
+    )
+  );
+
   console.log('✅ Task assignments created');
 
   // Create demo communications
-  await Promise.all([
+  const communications = await Promise.all([
     prisma.communication.create({
       data: {
-        type: 'EMAIL',
-        subject: 'Q4 Financial Review Discussion',
-        content: 'We need to schedule a meeting to discuss the Q4 financial review findings.',
-        direction: 'OUTBOUND',
         customerId: customers[0].id,
-      },
-    }),
-    prisma.communication.create({
-      data: {
-        type: 'PHONE',
-        subject: 'Tax Filing Update',
-        content: 'Tax filing has been completed and submitted successfully.',
-        direction: 'OUTBOUND',
-        customerId: customers[1].id,
-      },
-    }),
-    prisma.communication.create({
-      data: {
+        subject: 'Project Kickoff Meeting',
+        message: 'Discussed project scope and timeline',
         type: 'MEETING',
-        subject: 'Budget Planning Consultation',
-        content: 'Initial consultation meeting scheduled for budget planning.',
-        direction: 'INBOUND',
-        customerId: customers[2].id,
+        status: 'COMPLETED',
+        date: new Date('2025-10-01'),
+      },
+    }),
+    prisma.communication.create({
+      data: {
+        customerId: customers[1].id,
+        subject: 'Tax Document Request',
+        message: 'Requested all Q3 financial documents',
+        type: 'EMAIL',
+        status: 'COMPLETED',
+        date: new Date('2025-10-15'),
       },
     }),
   ]);
@@ -401,102 +437,67 @@ async function main() {
   const partners = await Promise.all([
     prisma.partner.create({
       data: {
-        name: 'Maria Santos',
-        email: 'maria@techpartners.ae',
-        phone: '+971 50 123 4567',
+        name: 'Audit Firm X',
+        contactEmail: 'contact@auditfirmx.com',
+        contactPhone: '+971 4 111 2222',
+        type: 'AUDIT',
+        status: 'ACTIVE',
         country: 'UAE',
         city: 'Dubai',
-        address: 'Dubai Internet City, Dubai',
-        latitude: 25.0919,
-        longitude: 55.1659,
-        domain: 'Network Infrastructure',
-        role: 'TECHNICAL',
-        specialties: ['Network Infrastructure', 'Security Systems', 'WiFi Deployment'],
-        rating: 4.8,
-        activeEngagements: 3,
-        availability: 'MODERATE',
-        remoteOk: false,
-        notes: 'Specialized in network infrastructure and security systems',
+        address: 'Downtown Dubai',
+        notes: 'External audit services provider',
       },
     }),
     prisma.partner.create({
       data: {
-        name: 'Ahmed Hassan',
-        email: 'ahmed@serverexperts.ae',
-        phone: '+971 50 234 5678',
+        name: 'Legal Advisors Y',
+        contactEmail: 'info@legaladvisors.ae',
+        contactPhone: '+971 4 222 3333',
+        type: 'LEGAL',
+        status: 'ACTIVE',
         country: 'UAE',
         city: 'Dubai',
-        address: 'Al Barsha, Dubai',
-        latitude: 25.1124,
-        longitude: 55.1966,
-        domain: 'Server Infrastructure',
-        role: 'TECHNICAL',
-        specialties: ['Server Setup', 'Cloud Configuration', 'Backup Systems'],
-        rating: 4.6,
-        activeEngagements: 1,
-        availability: 'AVAILABLE',
-        remoteOk: true,
-        notes: 'Expert in server technologies and cloud infrastructure',
+        address: 'Business Bay',
+        notes: 'Corporate legal services',
       },
     }),
     prisma.partner.create({
       data: {
-        name: 'XYZ Consulting',
-        email: 'contact@xyzconsulting.om',
-        phone: '+968 90 123 456',
-        country: 'Oman',
-        city: 'Muscat',
-        address: 'Al Khuwair, Muscat',
-        latitude: 23.5883,
-        longitude: 58.3829,
-        domain: 'Odoo ERP',
-        role: 'ERP_CONSULTANT',
-        specialties: ['Odoo Implementation', 'ERP Integration', 'Business Process'],
-        rating: 4.7,
-        activeEngagements: 2,
-        availability: 'MODERATE',
-        remoteOk: true,
-        notes: 'Specialized in Odoo implementations',
-      },
-    }),
-    prisma.partner.create({
-      data: {
-        name: 'ABC Tech Egypt',
-        email: 'info@abctech.eg',
-        phone: '+20 100 555 1234',
-        country: 'Egypt',
-        city: 'Cairo',
-        address: 'Nasr City, Cairo',
-        latitude: 30.0626,
-        longitude: 31.3458,
-        domain: 'Stock Count',
-        role: 'STOCK_COUNT',
-        specialties: ['Inventory Management', 'Stock Count', 'Asset Tracking'],
-        rating: 4.5,
-        activeEngagements: 2,
-        availability: 'AVAILABLE',
-        remoteOk: false,
-        notes: 'On-site inventory stock count services',
-      },
-    }),
-    prisma.partner.create({
-      data: {
-        name: 'David Chen',
-        email: 'david@enterprisetech.ae',
-        phone: '+971 50 345 6789',
+        name: 'Tech Solutions Z',
+        contactEmail: 'hello@techsolutions.ae',
+        contactPhone: '+971 4 333 4444',
+        type: 'TECHNOLOGY',
+        status: 'ACTIVE',
         country: 'UAE',
         city: 'Dubai',
-        address: 'Jumeirah Lake Towers, Dubai',
-        latitude: 25.0706,
-        longitude: 55.1410,
-        domain: 'Enterprise Systems',
-        role: 'IMPLEMENTATION',
-        specialties: ['Enterprise Systems', 'VoIP', 'Digital Signage', 'IoT Integration'],
-        rating: 4.9,
-        activeEngagements: 5,
-        availability: 'BUSY',
-        remoteOk: true,
-        notes: 'Enterprise systems specialist with high demand',
+        address: 'DIFC',
+        notes: 'Financial software provider',
+      },
+    }),
+    prisma.partner.create({
+      data: {
+        name: 'HR Consultants',
+        contactEmail: 'contact@hrconsultants.ae',
+        contactPhone: '+971 4 444 5555',
+        type: 'CONSULTING',
+        status: 'ACTIVE',
+        country: 'UAE',
+        city: 'Abu Dhabi',
+        address: 'Al Maryah Island',
+        notes: 'HR and payroll services',
+      },
+    }),
+    prisma.partner.create({
+      data: {
+        name: 'Marketing Agency',
+        contactEmail: 'info@marketingagency.ae',
+        contactPhone: '+971 4 555 6666',
+        type: 'MARKETING',
+        status: 'ACTIVE',
+        country: 'UAE',
+        city: 'Dubai',
+        address: 'Media City',
+        notes: 'Business development support',
       },
     }),
   ]);
@@ -508,7 +509,7 @@ async function main() {
 
 main()
   .catch((e) => {
-    console.error('❌ Error during seed:', e);
+    console.error(e);
     process.exit(1);
   })
   .finally(async () => {
