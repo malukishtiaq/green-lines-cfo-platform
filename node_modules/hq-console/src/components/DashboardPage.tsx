@@ -1,126 +1,202 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Row,
   Col,
   Card,
   Statistic,
-  Progress,
-  Table,
-  Tag,
+  Select,
   Button,
   Space,
   Typography,
+  Spin,
+  Alert,
 } from 'antd';
 import {
   UserOutlined,
   FileTextOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
-  ArrowUpOutlined,
-  ArrowDownOutlined,
+  PlusOutlined,
+  UserAddOutlined,
+  DownloadOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
+import { Column, Line } from '@ant-design/plots';
 
 const { Title } = Typography;
 
 const DashboardPage: React.FC = () => {
-  // Mock data for demonstration
-  const recentTasks = [
-    {
-      key: '1',
-      task: 'Review Q4 Financial Reports',
-      customer: 'ABC Company',
-      agent: 'John Smith',
-      status: 'In Progress',
-      priority: 'High',
-      dueDate: '2025-10-20',
-    },
-    {
-      key: '2',
-      task: 'Tax Filing Preparation',
-      customer: 'XYZ Corp',
-      agent: 'Sarah Johnson',
-      status: 'Completed',
-      priority: 'Medium',
-      dueDate: '2025-10-18',
-    },
-    {
-      key: '3',
-      task: 'Budget Planning Session',
-      customer: 'DEF Ltd',
-      agent: 'Mike Wilson',
-      status: 'Pending',
-      priority: 'Low',
-      dueDate: '2025-10-25',
-    },
-  ];
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalPlansInitiated: 0,
+    totalOpenPlans: 0,
+    totalClosedPlans: 0,
+    totalPartners: 0,
+    conversionRate: 0,
+  });
+  const [regionData, setRegionData] = useState<any[]>([]);
+  const [trendData, setTrendData] = useState<any[]>([]);
+  
+  const [filters, setFilters] = useState({
+    dateRange: 'ALL',
+    region: null as string | null,
+  });
 
-  const columns = [
-    {
-      title: 'Task',
-      dataIndex: 'task',
-      key: 'task',
-    },
-    {
-      title: 'Customer',
-      dataIndex: 'customer',
-      key: 'customer',
-    },
-    {
-      title: 'Agent',
-      dataIndex: 'agent',
-      key: 'agent',
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status: string) => {
-        const color = status === 'Completed' ? 'green' : 
-                     status === 'In Progress' ? 'blue' : 'orange';
-        return <Tag color={color}>{status}</Tag>;
+  // Fetch data
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (filters.dateRange) params.set('dateRange', filters.dateRange);
+      if (filters.region) params.set('region', filters.region);
+
+      const [statsRes, regionRes, trendRes] = await Promise.all([
+        fetch(`/api/dashboard/stats?${params.toString()}`),
+        fetch(`/api/dashboard/charts/clients-by-region?${params.toString()}`),
+        fetch(`/api/dashboard/charts/plans-trend?period=monthly`),
+      ]);
+
+      const statsData = await statsRes.json();
+      const regionDataRes = await regionRes.json();
+      const trendDataRes = await trendRes.json();
+
+      setStats(statsData);
+      setRegionData(regionDataRes);
+      setTrendData(trendDataRes);
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [filters]);
+
+  // Charts configuration
+  const regionChartConfig = {
+    data: regionData,
+    xField: 'region',
+    yField: 'count',
+    label: {
+      position: 'middle' as const,
+      style: {
+        fill: '#FFFFFF',
+        opacity: 0.6,
       },
     },
-    {
-      title: 'Priority',
-      dataIndex: 'priority',
-      key: 'priority',
-      render: (priority: string) => {
-        const color = priority === 'High' ? 'red' : 
-                     priority === 'Medium' ? 'orange' : 'green';
-        return <Tag color={color}>{priority}</Tag>;
-      },
+    meta: {
+      region: { alias: 'Region' },
+      count: { alias: 'Number of Clients' },
     },
-    {
-      title: 'Due Date',
-      dataIndex: 'dueDate',
-      key: 'dueDate',
-    },
-  ];
+  };
+
+  // Transform trend data for chart
+  const trendChartData = trendData.flatMap(item => [
+    { period: new Date(item.period).toLocaleDateString(), value: item.initiated, type: 'Initiated' },
+    { period: new Date(item.period).toLocaleDateString(), value: item.closed, type: 'Closed' },
+  ]);
+
+  const trendChartConfig = {
+    data: trendChartData,
+    xField: 'period',
+    yField: 'value',
+    seriesField: 'type',
+    smooth: true,
+    color: ['#1890ff', '#52c41a'],
+  };
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '50px' }}>
+        <Spin size="large" />
+        <p>Loading Dashboard...</p>
+      </div>
+    );
+  }
 
   return (
     <div>
-      <Title level={2}>Dashboard Overview</Title>
-      
-      {/* KPI Cards */}
+      <Row justify="space-between" align="middle" style={{ marginBottom: '24px' }}>
+        <Col>
+          <Title level={2}>Dashboard Overview - Enhanced</Title>
+        </Col>
+        <Col>
+          <Space>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => window.location.href = '/plans/new'}
+            >
+              Create Plan
+            </Button>
+            <Button
+              icon={<UserAddOutlined />}
+              onClick={() => window.location.href = '/partners?action=create'}
+            >
+              Invite Partner
+            </Button>
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={fetchDashboardData}
+            />
+          </Space>
+        </Col>
+      </Row>
+
+      {/* Filters */}
+      <Card style={{ marginBottom: '24px' }}>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} md={6}>
+            <Select
+              placeholder="Date Range"
+              style={{ width: '100%' }}
+              value={filters.dateRange}
+              onChange={(value) => setFilters({ ...filters, dateRange: value })}
+              options={[
+                { label: 'This Month', value: 'THIS_MONTH' },
+                { label: 'QTD', value: 'QTD' },
+                { label: 'YTD', value: 'YTD' },
+                { label: 'All Time', value: 'ALL' },
+              ]}
+            />
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Select
+              placeholder="Region"
+              style={{ width: '100%' }}
+              allowClear
+              value={filters.region}
+              onChange={(value) => setFilters({ ...filters, region: value })}
+              options={[
+                { label: 'GCC', value: 'GCC' },
+                { label: 'MENA', value: 'MENA' },
+                { label: 'APAC', value: 'APAC' },
+                { label: 'EU', value: 'EU' },
+              ]}
+            />
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Button
+              block
+              onClick={() => setFilters({ dateRange: 'ALL', region: null })}
+            >
+              Clear Filters
+            </Button>
+          </Col>
+        </Row>
+      </Card>
+
+      {/* NEW KPI Cards - Spec Compliant */}
       <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Total Customers"
-              value={1128}
-              prefix={<UserOutlined />}
-              valueStyle={{ color: '#3f8600' }}
-              suffix={<ArrowUpOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="Active Service Plans"
-              value={89}
+              title="Total Plans Initiated"
+              value={stats.totalPlansInitiated}
               prefix={<FileTextOutlined />}
               valueStyle={{ color: '#1890ff' }}
             />
@@ -129,82 +205,56 @@ const DashboardPage: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Completed Tasks"
-              value={456}
-              prefix={<CheckCircleOutlined />}
-              valueStyle={{ color: '#3f8600' }}
-              suffix={<ArrowUpOutlined />}
+              title="Total Open Plans"
+              value={stats.totalOpenPlans}
+              prefix={<ClockCircleOutlined />}
+              valueStyle={{ color: '#faad14' }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Pending Tasks"
-              value={23}
-              prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: '#cf1322' }}
-              suffix={<ArrowDownOutlined />}
+              title="Total Closed Plans"
+              value={stats.totalClosedPlans}
+              prefix={<CheckCircleOutlined />}
+              valueStyle={{ color: '#52c41a' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card>
+            <Statistic
+              title="Total Partners"
+              value={stats.totalPartners}
+              prefix={<UserOutlined />}
+              valueStyle={{ color: '#722ed1' }}
             />
           </Card>
         </Col>
       </Row>
 
-      {/* Progress Cards */}
+      {/* NEW Charts Section */}
       <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
         <Col xs={24} lg={12}>
-          <Card title="Task Completion Rate" bordered={false}>
-            <Progress
-              percent={75}
-              strokeColor={{
-                '0%': '#108ee9',
-                '100%': '#87d068',
-              }}
-            />
-            <div style={{ marginTop: '16px' }}>
-              <Space>
-                <span>This Month: 75%</span>
-                <span style={{ color: '#3f8600' }}>↑ 5% from last month</span>
-              </Space>
-            </div>
+          <Card title="Clients by Region" style={{ height: 400 }}>
+            <Column {...regionChartConfig} />
           </Card>
         </Col>
         <Col xs={24} lg={12}>
-          <Card title="Customer Satisfaction" bordered={false}>
-            <Progress
-              percent={92}
-              strokeColor={{
-                '0%': '#87d068',
-                '100%': '#108ee9',
-              }}
-            />
-            <div style={{ marginTop: '16px' }}>
-              <Space>
-                <span>Current Rating: 4.6/5</span>
-                <span style={{ color: '#3f8600' }}>↑ 0.2 from last month</span>
-              </Space>
-            </div>
+          <Card 
+            title="Plans Trend: Total vs Closed" 
+            extra={
+              <span style={{ fontSize: '14px', color: '#666' }}>
+                Conversion Rate: {stats.conversionRate}%
+              </span>
+            }
+            style={{ height: 400 }}
+          >
+            <Line {...trendChartConfig} />
           </Card>
         </Col>
       </Row>
-
-      {/* Recent Tasks Table */}
-      <Card
-        title="Recent Tasks"
-        extra={
-          <Button type="primary">
-            View All Tasks
-          </Button>
-        }
-        bordered={false}
-      >
-        <Table
-          columns={columns}
-          dataSource={recentTasks}
-          pagination={false}
-          size="small"
-        />
-      </Card>
     </div>
   );
 };

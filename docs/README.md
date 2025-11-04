@@ -1,193 +1,179 @@
-# Green Lines CFO Platform - Master Documentation Index
+# Green Lines CFO Platform - Documentation
 
-## 📚 Documentation Structure
-
-This directory contains strategic documentation for the Green Lines CFO Platform development. Each document serves a specific purpose for AI assistant reference during development.
+**Last Updated**: November 4, 2025
 
 ---
 
-## 🎯 Core Documents (Always Reference These)
+## 📁 Documentation Structure
 
-### **1. Progress_Tracker.md** 
-**Purpose**: Single source of truth for tracking what's done, what's in progress, and what's pending.  
-**Update Frequency**: After every significant feature completion  
-**Contains**: 
-- Current phase status
-- Completed features checklist
-- Pending features
-- Known issues
-- Database status
-- Deployment status
+### **📋 01-planning/** - Project Planning & Specifications
+Complete specifications and planning documents for all platform components.
 
-### **2. Phase_1_Foundation.md**
-**Purpose**: Complete documentation of Phase 1 foundation work  
-**Update Frequency**: Rarely (Phase 1 is complete)  
-**Contains**:
-- Clean Architecture implementation
-- Multi-language setup
-- Design system
-- HTTP client architecture
-- Access control system
-- Service architecture
-- Authentication system
+**Files:**
+- `HQ Console Navigation & Page Specifications.md` - Complete HQ Console specs
+- `CFO App Navigation & Page Spec.md` - Complete CFO App specs
+- `HQ_Console_Development_Plan.md` - Development roadmap
+- `HQ_Console_Complete_Breakdown.md` - Detailed breakdown
+- PDF versions of specifications
 
-### **3. Phase_2_Dashboard.md**
-**Purpose**: Implementation guide for Phase 2 dashboard features  
-**Update Frequency**: As features are completed  
-**Contains**:
-- KPI cards implementation
-- Charts and analytics
-- User profile management
-- Enhanced data tables
-- Responsive design
-- Testing requirements
-
-### **4. Phase_3_Customers.md**
-**Purpose**: Implementation guide for Phase 3 customer management  
-**Update Frequency**: When Phase 3 starts  
-**Contains**:
-- Customer list and filtering
-- Customer profiles
-- Customer forms
-- Communication history
-- Customer analytics
-
-### **5. Phase_4_Plans.md**
-**Purpose**: Implementation guide for Phase 4 service plan management  
-**Update Frequency**: As features are completed  
-**Contains**:
-- Plan Builder (completed)
-- Plan templates
-- Plan approval workflows
-- Plan performance tracking
-- Plan analytics
-
-### **6. Phase_5_Tasks.md**
-**Purpose**: Implementation guide for Phase 5 task management  
-**Update Frequency**: When Phase 5 starts  
-**Contains**:
-- Task creation interface
-- Smart assignment engine
-- Workload monitoring
-- Task status tracking
-- Task analytics
+**Use When:** Planning features, understanding requirements, designing new modules
 
 ---
 
-## 📖 Reference Documents (Use When Needed)
+### **🚀 02-implementation/** - Development Progress & Phase Documentation
+Active development tracking and phase-specific implementation guides.
 
-### **reference/** folder
-**Purpose**: Original specifications and requirements  
-**Contains**:
-- Green Lines CFO Platform PRD
-- HQ Console Spec
-- Agent Platform Spec
-- Customer App Spec
-- Example scenarios
-- Plan Builder form requirements
+**Files:**
+- `Progress_Tracker.md` ⭐ **START HERE** - Single source of truth for current status
+- `Development_Progress_Log.md` - Detailed development log
+- `Phase_1_Foundation.md` - Foundation phase (completed)
+- `Phase_2_Implementation.md` - Current phase implementation
+- `Task_Milestone_Implementation.md` - Task/milestone system docs
+- `Task_Milestone_Budget_Flow.md` - Budget workflow
+- `Project_Status_Review.md` - Status reviews
 
-### **Technology_Research/** folder
-**Purpose**: Technology stack decisions and recommendations  
-**Contains**:
-- Technology Stack Recommendations
-- Library comparisons
-- Architecture decisions
+**Use When:** Daily development, tracking progress, understanding what's been built
 
 ---
 
-## 🗂️ Archived Documents (Historical Reference Only)
+### **☁️ 03-deployment/** - Deployment & DevOps
+Guides for deploying to Vercel and troubleshooting deployment issues.
 
-### **archive/** folder
-**Purpose**: Old documents kept for historical reference  
-**Contains**:
-- Deployment troubleshooting guides (issues resolved)
-- Old conversation logs
-- Temporary implementation notes
-- Build error fixes (issues resolved)
+**Files:**
+- `VERCEL_QUICKSTART.md` - Quick deployment guide
+- `DEPLOYMENT_SUMMARY.md` - Deployment overview
+- `DEPLOYMENT_VISUAL_GUIDE.md` - Visual deployment guide
+- `Vercel_Deployment_Fix.md` - Common fixes
+- `Vercel_Build_Error_Fix.md` - Build error solutions
+- `Vercel_Advanced_Troubleshooting.md` - Advanced troubleshooting
 
----
-
-## 📋 Document Usage Rules for AI Assistant
-
-### **When Starting New Feature**:
-1. Check `Progress_Tracker.md` to see current status
-2. Read relevant `Phase_X_*.md` for implementation details
-3. Reference `reference/` folder for requirements
-4. Update `Progress_Tracker.md` when feature is complete
-
-### **When User Reports Issue**:
-1. Check `Progress_Tracker.md` for known issues
-2. Fix the issue
-3. Update `Progress_Tracker.md` if it was a known issue
-4. Do NOT create new troubleshooting documents
-
-### **When Phase is Complete**:
-1. Update `Progress_Tracker.md` with completion status
-2. Archive any temporary documents to `archive/`
-3. Keep phase document for future reference
-
-### **Document Creation Rules**:
-- ❌ DO NOT create documents for: bug fixes, deployment issues, temporary notes
-- ❌ DO NOT create new documents without user request
-- ✅ DO update `Progress_Tracker.md` regularly
-- ✅ DO update relevant `Phase_X_*.md` when adding features
-- ✅ DO keep documentation clean and organized
+**Use When:** Deploying, fixing build errors, troubleshooting production issues
 
 ---
 
-## 🎯 Current Active Documents
+### **🧪 04-testing/** - Testing Scenarios & QA
+Test plans and scenarios for feature validation.
 
-Based on current phase (Phase 2 - Week 3):
+**Files:**
+- `PlanBuilder_Testing_Scenarios.md` - Plan Builder test cases
 
-| Document | Status | Use For |
-|----------|--------|---------|
-| `Progress_Tracker.md` | 🟢 Active | Daily development tracking |
-| `Phase_1_Foundation.md` | ✅ Complete | Reference for architecture patterns |
-| `Phase_2_Dashboard.md` | 🟢 Active | Current development guide |
-| `Phase_3_Customers.md` | ⏳ Pending | Future reference |
-| `Phase_4_Plans.md` | 🟡 Partial | Reference for Plan Builder |
-| `Phase_5_Tasks.md` | ⏳ Pending | Future reference |
-| `reference/*` | 📚 Reference | Requirements and specs |
+**Use When:** Testing features, writing test cases, QA validation
 
 ---
 
-## 🧹 Cleanup Completed
+### **🏗️ 05-architecture/** - System Architecture & Integration
+High-level system design, integration flows, and architecture diagrams.
 
-### **Archived** (moved to `archive/` folder):
-- Conversation_Log.md → Old conversations
-- DEPLOYMENT_SUMMARY.md → Deployment issues resolved
-- DEPLOYMENT_VISUAL_GUIDE.md → Deployment issues resolved
-- Vercel_Advanced_Troubleshooting.md → Issues resolved
-- Vercel_Build_Error_Fix.md → Issues resolved
-- Vercel_Deployment_Fix.md → Issues resolved
-- VERCEL_QUICKSTART.md → Deployment working now
-- PlanBuilder_Testing_Scenarios.md → Testing notes
-- HQ_Console_Complete_Breakdown.md → Merged into phase docs
-- Machine_Diagram_Explained.md → System architecture notes
+**Files:**
+- `Platform_Integration_Analysis.md` - Integration architecture
+- `System_Integration_Flow.md` - System flow diagrams
+- `Machine_Diagram_Explained.md` - Machine/state diagrams
 
-### **Consolidated**:
-- Development_Progress_Log.md → Merged into `Progress_Tracker.md`
-- Project_Status_Review.md → Merged into `Progress_Tracker.md`
-- HQ_Console_Development_Plan.md → Split into phase documents
-- Phase_2_Implementation.md → Renamed to `Phase_2_Dashboard.md`
-
-### **Kept**:
-- Project_Guide.md → High-level project overview
-- Platform_Integration_Analysis.md → Integration architecture
-- System_Integration_Flow.md → System flow diagrams
-- reference/ → Original specifications
-- Technology_Research/ → Tech stack decisions
+**Use When:** Understanding system design, planning integrations, architectural decisions
 
 ---
 
-## 📝 Quick Reference
+### **📚 reference/** - Original Specifications
+Original PRD and specification documents (unchanged reference material).
 
-**Current Phase**: Phase 2 (Dashboard Enhancement) - Week 3 Day 3  
-**Current Task**: Charts & Analytics Implementation  
-**Next Document to Update**: `Progress_Tracker.md` after charts are complete  
-**Active Phase Document**: `Phase_2_Dashboard.md`
+**Files:**
+- `Green_Lines_CFO_Platform_PRD_v1.1.md` - Product Requirements Document
+- `Green_Lines_HQ_Console_Spec_v1.0.md` - HQ Console original spec
+- `Green_Lines_CFO_App_Spec_v1.0.md` - CFO App original spec
+- `Green_Lines_Agent_Platform_Spec_v1.0.docx` - Partner/Agent App spec
+- `Plan Builder Form.md` - Plan Builder form specs
+- `Example Senario.md` - Example scenarios
+- DOCX and ODT versions
+
+**Use When:** Referencing original requirements, verifying specs
 
 ---
 
-*This index provides a clean, strategic documentation structure for efficient AI-assisted development. Always refer to this index when unsure which document to use or update.*
+### **🔬 Technology_Research/** - Technology Stack & Catalogs
+Technology decisions, KPI catalogs, and milestone templates.
 
+**Files:**
+- `Technology_Stack_Recommendations.md` - Tech stack decisions
+- `Master_KPI_Catalog_Expanded.xlsx` - Complete KPI catalog
+- `Master_Milestone_Catalog.xlsx` - Milestone templates
+
+**Use When:** Technology decisions, KPI definitions, milestone planning
+
+---
+
+### **📦 archive/** - Historical Documents
+Deprecated or historical documents kept for reference.
+
+**Files:**
+- `Conversation_Log.md` - Old conversation logs
+- `DOCUMENTATION_CLEANUP.md` - Previous cleanup notes
+
+---
+
+## 🎯 Quick Start Guide
+
+### For New Developers
+1. Start with `02-implementation/Progress_Tracker.md` to see current status
+2. Read `01-planning/HQ Console Navigation & Page Specifications.md` for feature specs
+3. Check `Project_Guide.md` (root) for development setup
+
+### For Planning New Features
+1. Check `01-planning/` for existing specifications
+2. Review `05-architecture/` for system constraints
+3. Update `02-implementation/Progress_Tracker.md` when starting
+
+### For Deployment
+1. Follow `03-deployment/VERCEL_QUICKSTART.md`
+2. If issues arise, check troubleshooting guides in `03-deployment/`
+
+---
+
+## 📝 Core Documents
+
+### `Project_Guide.md` (Root)
+**Master project guide** with setup instructions, architecture overview, and getting started information.
+
+### `02-implementation/Progress_Tracker.md` ⭐
+**Single source of truth** for what's done, in progress, and pending. Update this after every feature completion.
+
+---
+
+## 🔄 Maintenance Guidelines
+
+### When Adding New Documentation:
+- **Planning docs** → `01-planning/`
+- **Implementation/progress** → `02-implementation/`
+- **Deployment guides** → `03-deployment/`
+- **Test cases** → `04-testing/`
+- **Architecture/design** → `05-architecture/`
+- **Original specs** → `reference/`
+- **Old/obsolete** → `archive/`
+
+### When Updating Progress:
+Always update `02-implementation/Progress_Tracker.md` - it's the single source of truth.
+
+---
+
+## 🏗️ Three-System Architecture
+
+This platform consists of three interconnected applications:
+
+1. **HQ Console** (`apps/hq-console/`)
+   - Internal operations dashboard
+   - Plan creation and monitoring
+   - Partner management
+   - Billing and CRM
+
+2. **CFO App** (Future - `apps/customer-app/`)
+   - Client-facing application
+   - Report viewing and approvals
+   - Service purchases
+
+3. **Partner App** (Future - `apps/agent-app/`)
+   - Partner portal
+   - Assignment management
+   - Deliverable uploads
+
+---
+
+**Repository**: https://github.com/malukishtiaq/green-lines-cfo-platform

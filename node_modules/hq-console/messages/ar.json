@@ -54,7 +54,46 @@
     "viewAllTasks": "عرض جميع المهام",
     "thisMonth": "هذا الشهر",
     "fromLastMonth": "من الشهر الماضي",
-    "currentRating": "التقييم الحالي"
+    "currentRating": "التقييم الحالي",
+    "totalPlansInitiated": "إجمالي الخطط المبدأة",
+    "totalOpenPlans": "إجمالي الخطط المفتوحة",
+    "totalClosedPlans": "إجمالي الخطط المغلقة",
+    "totalPartners": "إجمالي الشركاء",
+    "conversionRate": "معدل التحويل",
+    "clientsByRegion": "العملاء حسب المنطقة",
+    "plansTrend": "الخطط: الإجمالي مقابل المغلقة",
+    "filters": {
+      "title": "التصفية",
+      "dateRange": "نطاق التاريخ",
+      "region": "المنطقة",
+      "country": "البلد",
+      "industry": "القطاع",
+      "partnerTier": "مستوى الشريك",
+      "planType": "نوع الخطة",
+      "status": "الحالة",
+      "clearFilters": "مسح التصفية",
+      "applyFilters": "تطبيق التصفية",
+      "thisMonth": "هذا الشهر",
+      "qtd": "ربع سنوي",
+      "ytd": "سنوي",
+      "custom": "مخصص"
+    },
+    "actions": {
+      "createPlan": "إنشاء خطة",
+      "invitePartner": "دعوة شريك",
+      "exportDashboard": "تصدير لوحة التحكم"
+    },
+    "regions": {
+      "gcc": "مجلس التعاون الخليجي",
+      "mena": "الشرق الأوسط وشمال أفريقيا",
+      "apac": "آسيا والمحيط الهادئ",
+      "eu": "أوروبا",
+      "other": "أخرى"
+    },
+    "planTypes": {
+      "rightTrack": "المسار الصحيح",
+      "stayOnTrack": "البقاء على المسار"
+    }
   },
   "partner": {
     "title": "الشريك",

@@ -1,5 +1,5 @@
 import DashboardLayout from '@/components/DashboardLayout';
-import DashboardPage from '@/presentation/components/DashboardPage';
+import DashboardPageEnhanced from '@/presentation/components/DashboardPageEnhanced';
 import { CleanArchitectureConfig } from '@/application';
 
 // Initialize Clean Architecture
@@ -8,7 +8,7 @@ CleanArchitectureConfig.initialize();
 export default function Home() {
   return (
     <DashboardLayout>
-      <DashboardPage />
+      <DashboardPageEnhanced />
     </DashboardLayout>
   );
 }

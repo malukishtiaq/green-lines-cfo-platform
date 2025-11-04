@@ -23,8 +23,9 @@ async function main() {
 
   console.log('✅ Admin user created:', adminUser.email);
 
-  // Create demo customers
+  // Create demo customers from different regions
   const customers = await Promise.all([
+    // ========== GCC REGION ==========
     prisma.customer.upsert({
       where: { email: 'contact@abccompany.com' },
       update: {},
@@ -76,9 +77,270 @@ async function main() {
         notes: 'New startup looking for basic CFO services',
       },
     }),
+    prisma.customer.upsert({
+      where: { email: 'info@saudiarabiaco.com' },
+      update: {},
+      create: {
+        name: 'Saudi Arabia Holdings',
+        email: 'info@saudiarabiaco.com',
+        phone: '+966 11 123 4567',
+        company: 'Saudi Arabia Holdings Ltd',
+        address: 'King Fahd Road, Riyadh',
+        city: 'Riyadh',
+        country: 'Saudi Arabia',
+        industry: 'Real Estate',
+        size: 'LARGE',
+        status: 'ACTIVE',
+        notes: 'Major real estate portfolio management',
+      },
+    }),
+    prisma.customer.upsert({
+      where: { email: 'contact@kuwaitfin.com' },
+      update: {},
+      create: {
+        name: 'Kuwait Finance Co',
+        email: 'contact@kuwaitfin.com',
+        phone: '+965 2222 3333',
+        company: 'Kuwait Finance Company',
+        address: 'Kuwait City',
+        city: 'Kuwait City',
+        country: 'Kuwait',
+        industry: 'Finance',
+        size: 'MEDIUM',
+        status: 'ACTIVE',
+        notes: 'Financial services provider',
+      },
+    }),
+    prisma.customer.upsert({
+      where: { email: 'hello@qatartech.com' },
+      update: {},
+      create: {
+        name: 'Qatar Tech Solutions',
+        email: 'hello@qatartech.com',
+        phone: '+974 4444 5555',
+        company: 'Qatar Tech Solutions LLC',
+        address: 'West Bay, Doha',
+        city: 'Doha',
+        country: 'Qatar',
+        industry: 'Technology',
+        size: 'MEDIUM',
+        status: 'ACTIVE',
+        notes: 'Tech consulting services',
+      },
+    }),
+
+    // ========== MENA REGION ==========
+    prisma.customer.upsert({
+      where: { email: 'info@egyptgroup.com' },
+      update: {},
+      create: {
+        name: 'Egypt Industrial Group',
+        email: 'info@egyptgroup.com',
+        phone: '+20 2 1234 5678',
+        company: 'Egypt Industrial Group',
+        address: 'Nasr City, Cairo',
+        city: 'Cairo',
+        country: 'Egypt',
+        industry: 'Manufacturing',
+        size: 'LARGE',
+        status: 'ACTIVE',
+        notes: 'Major manufacturing operations',
+      },
+    }),
+    prisma.customer.upsert({
+      where: { email: 'contact@jordantrade.com' },
+      update: {},
+      create: {
+        name: 'Jordan Trade Partners',
+        email: 'contact@jordantrade.com',
+        phone: '+962 6 111 2222',
+        company: 'Jordan Trade Partners Ltd',
+        address: 'Abdali, Amman',
+        city: 'Amman',
+        country: 'Jordan',
+        industry: 'Retail',
+        size: 'MEDIUM',
+        status: 'ACTIVE',
+        notes: 'Import/export business',
+      },
+    }),
+    prisma.customer.upsert({
+      where: { email: 'hello@lebanonbank.com' },
+      update: {},
+      create: {
+        name: 'Lebanon Commercial Bank',
+        email: 'hello@lebanonbank.com',
+        phone: '+961 1 333 4444',
+        company: 'Lebanon Commercial Bank SAL',
+        address: 'Beirut Central District',
+        city: 'Beirut',
+        country: 'Lebanon',
+        industry: 'Finance',
+        size: 'LARGE',
+        status: 'ACTIVE',
+        notes: 'Regional banking operations',
+      },
+    }),
+    prisma.customer.upsert({
+      where: { email: 'info@moroccotextile.com' },
+      update: {},
+      create: {
+        name: 'Morocco Textile Industries',
+        email: 'info@moroccotextile.com',
+        phone: '+212 522 111 222',
+        company: 'Morocco Textile Industries SARL',
+        address: 'Casablanca Free Zone',
+        city: 'Casablanca',
+        country: 'Morocco',
+        industry: 'Manufacturing',
+        size: 'MEDIUM',
+        status: 'ACTIVE',
+        notes: 'Textile manufacturing and export',
+      },
+    }),
+
+    // ========== APAC REGION ==========
+    prisma.customer.upsert({
+      where: { email: 'contact@indiatech.com' },
+      update: {},
+      create: {
+        name: 'India Tech Solutions',
+        email: 'contact@indiatech.com',
+        phone: '+91 11 2345 6789',
+        company: 'India Tech Solutions Pvt Ltd',
+        address: 'Cyber City, Gurugram',
+        city: 'Gurugram',
+        country: 'India',
+        industry: 'Technology',
+        size: 'LARGE',
+        status: 'ACTIVE',
+        notes: 'Software development services',
+      },
+    }),
+    prisma.customer.upsert({
+      where: { email: 'info@pakistanmanufacturing.com' },
+      update: {},
+      create: {
+        name: 'Pakistan Manufacturing Ltd',
+        email: 'info@pakistanmanufacturing.com',
+        phone: '+92 21 1234 5678',
+        company: 'Pakistan Manufacturing Limited',
+        address: 'SITE Area, Karachi',
+        city: 'Karachi',
+        country: 'Pakistan',
+        industry: 'Manufacturing',
+        size: 'MEDIUM',
+        status: 'ACTIVE',
+        notes: 'Industrial manufacturing',
+      },
+    }),
+    prisma.customer.upsert({
+      where: { email: 'hello@singaporefinance.com' },
+      update: {},
+      create: {
+        name: 'Singapore Finance Hub',
+        email: 'hello@singaporefinance.com',
+        phone: '+65 6789 0123',
+        company: 'Singapore Finance Hub Pte Ltd',
+        address: 'Marina Bay Financial Centre',
+        city: 'Singapore',
+        country: 'Singapore',
+        industry: 'Finance',
+        size: 'LARGE',
+        status: 'ACTIVE',
+        notes: 'Regional financial services hub',
+      },
+    }),
+    prisma.customer.upsert({
+      where: { email: 'contact@malaysialogistics.com' },
+      update: {},
+      create: {
+        name: 'Malaysia Logistics Group',
+        email: 'contact@malaysialogistics.com',
+        phone: '+60 3 1234 5678',
+        company: 'Malaysia Logistics Group Sdn Bhd',
+        address: 'Port Klang',
+        city: 'Kuala Lumpur',
+        country: 'Malaysia',
+        industry: 'Logistics',
+        size: 'MEDIUM',
+        status: 'ACTIVE',
+        notes: 'Supply chain and logistics services',
+      },
+    }),
+
+    // ========== EU REGION ==========
+    prisma.customer.upsert({
+      where: { email: 'info@ukfinancial.com' },
+      update: {},
+      create: {
+        name: 'UK Financial Services',
+        email: 'info@ukfinancial.com',
+        phone: '+44 20 7123 4567',
+        company: 'UK Financial Services Ltd',
+        address: 'Canary Wharf, London',
+        city: 'London',
+        country: 'United Kingdom',
+        industry: 'Finance',
+        size: 'LARGE',
+        status: 'ACTIVE',
+        notes: 'Investment management services',
+      },
+    }),
+    prisma.customer.upsert({
+      where: { email: 'contact@germanengineering.com' },
+      update: {},
+      create: {
+        name: 'German Engineering GmbH',
+        email: 'contact@germanengineering.com',
+        phone: '+49 89 1234 5678',
+        company: 'German Engineering GmbH',
+        address: 'Munich Business District',
+        city: 'Munich',
+        country: 'Germany',
+        industry: 'Manufacturing',
+        size: 'LARGE',
+        status: 'ACTIVE',
+        notes: 'Advanced engineering solutions',
+      },
+    }),
+    prisma.customer.upsert({
+      where: { email: 'hello@frenchfashion.com' },
+      update: {},
+      create: {
+        name: 'French Fashion House',
+        email: 'hello@frenchfashion.com',
+        phone: '+33 1 4567 8900',
+        company: 'French Fashion House SAS',
+        address: 'Champs-Élysées, Paris',
+        city: 'Paris',
+        country: 'France',
+        industry: 'Retail',
+        size: 'MEDIUM',
+        status: 'ACTIVE',
+        notes: 'Luxury fashion and accessories',
+      },
+    }),
+    prisma.customer.upsert({
+      where: { email: 'info@netherlandslogistics.com' },
+      update: {},
+      create: {
+        name: 'Netherlands Logistics BV',
+        email: 'info@netherlandslogistics.com',
+        phone: '+31 20 1234 567',
+        company: 'Netherlands Logistics BV',
+        address: 'Port of Rotterdam',
+        city: 'Rotterdam',
+        country: 'Netherlands',
+        industry: 'Logistics',
+        size: 'MEDIUM',
+        status: 'ACTIVE',
+        notes: 'International shipping and logistics',
+      },
+    }),
   ]);
 
-  console.log('✅ Demo customers created:', customers.length);
+  console.log('✅ Demo customers created from all regions (GCC, MENA, APAC, EU):', customers.length);
 
   // Create service plans
   const servicePlans = await Promise.all([
@@ -406,103 +668,6 @@ async function main() {
   );
 
   console.log('✅ Task assignments created');
-
-  // Create demo communications
-  const communications = await Promise.all([
-    prisma.communication.create({
-      data: {
-        customerId: customers[0].id,
-        subject: 'Project Kickoff Meeting',
-        message: 'Discussed project scope and timeline',
-        type: 'MEETING',
-        status: 'COMPLETED',
-        date: new Date('2025-10-01'),
-      },
-    }),
-    prisma.communication.create({
-      data: {
-        customerId: customers[1].id,
-        subject: 'Tax Document Request',
-        message: 'Requested all Q3 financial documents',
-        type: 'EMAIL',
-        status: 'COMPLETED',
-        date: new Date('2025-10-15'),
-      },
-    }),
-  ]);
-
-  console.log('✅ Demo communications created');
-
-  // Create demo partners
-  const partners = await Promise.all([
-    prisma.partner.create({
-      data: {
-        name: 'Audit Firm X',
-        contactEmail: 'contact@auditfirmx.com',
-        contactPhone: '+971 4 111 2222',
-        type: 'AUDIT',
-        status: 'ACTIVE',
-        country: 'UAE',
-        city: 'Dubai',
-        address: 'Downtown Dubai',
-        notes: 'External audit services provider',
-      },
-    }),
-    prisma.partner.create({
-      data: {
-        name: 'Legal Advisors Y',
-        contactEmail: 'info@legaladvisors.ae',
-        contactPhone: '+971 4 222 3333',
-        type: 'LEGAL',
-        status: 'ACTIVE',
-        country: 'UAE',
-        city: 'Dubai',
-        address: 'Business Bay',
-        notes: 'Corporate legal services',
-      },
-    }),
-    prisma.partner.create({
-      data: {
-        name: 'Tech Solutions Z',
-        contactEmail: 'hello@techsolutions.ae',
-        contactPhone: '+971 4 333 4444',
-        type: 'TECHNOLOGY',
-        status: 'ACTIVE',
-        country: 'UAE',
-        city: 'Dubai',
-        address: 'DIFC',
-        notes: 'Financial software provider',
-      },
-    }),
-    prisma.partner.create({
-      data: {
-        name: 'HR Consultants',
-        contactEmail: 'contact@hrconsultants.ae',
-        contactPhone: '+971 4 444 5555',
-        type: 'CONSULTING',
-        status: 'ACTIVE',
-        country: 'UAE',
-        city: 'Abu Dhabi',
-        address: 'Al Maryah Island',
-        notes: 'HR and payroll services',
-      },
-    }),
-    prisma.partner.create({
-      data: {
-        name: 'Marketing Agency',
-        contactEmail: 'info@marketingagency.ae',
-        contactPhone: '+971 4 555 6666',
-        type: 'MARKETING',
-        status: 'ACTIVE',
-        country: 'UAE',
-        city: 'Dubai',
-        address: 'Media City',
-        notes: 'Business development support',
-      },
-    }),
-  ]);
-
-  console.log('✅ Demo partners created:', partners.length);
 
   console.log('🎉 Database seed completed successfully!');
 }

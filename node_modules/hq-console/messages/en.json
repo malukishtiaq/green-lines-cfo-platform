@@ -54,7 +54,46 @@
     "viewAllTasks": "View All Tasks",
     "thisMonth": "This Month",
     "fromLastMonth": "from last month",
-    "currentRating": "Current Rating"
+    "currentRating": "Current Rating",
+    "totalPlansInitiated": "Total Plans Initiated",
+    "totalOpenPlans": "Total Open Plans",
+    "totalClosedPlans": "Total Closed Plans",
+    "totalPartners": "Total Partners",
+    "conversionRate": "Conversion Rate",
+    "clientsByRegion": "Clients by Region",
+    "plansTrend": "Plans: Total vs Closed",
+    "filters": {
+      "title": "Filters",
+      "dateRange": "Date Range",
+      "region": "Region",
+      "country": "Country",
+      "industry": "Industry",
+      "partnerTier": "Partner Tier",
+      "planType": "Plan Type",
+      "status": "Status",
+      "clearFilters": "Clear Filters",
+      "applyFilters": "Apply Filters",
+      "thisMonth": "This Month",
+      "qtd": "QTD",
+      "ytd": "YTD",
+      "custom": "Custom"
+    },
+    "actions": {
+      "createPlan": "Create Plan",
+      "invitePartner": "Invite Partner",
+      "exportDashboard": "Export Dashboard"
+    },
+    "regions": {
+      "gcc": "GCC",
+      "mena": "MENA",
+      "apac": "APAC",
+      "eu": "EU",
+      "other": "Other"
+    },
+    "planTypes": {
+      "rightTrack": "Right Track",
+      "stayOnTrack": "Stay on Track"
+    }
   },
   "partner": {
     "title": "Partner",
