@@ -1,16 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/infrastructure/database';
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
-// GET /api/plans/[id] - Get specific plan
+// GET single service plan
 export async function GET(
-  request: NextRequest,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: planId } = await params;
-
-    const plan = await prisma.plan.findUnique({
-      where: { id: planId },
+    const { id } = await params;
+    const plan = await prisma.servicePlan.findUnique({
+      where: { id },
       include: {
         customer: {
           select: {
@@ -18,93 +17,95 @@ export async function GET(
             name: true,
             email: true,
             phone: true,
-            address: true,
+            country: true,
+            company: true,
           },
         },
-        milestones: {
-          orderBy: { sequence: 'asc' },
+        tasks: {
+          select: {
+            id: true,
+            title: true,
+            type: true,
+            status: true,
+            priority: true,
+            dueDate: true,
+          },
         },
-        resources: true,
-        attachments: true,
+        assignments: {
+          include: {
+            partner: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                domain: true,
+              },
+            },
+          },
+        },
+        kpis: true,
       },
     });
 
     if (!plan) {
-      return NextResponse.json(
-        { success: false, error: 'Plan not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Service plan not found' }, { status: 404 });
     }
 
-    return NextResponse.json({
-      success: true,
-      data: plan,
-    });
+    return NextResponse.json(plan);
   } catch (error) {
-    console.error('Error fetching plan:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch plan' },
-      { status: 500 }
-    );
+    console.error('Error fetching service plan:', error);
+    return NextResponse.json({ error: 'Failed to fetch service plan' }, { status: 500 });
   }
 }
 
-// PUT /api/plans/[id] - Update plan
+// PUT update service plan
 export async function PUT(
-  request: NextRequest,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: planId } = await params;
-    const body = await request.json();
+    const { id } = await params;
+    const data = await request.json();
 
     // Check if plan exists
-    const existingPlan = await prisma.plan.findUnique({
-      where: { id: planId },
+    const existingPlan = await prisma.servicePlan.findUnique({
+      where: { id },
     });
 
     if (!existingPlan) {
-      return NextResponse.json(
-        { success: false, error: 'Plan not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Service plan not found' }, { status: 404 });
     }
 
-    // Update plan with milestones
-    const updatedPlan = await prisma.plan.update({
-      where: { id: planId },
+    // If customer is being changed, check if new customer exists
+    if (data.customerId && data.customerId !== existingPlan.customerId) {
+      const customer = await prisma.customer.findUnique({
+        where: { id: data.customerId },
+      });
+
+      if (!customer) {
+        return NextResponse.json(
+          { error: 'Customer not found' },
+          { status: 404 }
+        );
+      }
+    }
+
+    const plan = await prisma.servicePlan.update({
+      where: { id },
       data: {
-        name: body.name,
-        description: body.description,
-        industry: body.industry,
-        companySize: body.companySize,
-        durationType: body.durationType,
-        durationWeeks: body.durationWeeks,
-        startDate: body.startDate ? new Date(body.startDate) : null,
-        workingDays: body.workingDays,
-        address: body.address,
-        siteType: body.siteType,
-        accessRequirements: body.accessRequirements,
-        status: body.status,
-        currentStage: body.currentStage,
-        totalBudget: body.totalBudget,
-        currency: body.currency,
-        notes: body.notes,
-        updatedAt: new Date(),
-        // Update milestones if provided
-        milestones: body.milestones ? {
-          deleteMany: {}, // Delete existing milestones
-          create: body.milestones.map((milestone: any) => ({
-            sequence: milestone.sequence || 1,
-            name: milestone.name,
-            description: milestone.description,
-            durationWeeks: milestone.durationWeeks || 1,
-            budgetAllocation: parseFloat(milestone.budgetPercent || milestone.budgetAllocation || 0),
-            deliverables: milestone.deliverables,
-            dependencies: Array.isArray(milestone.dependencies) ? milestone.dependencies.join(',') : milestone.dependencies,
-            isCriticalPath: milestone.criticalPath || milestone.isCriticalPath || false,
-          }))
-        } : undefined,
+        name: data.name,
+        description: data.description || null,
+        type: data.type,
+        status: data.status,
+        price: data.price ? parseFloat(data.price) : null,
+        currency: data.currency,
+        duration: data.duration ? parseInt(data.duration) : null,
+        features: data.features || null,
+        erpConnection: data.erpConnection || null,
+        dataDomains: data.dataDomains || [],
+        governancePolicy: data.governancePolicy || null,
+        customerId: data.customerId,
       },
       include: {
         customer: {
@@ -112,61 +113,65 @@ export async function PUT(
             id: true,
             name: true,
             email: true,
+            country: true,
           },
-        },
-        milestones: {
-          orderBy: { sequence: 'asc' },
         },
       },
     });
 
-    return NextResponse.json({
-      success: true,
-      data: updatedPlan,
-    });
+    return NextResponse.json(plan);
   } catch (error) {
-    console.error('Error updating plan:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to update plan' },
-      { status: 500 }
-    );
+    console.error('Error updating service plan:', error);
+    return NextResponse.json({ error: 'Failed to update service plan' }, { status: 500 });
   }
 }
 
-// DELETE /api/plans/[id] - Delete plan
+// DELETE service plan
 export async function DELETE(
-  request: NextRequest,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: planId } = await params;
-
-    // Check if plan exists
-    const existingPlan = await prisma.plan.findUnique({
-      where: { id: planId },
+    const { id } = await params;
+    
+    // Check if plan has active tasks or assignments
+    const plan = await prisma.servicePlan.findUnique({
+      where: { id },
+      include: {
+        tasks: {
+          where: { status: { in: ['PENDING', 'IN_PROGRESS'] } },
+        },
+        assignments: {
+          where: { status: { in: ['ASSIGNED', 'IN_PROGRESS'] } },
+        },
+      },
     });
 
-    if (!existingPlan) {
+    if (!plan) {
+      return NextResponse.json({ error: 'Service plan not found' }, { status: 404 });
+    }
+
+    if (plan.tasks.length > 0) {
       return NextResponse.json(
-        { success: false, error: 'Plan not found' },
-        { status: 404 }
+        { error: 'Cannot delete plan with active tasks' },
+        { status: 400 }
       );
     }
 
-    // Delete plan (this will cascade delete related records)
-    await prisma.plan.delete({
-      where: { id: planId },
+    if (plan.assignments.length > 0) {
+      return NextResponse.json(
+        { error: 'Cannot delete plan with active assignments' },
+        { status: 400 }
+      );
+    }
+
+    await prisma.servicePlan.delete({
+      where: { id },
     });
 
-    return NextResponse.json({
-      success: true,
-      message: 'Plan deleted successfully',
-    });
+    return NextResponse.json({ message: 'Service plan deleted successfully' });
   } catch (error) {
-    console.error('Error deleting plan:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to delete plan' },
-      { status: 500 }
-    );
+    console.error('Error deleting service plan:', error);
+    return NextResponse.json({ error: 'Failed to delete service plan' }, { status: 500 });
   }
 }

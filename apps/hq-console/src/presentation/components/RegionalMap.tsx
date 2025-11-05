@@ -1,4 +1,4 @@
-// Regional Map Component for Clients by Region
+// Regional Map Component for Customers by Region
 import React from 'react';
 import { Tooltip } from 'antd';
 

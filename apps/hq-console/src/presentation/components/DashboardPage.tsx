@@ -106,7 +106,7 @@ const DashboardPage: React.FC = () => {
 
       const [statsRes, regionRes, trendRes] = await Promise.all([
         fetch(`/api/dashboard/stats?${params.toString()}`, { cache: 'no-store' }),
-        fetch(`/api/dashboard/charts/clients-by-region?${params.toString()}`, { cache: 'no-store' }),
+        fetch(`/api/dashboard/charts/customers-by-region?${params.toString()}`, { cache: 'no-store' }),
         fetch(`/api/dashboard/charts/plans-trend?period=${trendPeriod}&${params.toString()}`, { cache: 'no-store' }),
       ]);
 
@@ -514,7 +514,7 @@ const DashboardPage: React.FC = () => {
       <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
         <Col xs={24} lg={12}>
           <Card 
-            title="Clients by Region" 
+            title="Customers by Region" 
             extra={
               <Space>
                 <Switch

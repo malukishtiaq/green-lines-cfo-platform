@@ -2,361 +2,261 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  Card,
   Table,
   Button,
   Space,
-  Tag,
-  Typography,
-  Row,
-  Col,
-  Statistic,
   Input,
   Select,
-  DatePicker,
+  Tag,
   Modal,
   message,
+  Card,
+  Row,
+  Col,
   Tooltip,
-  Badge,
-  Skeleton,
-  Alert,
 } from 'antd';
 import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
   EyeOutlined,
-  SearchOutlined,
-  FilterOutlined,
   FileTextOutlined,
-  CalendarOutlined,
-  DollarOutlined,
 } from '@ant-design/icons';
-import DashboardLayout from '@/components/DashboardLayout';
-import { CleanArchitectureConfig } from '@/application';
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import type { ColumnsType } from 'antd/es/table';
 
-const { Title, Text } = Typography;
 const { Search } = Input;
-const { Option } = Select;
-const { RangePicker } = DatePicker;
 
-// Mock data for demonstration - in real app, this would come from API
-const mockPlans = [
-  {
-    id: '1',
-    name: 'ERP Implementation - ABC Corp',
-    customer: 'ABC Corporation',
-    status: 'active',
-    stage: 3,
-    totalStages: 7,
-    budget: 50000,
-    currency: 'SAR',
-    startDate: '2024-01-15',
-    endDate: '2024-06-15',
-    createdAt: '2024-01-10',
-    lastModified: '2024-01-20',
-    progress: 45,
-    industry: 'Manufacturing',
-    companySize: 'Large',
-    durationWeeks: 20,
-  },
-  {
-    id: '2',
-    name: 'Stock Count System - XYZ Ltd',
-    customer: 'XYZ Limited',
-    status: 'draft',
-    stage: 2,
-    totalStages: 7,
-    budget: 25000,
-    currency: 'SAR',
-    startDate: '2024-02-01',
-    endDate: '2024-04-01',
-    createdAt: '2024-01-25',
-    lastModified: '2024-01-30',
-    progress: 25,
-    industry: 'Retail',
-    companySize: 'Medium',
-    durationWeeks: 8,
-  },
-  {
-    id: '3',
-    name: 'Financial System Upgrade - DEF Inc',
-    customer: 'DEF Incorporated',
-    status: 'completed',
-    stage: 7,
-    totalStages: 7,
-    budget: 75000,
-    currency: 'SAR',
-    startDate: '2023-10-01',
-    endDate: '2024-01-15',
-    createdAt: '2023-09-20',
-    lastModified: '2024-01-15',
-    progress: 100,
-    industry: 'Finance',
-    companySize: 'Large',
-    durationWeeks: 15,
-  },
-  {
-    id: '4',
-    name: 'Inventory Management - GHI Co',
-    customer: 'GHI Company',
-    status: 'on-hold',
-    stage: 4,
-    totalStages: 7,
-    budget: 35000,
-    currency: 'SAR',
-    startDate: '2024-01-20',
-    endDate: '2024-05-20',
-    createdAt: '2024-01-15',
-    lastModified: '2024-01-25',
-    progress: 60,
-    industry: 'Logistics',
-    companySize: 'Medium',
-    durationWeeks: 16,
-  },
-];
-
-const statusColors = {
-  draft: 'default',
-  active: 'processing',
-  'on-hold': 'warning',
-  completed: 'success',
-  cancelled: 'error',
-};
-
-const statusLabels = {
-  draft: 'Draft',
-  active: 'Active',
-  'on-hold': 'On Hold',
-  completed: 'Completed',
-  cancelled: 'Cancelled',
-};
+interface Plan {
+  id: string;
+  name: string;
+  description: string | null;
+  type: string;
+  status: string;
+  price: number | null;
+  currency: string;
+  duration: number | null;
+  createdAt: string;
+  customer: {
+    id: string;
+    name: string;
+    email: string;
+    country: string;
+  };
+  _count?: {
+    tasks: number;
+    assignments: number;
+  };
+}
 
 export default function PlansPage() {
-  const [plans, setPlans] = useState<any[]>([]);
-  const [filteredPlans, setFilteredPlans] = useState<any[]>([]);
+  const router = useRouter();
+  
+  // Fallback translations
+  let t: any, tCommon: any;
+  try {
+    t = useTranslations('plans');
+    tCommon = useTranslations('common');
+  } catch (e) {
+    t = (key: string) => {
+      const fallbacks: any = {
+        'title': 'Service Plans Management',
+        'addPlan': 'Add Plan',
+        'fetchError': 'Failed to fetch plans',
+        'deleteConfirmTitle': 'Delete Plan',
+        'deleteSuccess': 'Plan deleted successfully',
+        'deleteError': 'Failed to delete plan',
+        'name': 'Plan Name',
+        'customer': 'Customer',
+        'type': 'Plan Type',
+        'status': 'Status',
+        'price': 'Price',
+        'duration': 'Duration',
+        'tasks': 'Tasks',
+        'searchPlaceholder': 'Search by name or description',
+        'filterByType': 'Filter by Type',
+        'filterByStatus': 'Filter by Status',
+        'plans': 'plans',
+      };
+      return fallbacks[key] || key;
+    };
+    tCommon = (key: string) => {
+      const fallbacks: any = {
+        'delete': 'Delete',
+        'cancel': 'Cancel',
+        'edit': 'Edit',
+        'actions': 'Actions',
+        'total': 'Total'
+      };
+      return fallbacks[key] || key;
+    };
+  }
+
+  const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [searchText, setSearchText] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [industryFilter, setIndustryFilter] = useState('all');
-  const [dateRange, setDateRange] = useState<any>(null);
+  const [typeFilter, setTypeFilter] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [deleteModal, setDeleteModal] = useState<{ visible: boolean; id: string; name: string }>({
+    visible: false,
+    id: '',
+    name: '',
+  });
 
   useEffect(() => {
-    CleanArchitectureConfig.initialize();
     fetchPlans();
-  }, []);
+  }, [searchText, typeFilter, statusFilter]);
 
   const fetchPlans = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      setError(null);
-      const response = await fetch('/api/plans');
-      const data = await response.json();
-      
-      if (data.success) {
-        // Transform API data to match the expected format
-        const transformedPlans = data.data.map((plan: any) => ({
-          id: plan.id,
-          name: plan.name,
-          customer: plan.customer?.name || 'Unknown Customer',
-          status: plan.status.toLowerCase(),
-          stage: plan.currentStage,
-          totalStages: plan.totalStages,
-          budget: Number(plan.totalBudget),
-          currency: plan.currency,
-          startDate: plan.startDate,
-          endDate: plan.endDate,
-          createdAt: plan.createdAt,
-          lastModified: plan.updatedAt,
-          progress: Math.round((plan.currentStage / plan.totalStages) * 100),
-          industry: plan.industry,
-          companySize: plan.companySize,
-          durationWeeks: plan.durationWeeks,
-        }));
-        
-        setPlans(transformedPlans);
+      const params = new URLSearchParams();
+      if (searchText) params.set('search', searchText);
+      if (typeFilter) params.set('type', typeFilter);
+      if (statusFilter) params.set('status', statusFilter);
+
+      const res = await fetch(`/api/plans?${params.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        setPlans(data);
       } else {
-        setError(data.error || 'Failed to fetch plans');
-        setPlans([]);
+        message.error(t('fetchError'));
       }
     } catch (error) {
       console.error('Error fetching plans:', error);
-      setError('Network error occurred');
-      setPlans([]);
+      message.error(t('fetchError'));
     } finally {
       setLoading(false);
     }
   };
 
-  // Filter plans based on search and filters
-  useEffect(() => {
-    let filtered = plans;
+  const handleDelete = async (id: string, name: string) => {
+    setDeleteModal({ visible: true, id, name });
+  };
 
-    // Search filter
-    if (searchText) {
-      filtered = filtered.filter(plan =>
-        plan.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        plan.customer.toLowerCase().includes(searchText.toLowerCase())
-      );
-    }
-
-    // Status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(plan => plan.status === statusFilter);
-    }
-
-    // Industry filter
-    if (industryFilter !== 'all') {
-      filtered = filtered.filter(plan => plan.industry === industryFilter);
-    }
-
-    // Date range filter
-    if (dateRange && dateRange.length === 2) {
-      const [start, end] = dateRange;
-      filtered = filtered.filter(plan => {
-        const planDate = new Date(plan.createdAt);
-        return planDate >= start.toDate() && planDate <= end.toDate();
+  const confirmDelete = async () => {
+    try {
+      const res = await fetch(`/api/plans/${deleteModal.id}`, {
+        method: 'DELETE',
       });
+
+      if (res.ok) {
+        message.success(t('deleteSuccess'));
+        fetchPlans();
+      } else {
+        const error = await res.json();
+        message.error(error.error || t('deleteError'));
+      }
+    } catch (error) {
+      console.error('Error deleting plan:', error);
+      message.error(t('deleteError'));
+    } finally {
+      setDeleteModal({ visible: false, id: '', name: '' });
     }
-
-    setFilteredPlans(filtered);
-  }, [plans, searchText, statusFilter, industryFilter, dateRange]);
-
-  const handleDelete = async (planId: string) => {
-    Modal.confirm({
-      title: 'Delete Plan',
-      content: 'Are you sure you want to delete this plan? This action cannot be undone.',
-      okText: 'Delete',
-      okType: 'danger',
-      cancelText: 'Cancel',
-      onOk: async () => {
-        try {
-          const response = await fetch(`/api/plans/${planId}`, {
-            method: 'DELETE',
-          });
-          
-          const result = await response.json();
-          
-          if (result.success) {
-            message.success('Plan deleted successfully');
-            // Refresh the plans list
-            fetchPlans();
-          } else {
-            message.error(result.error || 'Failed to delete plan');
-          }
-        } catch (error) {
-          message.error('Network error occurred');
-        }
-      },
-    });
   };
 
-  const handleEdit = (planId: string) => {
-    // Navigate to edit page
-    window.location.href = `/plans/edit/${planId}`;
+  const getTypeColor = (type: string) => {
+    const colors: { [key: string]: string } = {
+      BASIC_CFO: 'blue',
+      PREMIUM_CFO: 'purple',
+      ENTERPRISE_CFO: 'gold',
+      CONSULTING: 'green',
+      AUDIT: 'orange',
+      TAX_FILING: 'cyan',
+      CUSTOM: 'default',
+    };
+    return colors[type] || 'default';
   };
 
-  const handleView = (planId: string) => {
-    // Navigate to plan details page
-    window.location.href = `/plans/${planId}`;
+  const getStatusColor = (status: string) => {
+    const colors: { [key: string]: string } = {
+      ACTIVE: 'green',
+      INACTIVE: 'default',
+      SUSPENDED: 'orange',
+      COMPLETED: 'blue',
+    };
+    return colors[status] || 'default';
   };
 
-  const columns = [
+  const columns: ColumnsType<Plan> = [
     {
-      title: 'Plan Name',
+      title: t('name'),
       dataIndex: 'name',
       key: 'name',
-      render: (text: string, record: any) => (
+      render: (text, record) => (
+        <Space>
+          <FileTextOutlined />
+          <span style={{ fontWeight: 500 }}>{text}</span>
+        </Space>
+      ),
+    },
+    {
+      title: t('customer'),
+      dataIndex: ['customer', 'name'],
+      key: 'customer',
+      render: (text, record) => (
         <div>
-          <Text strong>{text}</Text>
-          <br />
-          <Text type="secondary" style={{ fontSize: '12px' }}>
-            {record.customer}
-          </Text>
+          <div style={{ fontWeight: 500 }}>{text}</div>
+          <div style={{ fontSize: 12, color: '#666' }}>{record.customer.country}</div>
         </div>
       ),
     },
     {
-      title: 'Status',
+      title: t('type'),
+      dataIndex: 'type',
+      key: 'type',
+      render: (type) => <Tag color={getTypeColor(type)}>{type.replace('_', ' ')}</Tag>,
+    },
+    {
+      title: t('status'),
       dataIndex: 'status',
       key: 'status',
-      render: (status: string) => (
-        <Tag color={statusColors[status as keyof typeof statusColors]}>
-          {statusLabels[status as keyof typeof statusLabels]}
-        </Tag>
-      ),
+      render: (status) => <Tag color={getStatusColor(status)}>{status}</Tag>,
     },
     {
-      title: 'Progress',
-      dataIndex: 'progress',
-      key: 'progress',
-      render: (progress: number, record: any) => (
-        <div>
-          <Text>{progress}%</Text>
-          <br />
-          <Text type="secondary" style={{ fontSize: '12px' }}>
-            Stage {record.stage}/{record.totalStages}
-          </Text>
-        </div>
-      ),
+      title: t('price'),
+      dataIndex: 'price',
+      key: 'price',
+      render: (price, record) => price ? `${price} ${record.currency}` : '-',
     },
     {
-      title: 'Budget',
-      dataIndex: 'budget',
-      key: 'budget',
-      render: (budget: number, record: any) => (
-        <Text>
-          {budget.toLocaleString()} {record.currency}
-        </Text>
-      ),
+      title: t('duration'),
+      dataIndex: 'duration',
+      key: 'duration',
+      render: (duration) => duration ? `${duration} months` : '-',
     },
     {
-      title: 'Duration',
-      dataIndex: 'durationWeeks',
-      key: 'durationWeeks',
-      render: (weeks: number) => (
-        <Text>{weeks} weeks</Text>
-      ),
+      title: t('tasks'),
+      dataIndex: ['_count', 'tasks'],
+      key: 'tasks',
+      render: (count) => count || 0,
     },
     {
-      title: 'Industry',
-      dataIndex: 'industry',
-      key: 'industry',
-    },
-    {
-      title: 'Created',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      render: (date: string) => (
-        <Text>{new Date(date).toLocaleDateString()}</Text>
-      ),
-    },
-    {
-      title: 'Actions',
+      title: tCommon('actions'),
       key: 'actions',
-      render: (_: unknown, record: any) => (
+      render: (_, record) => (
         <Space>
-          <Tooltip title="View Details">
+          <Tooltip title="View">
             <Button
-              type="text"
+              type="link"
               icon={<EyeOutlined />}
-              onClick={() => handleView(record.id)}
+              onClick={() => router.push(`/plans/${record.id}`)}
             />
           </Tooltip>
-          <Tooltip title="Edit Plan">
+          <Tooltip title={tCommon('edit')}>
             <Button
-              type="text"
+              type="link"
               icon={<EditOutlined />}
-              onClick={() => handleEdit(record.id)}
+              onClick={() => router.push(`/plans/${record.id}/edit`)}
             />
           </Tooltip>
-          <Tooltip title="Delete Plan">
+          <Tooltip title={tCommon('delete')}>
             <Button
-              type="text"
+              type="link"
               danger
               icon={<DeleteOutlined />}
-              onClick={() => handleDelete(record.id)}
+              onClick={() => handleDelete(record.id, record.name)}
             />
           </Tooltip>
         </Space>
@@ -364,170 +264,93 @@ export default function PlansPage() {
     },
   ];
 
-  // Calculate statistics
-  const totalPlans = plans.length;
-  const activePlans = plans.filter(p => p.status === 'active').length;
-  const draftPlans = plans.filter(p => p.status === 'draft').length;
-  const completedPlans = plans.filter(p => p.status === 'completed').length;
-  const totalBudget = plans.reduce((sum, plan) => sum + plan.budget, 0);
-
-  // Show error state
-  if (error) {
-    return (
-      <DashboardLayout>
-        <div style={{ padding: '24px' }}>
-          <Alert
-            message="Error Loading Plans"
-            description={error}
-            type="error"
-            showIcon
-            action={
-              <Button size="small" onClick={fetchPlans}>
-                Retry
-              </Button>
-            }
-          />
-        </div>
-      </DashboardLayout>
-    );
-  }
-
   return (
-    <DashboardLayout>
-      <div style={{ padding: '24px' }}>
-        <div style={{ marginBottom: '24px' }}>
-          <Title level={2}>
-            <FileTextOutlined style={{ marginRight: '8px' }} />
-            Service Plans Management
-          </Title>
-          <Text type="secondary">
-            Manage and track all your service plans and implementations
-          </Text>
-        </div>
-
-        {/* Statistics Cards */}
-        <Row gutter={16} style={{ marginBottom: '24px' }}>
-          <Col span={6}>
-            <Card loading={loading}>
-              <Statistic
-                title="Total Plans"
-                value={loading ? 0 : totalPlans}
-                prefix={<FileTextOutlined />}
-              />
-            </Card>
+    <div style={{ padding: '24px' }}>
+      <Card>
+        <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
+          <Col>
+            <h2 style={{ margin: 0 }}>{t('title')}</h2>
           </Col>
-          <Col span={6}>
-            <Card loading={loading}>
-              <Statistic
-                title="Active Plans"
-                value={loading ? 0 : activePlans}
-                valueStyle={{ color: '#1890ff' }}
-                prefix={<CalendarOutlined />}
-              />
-            </Card>
-          </Col>
-          <Col span={6}>
-            <Card loading={loading}>
-              <Statistic
-                title="Draft Plans"
-                value={loading ? 0 : draftPlans}
-                valueStyle={{ color: '#faad14' }}
-                prefix={<EditOutlined />}
-              />
-            </Card>
-          </Col>
-          <Col span={6}>
-            <Card loading={loading}>
-              <Statistic
-                title="Total Budget"
-                value={loading ? 0 : totalBudget}
-                precision={0}
-                suffix="SAR"
-                prefix={<DollarOutlined />}
-              />
-            </Card>
+          <Col>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => router.push('/plans/new')}
+              size="large"
+            >
+              {t('addPlan')}
+            </Button>
           </Col>
         </Row>
 
-        {/* Filters and Actions */}
-        <Card style={{ marginBottom: '16px' }}>
-          <Row gutter={16} align="middle">
-            <Col flex="auto">
-              <Search
-                placeholder="Search plans by name or customer..."
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                style={{ width: '100%' }}
-                prefix={<SearchOutlined />}
-              />
-            </Col>
-            <Col>
-              <Select
-                placeholder="Status"
-                value={statusFilter}
-                onChange={setStatusFilter}
-                style={{ width: 120 }}
-              >
-                <Option value="all">All Status</Option>
-                <Option value="draft">Draft</Option>
-                <Option value="active">Active</Option>
-                <Option value="on-hold">On Hold</Option>
-                <Option value="completed">Completed</Option>
-                <Option value="cancelled">Cancelled</Option>
-              </Select>
-            </Col>
-            <Col>
-              <Select
-                placeholder="Industry"
-                value={industryFilter}
-                onChange={setIndustryFilter}
-                style={{ width: 120 }}
-              >
-                <Option value="all">All Industries</Option>
-                <Option value="Manufacturing">Manufacturing</Option>
-                <Option value="Retail">Retail</Option>
-                <Option value="Finance">Finance</Option>
-                <Option value="Logistics">Logistics</Option>
-              </Select>
-            </Col>
-            <Col>
-              <RangePicker
-                placeholder={['Start Date', 'End Date']}
-                value={dateRange}
-                onChange={setDateRange}
-              />
-            </Col>
-            <Col>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => window.location.href = '/plans/new'}
-              >
-                New Plan
-              </Button>
-            </Col>
-          </Row>
-        </Card>
+        <Row gutter={16} style={{ marginBottom: 16 }}>
+          <Col xs={24} sm={12} md={8}>
+            <Search
+              placeholder={t('searchPlaceholder')}
+              allowClear
+              onSearch={setSearchText}
+              onChange={(e) => !e.target.value && setSearchText('')}
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={24} sm={12} md={8}>
+            <Select
+              placeholder={t('filterByType')}
+              allowClear
+              style={{ width: '100%' }}
+              onChange={setTypeFilter}
+              options={[
+                { label: 'Basic CFO', value: 'BASIC_CFO' },
+                { label: 'Premium CFO', value: 'PREMIUM_CFO' },
+                { label: 'Enterprise CFO', value: 'ENTERPRISE_CFO' },
+                { label: 'Consulting', value: 'CONSULTING' },
+                { label: 'Audit', value: 'AUDIT' },
+                { label: 'Tax Filing', value: 'TAX_FILING' },
+                { label: 'Custom', value: 'CUSTOM' },
+              ]}
+            />
+          </Col>
+          <Col xs={24} sm={12} md={8}>
+            <Select
+              placeholder={t('filterByStatus')}
+              allowClear
+              style={{ width: '100%' }}
+              onChange={setStatusFilter}
+              options={[
+                { label: 'Active', value: 'ACTIVE' },
+                { label: 'Inactive', value: 'INACTIVE' },
+                { label: 'Suspended', value: 'SUSPENDED' },
+                { label: 'Completed', value: 'COMPLETED' },
+              ]}
+            />
+          </Col>
+        </Row>
 
-        {/* Plans Table */}
-        <Card>
-          <Table
-            columns={columns}
-            dataSource={filteredPlans}
-            rowKey="id"
-            loading={loading}
-            pagination={{
-              total: filteredPlans.length,
-              pageSize: 10,
-              showSizeChanger: true,
-              showQuickJumper: true,
-              showTotal: (total, range) =>
-                `${range[0]}-${range[1]} of ${total} plans`,
-            }}
-            scroll={{ x: 1200 }}
-          />
-        </Card>
-      </div>
-    </DashboardLayout>
+        <Table
+          columns={columns}
+          dataSource={plans}
+          rowKey="id"
+          loading={loading}
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: true,
+            showTotal: (total) => `${tCommon('total')} ${total} ${t('plans')}`,
+          }}
+        />
+      </Card>
+
+      <Modal
+        title={t('deleteConfirmTitle')}
+        open={deleteModal.visible}
+        onOk={confirmDelete}
+        onCancel={() => setDeleteModal({ visible: false, id: '', name: '' })}
+        okText={tCommon('delete')}
+        cancelText={tCommon('cancel')}
+        okType="danger"
+        centered
+      >
+        <p>Are you sure you want to delete <strong>{deleteModal.name}</strong>?</p>
+      </Modal>
+    </div>
   );
 }
