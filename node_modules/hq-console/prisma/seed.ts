@@ -3,8 +3,21 @@ import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
+// Helper function to generate dates in the past
+function getDateMonthsAgo(monthsAgo: number): Date {
+  const date = new Date();
+  date.setMonth(date.getMonth() - monthsAgo);
+  return date;
+}
+
 async function main() {
-  console.log('🌱 Starting database seed...');
+  console.log('🌱 Starting comprehensive database seed...');
+
+  // Clear existing data
+  await prisma.servicePlan.deleteMany({});
+  await prisma.customer.deleteMany({});
+  await prisma.partner.deleteMany({});
+  await prisma.user.deleteMany({});
 
   // Create admin user
   const hashedPassword = await bcrypt.hash('password123', 12);
@@ -23,658 +36,420 @@ async function main() {
 
   console.log('✅ Admin user created:', adminUser.email);
 
-  // Create demo customers from different regions
-  const customers = await Promise.all([
-    // ========== GCC REGION ==========
-    prisma.customer.upsert({
-      where: { email: 'contact@abccompany.com' },
-      update: {},
-      create: {
-        name: 'ABC Company',
-        email: 'contact@abccompany.com',
-        phone: '+971 50 123 4567',
-        company: 'ABC Company LLC',
-        address: 'Business Bay, Dubai',
-        city: 'Dubai',
+  // Create Partners (20 partners)
+  const partners = await Promise.all([
+    // GCC Partners
+    prisma.partner.create({
+      data: {
+        name: 'Dubai Finance Consulting',
+        email: 'contact@dubaifinance.com',
+        phone: '+971 4 123 4567',
         country: 'UAE',
-        industry: 'Technology',
-        size: 'MEDIUM',
-        status: 'ACTIVE',
-        notes: 'Long-term client with premium CFO services',
+        city: 'Dubai',
+        domain: 'CFO Services',
+        role: 'ACCOUNTS',
+        remoteOk: true,
+        rating: 4.8,
       },
     }),
-    prisma.customer.upsert({
-      where: { email: 'info@xyzcorp.com' },
-      update: {},
-      create: {
-        name: 'XYZ Corporation',
-        email: 'info@xyzcorp.com',
-        phone: '+971 4 567 8901',
-        company: 'XYZ Corporation',
-        address: 'DIFC, Dubai',
-        city: 'Dubai',
-        country: 'UAE',
-        industry: 'Finance',
-        size: 'LARGE',
-        status: 'ACTIVE',
-        notes: 'Enterprise client requiring comprehensive financial management',
-      },
-    }),
-    prisma.customer.upsert({
-      where: { email: 'hello@defstartup.com' },
-      update: {},
-      create: {
-        name: 'DEF Startup',
-        email: 'hello@defstartup.com',
-        phone: '+971 50 987 6543',
-        company: 'DEF Startup',
-        address: 'Silicon Oasis, Dubai',
-        city: 'Dubai',
-        country: 'UAE',
-        industry: 'Retail',
-        size: 'STARTUP',
-        status: 'PROSPECT',
-        notes: 'New startup looking for basic CFO services',
-      },
-    }),
-    prisma.customer.upsert({
-      where: { email: 'info@saudiarabiaco.com' },
-      update: {},
-      create: {
-        name: 'Saudi Arabia Holdings',
-        email: 'info@saudiarabiaco.com',
-        phone: '+966 11 123 4567',
-        company: 'Saudi Arabia Holdings Ltd',
-        address: 'King Fahd Road, Riyadh',
-        city: 'Riyadh',
+    prisma.partner.create({
+      data: {
+        name: 'Saudi Business Advisors',
+        email: 'info@saudibiz.com',
+        phone: '+966 11 456 7890',
         country: 'Saudi Arabia',
-        industry: 'Real Estate',
-        size: 'LARGE',
-        status: 'ACTIVE',
-        notes: 'Major real estate portfolio management',
+        city: 'Riyadh',
+        domain: 'Financial Advisory',
+        role: 'ACCOUNTS',
+        remoteOk: true,
+        rating: 4.5,
       },
     }),
-    prisma.customer.upsert({
-      where: { email: 'contact@kuwaitfin.com' },
-      update: {},
-      create: {
-        name: 'Kuwait Finance Co',
-        email: 'contact@kuwaitfin.com',
-        phone: '+965 2222 3333',
-        company: 'Kuwait Finance Company',
-        address: 'Kuwait City',
-        city: 'Kuwait City',
+    prisma.partner.create({
+      data: {
+        name: 'Kuwait CFO Services',
+        email: 'contact@kuwaitcfo.com',
+        phone: '+965 2245 6789',
         country: 'Kuwait',
-        industry: 'Finance',
-        size: 'MEDIUM',
-        status: 'ACTIVE',
-        notes: 'Financial services provider',
+        city: 'Kuwait City',
+        domain: 'CFO Services',
+        role: 'ACCOUNTS',
+        remoteOk: false,
+        rating: 4.3,
       },
     }),
-    prisma.customer.upsert({
-      where: { email: 'hello@qatartech.com' },
-      update: {},
-      create: {
-        name: 'Qatar Tech Solutions',
-        email: 'hello@qatartech.com',
+    prisma.partner.create({
+      data: {
+        name: 'Qatar Finance Group',
+        email: 'info@qatarfg.com',
         phone: '+974 4444 5555',
-        company: 'Qatar Tech Solutions LLC',
-        address: 'West Bay, Doha',
-        city: 'Doha',
         country: 'Qatar',
-        industry: 'Technology',
-        size: 'MEDIUM',
-        status: 'ACTIVE',
-        notes: 'Tech consulting services',
+        city: 'Doha',
+        domain: 'Financial Consulting',
+        role: 'ERP_CONSULTANT',
+        remoteOk: true,
+        rating: 4.6,
       },
     }),
-
-    // ========== MENA REGION ==========
-    prisma.customer.upsert({
-      where: { email: 'info@egyptgroup.com' },
-      update: {},
-      create: {
-        name: 'Egypt Industrial Group',
-        email: 'info@egyptgroup.com',
-        phone: '+20 2 1234 5678',
-        company: 'Egypt Industrial Group',
-        address: 'Nasr City, Cairo',
-        city: 'Cairo',
+    // MENA Partners
+    prisma.partner.create({
+      data: {
+        name: 'Cairo Business Solutions',
+        email: 'contact@cairobiz.com',
+        phone: '+20 2 3456 7890',
         country: 'Egypt',
-        industry: 'Manufacturing',
-        size: 'LARGE',
-        status: 'ACTIVE',
-        notes: 'Major manufacturing operations',
+        city: 'Cairo',
+        domain: 'Business Consulting',
+        role: 'ERP_CONSULTANT',
+        remoteOk: true,
+        rating: 4.2,
       },
     }),
-    prisma.customer.upsert({
-      where: { email: 'contact@jordantrade.com' },
-      update: {},
-      create: {
-        name: 'Jordan Trade Partners',
-        email: 'contact@jordantrade.com',
-        phone: '+962 6 111 2222',
-        company: 'Jordan Trade Partners Ltd',
-        address: 'Abdali, Amman',
-        city: 'Amman',
+    prisma.partner.create({
+      data: {
+        name: 'Jordan Finance Partners',
+        email: 'info@jordanfp.com',
+        phone: '+962 6 543 2109',
         country: 'Jordan',
-        industry: 'Retail',
-        size: 'MEDIUM',
-        status: 'ACTIVE',
-        notes: 'Import/export business',
+        city: 'Amman',
+        domain: 'CFO Services',
+        role: 'ACCOUNTS',
+        remoteOk: false,
+        rating: 4.0,
       },
     }),
-    prisma.customer.upsert({
-      where: { email: 'hello@lebanonbank.com' },
-      update: {},
-      create: {
-        name: 'Lebanon Commercial Bank',
-        email: 'hello@lebanonbank.com',
-        phone: '+961 1 333 4444',
-        company: 'Lebanon Commercial Bank SAL',
-        address: 'Beirut Central District',
-        city: 'Beirut',
+    prisma.partner.create({
+      data: {
+        name: 'Lebanon Consulting Group',
+        email: 'contact@lebcg.com',
+        phone: '+961 1 765 432',
         country: 'Lebanon',
-        industry: 'Finance',
-        size: 'LARGE',
-        status: 'ACTIVE',
-        notes: 'Regional banking operations',
+        city: 'Beirut',
+        domain: 'Management Consulting',
+        role: 'ERP_CONSULTANT',
+        remoteOk: true,
+        rating: 3.9,
       },
     }),
-    prisma.customer.upsert({
-      where: { email: 'info@moroccotextile.com' },
-      update: {},
-      create: {
-        name: 'Morocco Textile Industries',
-        email: 'info@moroccotextile.com',
-        phone: '+212 522 111 222',
-        company: 'Morocco Textile Industries SARL',
-        address: 'Casablanca Free Zone',
-        city: 'Casablanca',
+    prisma.partner.create({
+      data: {
+        name: 'Morocco Business Hub',
+        email: 'info@morocbiz.com',
+        phone: '+212 5 2234 5678',
         country: 'Morocco',
-        industry: 'Manufacturing',
-        size: 'MEDIUM',
-        status: 'ACTIVE',
-        notes: 'Textile manufacturing and export',
+        city: 'Casablanca',
+        domain: 'Business Advisory',
+        role: 'ERP_CONSULTANT',
+        remoteOk: true,
+        rating: 4.1,
       },
     }),
-
-    // ========== APAC REGION ==========
-    prisma.customer.upsert({
-      where: { email: 'contact@indiatech.com' },
-      update: {},
-      create: {
-        name: 'India Tech Solutions',
-        email: 'contact@indiatech.com',
-        phone: '+91 11 2345 6789',
-        company: 'India Tech Solutions Pvt Ltd',
-        address: 'Cyber City, Gurugram',
-        city: 'Gurugram',
+    // APAC Partners
+    prisma.partner.create({
+      data: {
+        name: 'Mumbai Finance Advisors',
+        email: 'contact@mumbaifa.com',
+        phone: '+91 22 1234 5678',
         country: 'India',
-        industry: 'Technology',
-        size: 'LARGE',
-        status: 'ACTIVE',
-        notes: 'Software development services',
+        city: 'Mumbai',
+        domain: 'CFO Services',
+        role: 'ACCOUNTS',
+        remoteOk: true,
+        rating: 4.7,
       },
     }),
-    prisma.customer.upsert({
-      where: { email: 'info@pakistanmanufacturing.com' },
-      update: {},
-      create: {
-        name: 'Pakistan Manufacturing Ltd',
-        email: 'info@pakistanmanufacturing.com',
-        phone: '+92 21 1234 5678',
-        company: 'Pakistan Manufacturing Limited',
-        address: 'SITE Area, Karachi',
-        city: 'Karachi',
-        country: 'Pakistan',
-        industry: 'Manufacturing',
-        size: 'MEDIUM',
-        status: 'ACTIVE',
-        notes: 'Industrial manufacturing',
-      },
-    }),
-    prisma.customer.upsert({
-      where: { email: 'hello@singaporefinance.com' },
-      update: {},
-      create: {
-        name: 'Singapore Finance Hub',
-        email: 'hello@singaporefinance.com',
+    prisma.partner.create({
+      data: {
+        name: 'Singapore CFO Network',
+        email: 'info@sgcfo.com',
         phone: '+65 6789 0123',
-        company: 'Singapore Finance Hub Pte Ltd',
-        address: 'Marina Bay Financial Centre',
-        city: 'Singapore',
         country: 'Singapore',
-        industry: 'Finance',
-        size: 'LARGE',
-        status: 'ACTIVE',
-        notes: 'Regional financial services hub',
+        city: 'Singapore',
+        domain: 'CFO Services',
+        role: 'ACCOUNTS',
+        remoteOk: true,
+        rating: 4.9,
       },
     }),
-    prisma.customer.upsert({
-      where: { email: 'contact@malaysialogistics.com' },
-      update: {},
-      create: {
-        name: 'Malaysia Logistics Group',
-        email: 'contact@malaysialogistics.com',
-        phone: '+60 3 1234 5678',
-        company: 'Malaysia Logistics Group Sdn Bhd',
-        address: 'Port Klang',
-        city: 'Kuala Lumpur',
-        country: 'Malaysia',
-        industry: 'Logistics',
-        size: 'MEDIUM',
-        status: 'ACTIVE',
-        notes: 'Supply chain and logistics services',
+    prisma.partner.create({
+      data: {
+        name: 'Manila Business Partners',
+        email: 'contact@manilabp.com',
+        phone: '+63 2 8765 4321',
+        country: 'Philippines',
+        city: 'Manila',
+        domain: 'Business Consulting',
+        role: 'ERP_CONSULTANT',
+        remoteOk: false,
+        rating: 4.0,
       },
     }),
-
-    // ========== EU REGION ==========
-    prisma.customer.upsert({
-      where: { email: 'info@ukfinancial.com' },
-      update: {},
-      create: {
-        name: 'UK Financial Services',
-        email: 'info@ukfinancial.com',
+    prisma.partner.create({
+      data: {
+        name: 'Bangkok Finance Group',
+        email: 'info@bangkokfg.com',
+        phone: '+66 2 345 6789',
+        country: 'Thailand',
+        city: 'Bangkok',
+        domain: 'Financial Advisory',
+        role: 'ACCOUNTS',
+        remoteOk: true,
+        rating: 4.3,
+      },
+    }),
+    // EU Partners
+    prisma.partner.create({
+      data: {
+        name: 'London CFO Services',
+        email: 'contact@londoncfo.com',
         phone: '+44 20 7123 4567',
-        company: 'UK Financial Services Ltd',
-        address: 'Canary Wharf, London',
-        city: 'London',
         country: 'United Kingdom',
-        industry: 'Finance',
-        size: 'LARGE',
-        status: 'ACTIVE',
-        notes: 'Investment management services',
+        city: 'London',
+        domain: 'CFO Services',
+        role: 'ACCOUNTS',
+        remoteOk: true,
+        rating: 4.8,
       },
     }),
-    prisma.customer.upsert({
-      where: { email: 'contact@germanengineering.com' },
-      update: {},
-      create: {
-        name: 'German Engineering GmbH',
-        email: 'contact@germanengineering.com',
-        phone: '+49 89 1234 5678',
-        company: 'German Engineering GmbH',
-        address: 'Munich Business District',
-        city: 'Munich',
+    prisma.partner.create({
+      data: {
+        name: 'Berlin Business Consultants',
+        email: 'info@berlinbc.com',
+        phone: '+49 30 1234 5678',
         country: 'Germany',
-        industry: 'Manufacturing',
-        size: 'LARGE',
-        status: 'ACTIVE',
-        notes: 'Advanced engineering solutions',
+        city: 'Berlin',
+        domain: 'Business Consulting',
+        role: 'ERP_CONSULTANT',
+        remoteOk: true,
+        rating: 4.6,
       },
     }),
-    prisma.customer.upsert({
-      where: { email: 'hello@frenchfashion.com' },
-      update: {},
-      create: {
-        name: 'French Fashion House',
-        email: 'hello@frenchfashion.com',
-        phone: '+33 1 4567 8900',
-        company: 'French Fashion House SAS',
-        address: 'Champs-Élysées, Paris',
-        city: 'Paris',
+    prisma.partner.create({
+      data: {
+        name: 'Paris Finance Partners',
+        email: 'contact@parisfp.com',
+        phone: '+33 1 4567 8901',
         country: 'France',
-        industry: 'Retail',
-        size: 'MEDIUM',
-        status: 'ACTIVE',
-        notes: 'Luxury fashion and accessories',
+        city: 'Paris',
+        domain: 'CFO Services',
+        role: 'ACCOUNTS',
+        remoteOk: true,
+        rating: 4.5,
       },
     }),
-    prisma.customer.upsert({
-      where: { email: 'info@netherlandslogistics.com' },
-      update: {},
-      create: {
-        name: 'Netherlands Logistics BV',
-        email: 'info@netherlandslogistics.com',
-        phone: '+31 20 1234 567',
-        company: 'Netherlands Logistics BV',
-        address: 'Port of Rotterdam',
-        city: 'Rotterdam',
+    prisma.partner.create({
+      data: {
+        name: 'Amsterdam Business Hub',
+        email: 'info@amsterdambh.com',
+        phone: '+31 20 765 4321',
         country: 'Netherlands',
-        industry: 'Logistics',
+        city: 'Amsterdam',
+        domain: 'Business Advisory',
+        role: 'ERP_CONSULTANT',
+        remoteOk: false,
+        rating: 4.2,
+      },
+    }),
+    prisma.partner.create({
+      data: {
+        name: 'Madrid CFO Network',
+        email: 'contact@madridcfo.com',
+        phone: '+34 91 234 5678',
+        country: 'Spain',
+        city: 'Madrid',
+        domain: 'CFO Services',
+        role: 'ACCOUNTS',
+        remoteOk: true,
+        rating: 4.4,
+      },
+    }),
+    prisma.partner.create({
+      data: {
+        name: 'Milan Finance Group',
+        email: 'info@milanfg.com',
+        phone: '+39 02 3456 7890',
+        country: 'Italy',
+        city: 'Milan',
+        domain: 'Financial Consulting',
+        role: 'ERP_CONSULTANT',
+        remoteOk: false,
+        rating: 4.1,
+      },
+    }),
+    prisma.partner.create({
+      data: {
+        name: 'Stockholm Business Partners',
+        email: 'contact@stockholmbp.com',
+        phone: '+46 8 765 4321',
+        country: 'Sweden',
+        city: 'Stockholm',
+        domain: 'Business Consulting',
+        role: 'ERP_CONSULTANT',
+        remoteOk: true,
+        rating: 4.3,
+      },
+    }),
+    prisma.partner.create({
+      data: {
+        name: 'Vienna Consulting Services',
+        email: 'info@viennacs.com',
+        phone: '+43 1 234 5678',
+        country: 'Austria',
+        city: 'Vienna',
+        domain: 'Management Consulting',
+        role: 'ERP_CONSULTANT',
+        remoteOk: false,
+        rating: 4.0,
+      },
+    }),
+  ]);
+
+  console.log(`✅ Created ${partners.length} partners`);
+
+  // Create Customers with varied distribution across regions and time
+  const customerData = [
+    // GCC Region - 15 customers
+    { name: 'Dubai Tech Innovations', email: 'contact@dubaitech.com', country: 'UAE', city: 'Dubai', industry: 'Technology', monthsAgo: 11 },
+    { name: 'Abu Dhabi Holdings', email: 'info@abudhabihold.com', country: 'UAE', city: 'Abu Dhabi', industry: 'Finance', monthsAgo: 10 },
+    { name: 'Sharjah Manufacturing', email: 'contact@sharjahmfg.com', country: 'UAE', city: 'Sharjah', industry: 'Manufacturing', monthsAgo: 9 },
+    { name: 'Dubai Retail Group', email: 'info@dubairetail.com', country: 'UAE', city: 'Dubai', industry: 'Retail', monthsAgo: 8 },
+    { name: 'Riyadh Enterprises', email: 'contact@riyadhent.com', country: 'Saudi Arabia', city: 'Riyadh', industry: 'Construction', monthsAgo: 7 },
+    { name: 'Jeddah Trading Co', email: 'info@jeddahtrade.com', country: 'Saudi Arabia', city: 'Jeddah', industry: 'Retail', monthsAgo: 6 },
+    { name: 'Dammam Industries', email: 'contact@dammamind.com', country: 'Saudi Arabia', city: 'Dammam', industry: 'Manufacturing', monthsAgo: 5 },
+    { name: 'Kuwait Investment Corp', email: 'info@kuwaitinv.com', country: 'Kuwait', city: 'Kuwait City', industry: 'Finance', monthsAgo: 4 },
+    { name: 'Kuwait Tech Solutions', email: 'contact@kuwaittech.com', country: 'Kuwait', city: 'Kuwait City', industry: 'Technology', monthsAgo: 3 },
+    { name: 'Doha Ventures', email: 'info@dohavent.com', country: 'Qatar', city: 'Doha', industry: 'Finance', monthsAgo: 2 },
+    { name: 'Qatar Real Estate', email: 'contact@qatarreal.com', country: 'Qatar', city: 'Doha', industry: 'Real Estate', monthsAgo: 1 },
+    { name: 'Manama Business Hub', email: 'info@manamabiz.com', country: 'Bahrain', city: 'Manama', industry: 'Finance', monthsAgo: 0 },
+    { name: 'Bahrain Tech Park', email: 'contact@bahraintech.com', country: 'Bahrain', city: 'Manama', industry: 'Technology', monthsAgo: 11 },
+    { name: 'Muscat Trading', email: 'info@muscattrade.com', country: 'Oman', city: 'Muscat', industry: 'Retail', monthsAgo: 10 },
+    { name: 'Oman Manufacturing', email: 'contact@omanmfg.com', country: 'Oman', city: 'Muscat', industry: 'Manufacturing', monthsAgo: 9 },
+    
+    // MENA Region - 12 customers
+    { name: 'Cairo Tech Solutions', email: 'contact@cairotech.com', country: 'Egypt', city: 'Cairo', industry: 'Technology', monthsAgo: 8 },
+    { name: 'Alexandria Trading', email: 'info@alextrade.com', country: 'Egypt', city: 'Alexandria', industry: 'Retail', monthsAgo: 7 },
+    { name: 'Giza Enterprises', email: 'contact@gizaent.com', country: 'Egypt', city: 'Giza', industry: 'Construction', monthsAgo: 6 },
+    { name: 'Amman Business Group', email: 'info@ammanbiz.com', country: 'Jordan', city: 'Amman', industry: 'Finance', monthsAgo: 5 },
+    { name: 'Jordan Tech Hub', email: 'contact@jordantech.com', country: 'Jordan', city: 'Amman', industry: 'Technology', monthsAgo: 4 },
+    { name: 'Beirut Holdings', email: 'info@beiruthold.com', country: 'Lebanon', city: 'Beirut', industry: 'Finance', monthsAgo: 3 },
+    { name: 'Lebanon Manufacturing', email: 'contact@lebanonmfg.com', country: 'Lebanon', city: 'Beirut', industry: 'Manufacturing', monthsAgo: 2 },
+    { name: 'Casablanca Ventures', email: 'info@casavent.com', country: 'Morocco', city: 'Casablanca', industry: 'Real Estate', monthsAgo: 1 },
+    { name: 'Rabat Tech Solutions', email: 'contact@rabattech.com', country: 'Morocco', city: 'Rabat', industry: 'Technology', monthsAgo: 0 },
+    { name: 'Tunis Trading Co', email: 'info@tunistrade.com', country: 'Tunisia', city: 'Tunis', industry: 'Retail', monthsAgo: 11 },
+    { name: 'Algiers Business Hub', email: 'contact@algiersbiz.com', country: 'Algeria', city: 'Algiers', industry: 'Construction', monthsAgo: 10 },
+    { name: 'Baghdad Enterprises', email: 'info@baghdadent.com', country: 'Iraq', city: 'Baghdad', industry: 'Manufacturing', monthsAgo: 9 },
+    
+    // APAC Region - 13 customers
+    { name: 'Mumbai Tech Innovations', email: 'contact@mumbaitech.com', country: 'India', city: 'Mumbai', industry: 'Technology', monthsAgo: 8 },
+    { name: 'Delhi Trading Corp', email: 'info@delhitrade.com', country: 'India', city: 'Delhi', industry: 'Retail', monthsAgo: 7 },
+    { name: 'Bangalore Software', email: 'contact@bangaloresoft.com', country: 'India', city: 'Bangalore', industry: 'Technology', monthsAgo: 6 },
+    { name: 'Karachi Industries', email: 'info@karachiind.com', country: 'Pakistan', city: 'Karachi', industry: 'Manufacturing', monthsAgo: 5 },
+    { name: 'Dhaka Ventures', email: 'contact@dhakavent.com', country: 'Bangladesh', city: 'Dhaka', industry: 'Finance', monthsAgo: 4 },
+    { name: 'Manila Tech Hub', email: 'info@manilatech.com', country: 'Philippines', city: 'Manila', industry: 'Technology', monthsAgo: 3 },
+    { name: 'Singapore Holdings', email: 'contact@sghold.com', country: 'Singapore', city: 'Singapore', industry: 'Finance', monthsAgo: 2 },
+    { name: 'Kuala Lumpur Trading', email: 'info@kltrade.com', country: 'Malaysia', city: 'Kuala Lumpur', industry: 'Retail', monthsAgo: 1 },
+    { name: 'Jakarta Business Group', email: 'contact@jakartabiz.com', country: 'Indonesia', city: 'Jakarta', industry: 'Construction', monthsAgo: 0 },
+    { name: 'Bangkok Tech Solutions', email: 'info@bangkoktech.com', country: 'Thailand', city: 'Bangkok', industry: 'Technology', monthsAgo: 11 },
+    { name: 'Ho Chi Minh Enterprises', email: 'contact@hcment.com', country: 'Vietnam', city: 'Ho Chi Minh City', industry: 'Manufacturing', monthsAgo: 10 },
+    { name: 'Shanghai Trading Co', email: 'info@shanghaitrade.com', country: 'China', city: 'Shanghai', industry: 'Retail', monthsAgo: 9 },
+    { name: 'Tokyo Ventures', email: 'contact@tokyovent.com', country: 'Japan', city: 'Tokyo', industry: 'Finance', monthsAgo: 8 },
+    
+    // EU Region - 10 customers
+    { name: 'London Tech Innovations', email: 'contact@londontech.com', country: 'United Kingdom', city: 'London', industry: 'Technology', monthsAgo: 7 },
+    { name: 'Manchester Trading', email: 'info@manchtrade.com', country: 'United Kingdom', city: 'Manchester', industry: 'Retail', monthsAgo: 6 },
+    { name: 'Berlin Software Hub', email: 'contact@berlinsoft.com', country: 'Germany', city: 'Berlin', industry: 'Technology', monthsAgo: 5 },
+    { name: 'Munich Industries', email: 'info@munichind.com', country: 'Germany', city: 'Munich', industry: 'Manufacturing', monthsAgo: 4 },
+    { name: 'Paris Business Group', email: 'contact@parisbiz.com', country: 'France', city: 'Paris', industry: 'Finance', monthsAgo: 3 },
+    { name: 'Rome Trading Co', email: 'info@rometrade.com', country: 'Italy', city: 'Rome', industry: 'Retail', monthsAgo: 2 },
+    { name: 'Madrid Ventures', email: 'contact@madridvent.com', country: 'Spain', city: 'Madrid', industry: 'Real Estate', monthsAgo: 1 },
+    { name: 'Amsterdam Tech Hub', email: 'info@amsterdamtech.com', country: 'Netherlands', city: 'Amsterdam', industry: 'Technology', monthsAgo: 0 },
+    { name: 'Warsaw Enterprises', email: 'contact@warsawent.com', country: 'Poland', city: 'Warsaw', industry: 'Construction', monthsAgo: 11 },
+    { name: 'Brussels Holdings', email: 'info@brusselshold.com', country: 'Belgium', city: 'Brussels', industry: 'Finance', monthsAgo: 10 },
+  ];
+
+  const customers = [];
+  for (const data of customerData) {
+    const customer = await prisma.customer.create({
+      data: {
+        name: data.name,
+        email: data.email,
+        phone: '+1234567890',
+        company: data.name,
+        address: `123 Business Street`,
+        city: data.city,
+        country: data.country,
+        industry: data.industry,
         size: 'MEDIUM',
         status: 'ACTIVE',
-        notes: 'International shipping and logistics',
+        notes: `Customer from ${data.city}, ${data.country}`,
       },
-    }),
-  ]);
+    });
+    customers.push({ ...customer, monthsAgo: data.monthsAgo });
+  }
 
-  console.log('✅ Demo customers created from all regions (GCC, MENA, APAC, EU):', customers.length);
+  console.log(`✅ Created ${customers.length} customers across all regions`);
 
-  // Create service plans
-  const servicePlans = await Promise.all([
-    prisma.servicePlan.create({
-      data: {
-        name: 'Basic CFO Package',
-        description: 'Essential financial management services',
-        type: 'BASIC_CFO',
-        status: 'ACTIVE',
-        price: 15000,
-        currency: 'SAR',
-        duration: 12,
-        features: {
-          monthlyReports: true,
-          taxPreparation: true,
-          consultation: true,
-        },
-        customerId: customers[0].id,
-      },
-    }),
-    prisma.servicePlan.create({
-      data: {
-        name: 'Premium CFO Package',
-        description: 'Comprehensive financial management',
-        type: 'PREMIUM_CFO',
-        status: 'ACTIVE',
-        price: 35000,
-        currency: 'SAR',
-        duration: 12,
-        features: {
-          monthlyReports: true,
-          taxPreparation: true,
-          consultation: true,
-          strategy: true,
-        },
-        customerId: customers[1].id,
-      },
-    }),
-    prisma.servicePlan.create({
-      data: {
-        name: 'Enterprise CFO',
-        description: 'Full-service financial leadership',
-        type: 'ENTERPRISE_CFO',
-        status: 'ACTIVE',
-        price: 75000,
-        currency: 'SAR',
-        duration: 12,
-        features: {
-          dedicated: true,
-          fullService: true,
-        },
-        customerId: customers[1].id,
-      },
-    }),
-  ]);
-
-  console.log('✅ Service plans created:', servicePlans.length);
-
-  // Create Tasks with Budgets (Following the new flow)
-  const tasks = await Promise.all([
-    prisma.task.create({
-      data: {
-        title: 'Financial System Implementation',
-        description: 'Complete financial management system setup for ABC Company',
-        type: 'BUDGET_PLANNING',
-        priority: 'HIGH',
-        status: 'IN_PROGRESS',
-        budget: 100000, // SAR 100,000 agreed with customer
-        actualCost: 25000, // SAR 25,000 spent so far
-        dueDate: new Date('2025-12-31'),
-        estimatedHours: 200,
-        actualHours: 50,
-        customerId: customers[0].id,
-        servicePlanId: servicePlans[0].id,
-        createdById: adminUser.id,
-      },
-    }),
-    prisma.task.create({
-      data: {
-        title: 'Tax Compliance & Filing',
-        description: 'Annual tax preparation and compliance for XYZ Corp',
-        type: 'TAX_PREPARATION',
-        priority: 'URGENT',
-        status: 'IN_PROGRESS',
-        budget: 50000, // SAR 50,000
-        actualCost: 15000, // SAR 15,000 spent
-        dueDate: new Date('2025-11-30'),
-        estimatedHours: 100,
-        actualHours: 30,
-        customerId: customers[1].id,
-        servicePlanId: servicePlans[1].id,
-        createdById: adminUser.id,
-      },
-    }),
-    prisma.task.create({
-      data: {
-        title: 'Q4 Financial Review',
-        description: 'Quarterly financial review and reporting',
-        type: 'FINANCIAL_REVIEW',
-        priority: 'MEDIUM',
-        status: 'COMPLETED',
-        budget: 25000, // SAR 25,000
-        actualCost: 23000, // SAR 23,000 actual (under budget!)
-        dueDate: new Date('2025-10-15'),
-        completedAt: new Date('2025-10-14'),
-        estimatedHours: 40,
-        actualHours: 38,
-        customerId: customers[1].id,
-        servicePlanId: servicePlans[2].id,
-        createdById: adminUser.id,
-      },
-    }),
-    prisma.task.create({
-      data: {
-        title: 'Startup Financial Setup',
-        description: 'Initial financial system setup for DEF Startup',
-        type: 'BUDGET_PLANNING',
-        priority: 'MEDIUM',
-        status: 'PENDING',
-        budget: 30000, // SAR 30,000
-        actualCost: 0, // Not started yet
-        dueDate: new Date('2026-01-31'),
-        estimatedHours: 60,
-        customerId: customers[2].id,
-        createdById: adminUser.id,
-      },
-    }),
-  ]);
-
-  console.log('✅ Tasks created with budgets:', tasks.length);
-
-  // Create Plans linked to Tasks
-  const plans = await Promise.all([
-    prisma.plan.create({
-      data: {
-        name: 'Financial System Implementation Plan',
-        description: 'Step-by-step plan for ABC Company financial system',
-        customerId: customers[0].id,
-        taskId: tasks[0].id, // Linked to Task!
-        industry: 'Technology',
-        companySize: 'MEDIUM',
-        durationType: 'WEEKS',
-        durationWeeks: 24,
-        startDate: new Date('2025-10-01'),
-        workingDays: 5,
-        address: 'Business Bay, Dubai',
-        siteType: 'Office',
-        status: 'ACTIVE',
-        currentStage: 2,
-        totalStages: 7,
-        totalBudget: 100000, // Same as task budget
-        currency: 'SAR',
-      },
-    }),
-    prisma.plan.create({
-      data: {
-        name: 'Tax Compliance Plan',
-        description: 'Tax preparation and filing plan for XYZ Corp',
-        customerId: customers[1].id,
-        taskId: tasks[1].id, // Linked to Task!
-        industry: 'Finance',
-        companySize: 'LARGE',
-        durationType: 'WEEKS',
-        durationWeeks: 12,
-        startDate: new Date('2025-10-15'),
-        workingDays: 5,
-        status: 'ACTIVE',
-        currentStage: 2,
-        totalStages: 4,
-        totalBudget: 50000,
-        currency: 'SAR',
-      },
-    }),
-  ]);
-
-  console.log('✅ Plans created (linked to tasks):', plans.length);
-
-  // Create Milestones with Budget Allocation and Status
-  const milestones = await Promise.all([
-    // Plan 1 Milestones (Financial System Implementation)
-    prisma.milestone.create({
-      data: {
-        planId: plans[0].id,
-        sequence: 1,
-        name: 'Requirements Analysis',
-        description: 'Gather requirements and assess current state',
-        durationWeeks: 2,
-        budgetAllocation: 10, // 10% = SAR 10,000
-        deliverables: 'Requirements document, Gap analysis',
-        isCriticalPath: true,
-        status: 'COMPLETED',
-        startDate: new Date('2025-10-01'),
-        completedDate: new Date('2025-10-14'),
-        actualCost: 9500, // Actual cost
-      },
-    }),
-    prisma.milestone.create({
-      data: {
-        planId: plans[0].id,
-        sequence: 2,
-        name: 'System Design',
-        description: 'Design financial system architecture',
-        durationWeeks: 4,
-        budgetAllocation: 15, // 15% = SAR 15,000
-        deliverables: 'System design, Process flows',
-        isCriticalPath: true,
-        status: 'IN_PROGRESS',
-        startDate: new Date('2025-10-15'),
-        actualCost: 12000, // Partial cost so far
-      },
-    }),
-    prisma.milestone.create({
-      data: {
-        planId: plans[0].id,
-        sequence: 3,
-        name: 'Implementation',
-        description: 'Build and configure the system',
-        durationWeeks: 8,
-        budgetAllocation: 40, // 40% = SAR 40,000
-        deliverables: 'Configured system, Integration',
-        isCriticalPath: true,
-        status: 'PENDING',
-      },
-    }),
-    prisma.milestone.create({
-      data: {
-        planId: plans[0].id,
-        sequence: 4,
-        name: 'Testing & Training',
-        description: 'UAT and staff training',
-        durationWeeks: 6,
-        budgetAllocation: 20, // 20% = SAR 20,000
-        deliverables: 'Test reports, Training materials',
-        isCriticalPath: false,
-        status: 'PENDING',
-      },
-    }),
-    prisma.milestone.create({
-      data: {
-        planId: plans[0].id,
-        sequence: 5,
-        name: 'Go-Live & Support',
-        description: 'Launch and initial support',
-        durationWeeks: 4,
-        budgetAllocation: 15, // 15% = SAR 15,000
-        deliverables: 'Live system, Support documentation',
-        isCriticalPath: true,
-        status: 'PENDING',
-      },
-    }),
-    // Plan 2 Milestones (Tax Compliance)
-    prisma.milestone.create({
-      data: {
-        planId: plans[1].id,
-        sequence: 1,
-        name: 'Document Collection',
-        description: 'Gather all tax documents',
-        durationWeeks: 2,
-        budgetAllocation: 20, // 20% = SAR 10,000
-        deliverables: 'Complete document set',
-        isCriticalPath: true,
-        status: 'COMPLETED',
-        startDate: new Date('2025-10-15'),
-        completedDate: new Date('2025-10-28'),
-        actualCost: 9800,
-      },
-    }),
-    prisma.milestone.create({
-      data: {
-        planId: plans[1].id,
-        sequence: 2,
-        name: 'Tax Calculation',
-        description: 'Calculate tax obligations',
-        durationWeeks: 4,
-        budgetAllocation: 35, // 35% = SAR 17,500
-        deliverables: 'Tax calculations, Worksheets',
-        isCriticalPath: true,
-        status: 'IN_PROGRESS',
-        startDate: new Date('2025-10-29'),
-        actualCost: 8000, // Partial
-      },
-    }),
-    prisma.milestone.create({
-      data: {
-        planId: plans[1].id,
-        sequence: 3,
-        name: 'Filing Preparation',
-        description: 'Prepare tax returns',
-        durationWeeks: 3,
-        budgetAllocation: 25, // 25% = SAR 12,500
-        deliverables: 'Draft returns',
-        isCriticalPath: true,
-        status: 'PENDING',
-      },
-    }),
-    prisma.milestone.create({
-      data: {
-        planId: plans[1].id,
-        sequence: 4,
-        name: 'Submission & Follow-up',
-        description: 'Submit and track status',
-        durationWeeks: 3,
-        budgetAllocation: 20, // 20% = SAR 10,000
-        deliverables: 'Filed returns, Confirmation',
-        isCriticalPath: true,
-        status: 'PENDING',
-      },
-    }),
-  ]);
-
-  console.log('✅ Milestones created with status tracking:', milestones.length);
-
-  // Create task assignments
-  await Promise.all(
-    tasks.slice(0, 3).map((task) =>
-      prisma.taskAssignment.create({
+  // Create Service Plans with realistic distribution
+  let totalPlansCreated = 0;
+  const serviceTypes = ['BASIC_CFO', 'PREMIUM_CFO', 'ENTERPRISE_CFO', 'CONSULTING'];
+  
+  for (const customer of customers) {
+    // Determine number of plans based on how long ago the customer was created
+    let numPlans = 1; // At least 1 plan
+    if (customer.monthsAgo > 6) numPlans = 2; // Older customers get 2 plans
+    if (customer.monthsAgo > 9) numPlans = 3; // Very old customers get 3 plans
+    
+    for (let i = 0; i < numPlans; i++) {
+      const monthOffset = i * Math.floor(customer.monthsAgo / numPlans);
+      const createdDate = getDateMonthsAgo(monthOffset);
+      
+      // Determine status based on plan age
+      let status: 'ACTIVE' | 'INACTIVE' | 'COMPLETED' = 'ACTIVE';
+      if (monthOffset > 8) {
+        status = 'COMPLETED'; // Plans older than 8 months are completed
+      } else if (monthOffset < 1) {
+        status = 'INACTIVE'; // Recent plans are still inactive
+      }
+      
+      // Select service type based on company industry
+      let serviceType = serviceTypes[Math.floor(Math.random() * serviceTypes.length)];
+      
+      await prisma.servicePlan.create({
         data: {
-          taskId: task.id,
-          userId: adminUser.id,
-          status: 'ASSIGNED',
-          notes: 'Primary assignee',
+          name: `${customer.company} - ${status === 'COMPLETED' ? 'Completed' : status === 'INACTIVE' ? 'New' : 'Active'} Plan ${i + 1}`,
+          description: `CFO service plan for ${customer.company}`,
+          type: serviceType as any,
+          status: status as any,
+          price: 50000 + Math.floor(Math.random() * 150000),
+          currency: 'USD',
+          duration: 12, // 12 months
+          customerId: customer.id,
+          createdAt: createdDate,
+          updatedAt: createdDate,
         },
-      })
-    )
-  );
+      });
+      totalPlansCreated++;
+    }
+  }
 
-  console.log('✅ Task assignments created');
-
-  console.log('🎉 Database seed completed successfully!');
+  console.log(`✅ Created ${totalPlansCreated} service plans`);
+  console.log('');
+  console.log('📊 Summary:');
+  console.log(`   - Admin users: 1`);
+  console.log(`   - Partners: ${partners.length}`);
+  console.log(`   - Customers: ${customers.length}`);
+  console.log(`     • GCC: 15`);
+  console.log(`     • MENA: 12`);
+  console.log(`     • APAC: 13`);
+  console.log(`     • EU: 10`);
+  console.log(`   - Service Plans: ${totalPlansCreated}`);
+  console.log('');
+  console.log('✨ Database seed completed successfully!');
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error('❌ Error seeding database:', e);
     process.exit(1);
   })
   .finally(async () => {

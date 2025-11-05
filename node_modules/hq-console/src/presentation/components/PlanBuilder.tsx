@@ -8,7 +8,7 @@ const { Title, Paragraph, Text } = Typography;
 const { Step } = Steps;
 const { Option } = Select;
 
-type StageKey = 'basic' | 'milestones' | 'resources' | 'cfo' | 'services' | 'attachments' | 'review';
+type StageKey = 'basic' | 'erp' | 'kpis' | 'milestones' | 'governance' | 'pricing' | 'assignments' | 'review';
 
 interface BasicInfoForm {
   planName: string;
@@ -24,6 +24,28 @@ interface BasicInfoForm {
   accessRequirements?: string[];
 }
 
+interface ERPForm {
+  erpType: string;
+  erpStatus: string;
+  dataDomains: string[];
+  mappingHealth?: number;
+  lastSync?: string;
+}
+
+interface KPIItem {
+  id: string;
+  kpiCode: string;
+  kpiName: string;
+  targetValue: number;
+  thresholdGreen: number;
+  thresholdAmber: number;
+  thresholdRed: number;
+  weight: number;
+  calculationSource: string;
+  effectiveFrom: string;
+  effectiveTo?: string;
+}
+
 interface Milestone {
   id: string;
   sequence: number;
@@ -33,6 +55,40 @@ interface Milestone {
   deliverables: string;
   dependencies: string[];
   criticalPath: boolean;
+}
+
+interface GovernanceForm {
+  approvalMode: 'MODE_A' | 'MODE_B' | 'MODE_C';
+  notificationChannels: string[];
+  reportCadence: string;
+  slaResponseHours: number;
+  escalationEnabled: boolean;
+}
+
+interface PricingForm {
+  package: string;
+  addOns: string[];
+  basePrice: number;
+  totalPrice: number;
+  platformCommissionPct: number;
+  partnerCommissionPct: number;
+  payoutDelayDays: number;
+  refundPolicy: string;
+  contractStartDate: string;
+  contractEndDate: string;
+  paymentTerms: string;
+}
+
+interface AssignmentItem {
+  id: string;
+  type: string;
+  partnerId?: string;
+  partnerName?: string;
+  assignmentOwner: string;
+  slaHours: number;
+  dueDate: string;
+  priority: string;
+  notes?: string;
 }
 
 const industries = ['Retail','Technology','Healthcare','Finance','Hospitality','Government','Education'];
@@ -46,16 +102,99 @@ const workingDays = ['Saturday','Sunday','Monday','Tuesday','Wednesday','Thursda
 const siteTypes = ['Office','Retail','Warehouse','Residential','Mixed-Use'];
 const accessOptions = ['Security clearance','Timing restrictions','Parking'];
 
+// ERP Types
+const erpTypes = [
+  { value: 'NONE', label: 'No ERP / Manual Entry' },
+  { value: 'ODOO', label: 'Odoo' },
+  { value: 'SAP', label: 'SAP' },
+  { value: 'QUICKBOOKS', label: 'QuickBooks' },
+  { value: 'ZOHO', label: 'Zoho Books' },
+  { value: 'MANUAL', label: 'Manual/CSV Import' },
+];
+
+const dataDomainOptions = [
+  'AR (Accounts Receivable)',
+  'AP (Accounts Payable)',
+  'GL (General Ledger)',
+  'Sales',
+  'Inventory',
+  'Payroll',
+  'Assets',
+  'Banking',
+];
+
+// Sample KPI Catalog (first 20 from Master KPI Catalog)
+const kpiCatalog = [
+  { code: 'FIN.REV_GROWTH', name: 'Revenue Growth %', industry: 'Cross-Industry', dataSource: 'GL, Sales Ledger' },
+  { code: 'FIN.GM%', name: 'Gross Margin %', industry: 'Cross-Industry', dataSource: 'GL, COGS' },
+  { code: 'FIN.OP_MARGIN%', name: 'Operating Margin %', industry: 'Cross-Industry', dataSource: 'GL' },
+  { code: 'FIN.NET_MARGIN%', name: 'Net Profit Margin %', industry: 'Cross-Industry', dataSource: 'GL' },
+  { code: 'FIN.EBITDA_MARGIN%', name: 'EBITDA Margin %', industry: 'Cross-Industry', dataSource: 'GL' },
+  { code: 'WC.CCC', name: 'Cash Conversion Cycle (days)', industry: 'Cross-Industry', dataSource: 'AR, AP, Inventory' },
+  { code: 'WC.DSO', name: 'Days Sales Outstanding', industry: 'Cross-Industry', dataSource: 'AR' },
+  { code: 'WC.DPO', name: 'Days Payables Outstanding', industry: 'Cross-Industry', dataSource: 'AP, COGS' },
+  { code: 'WC.DIO', name: 'Days Inventory Outstanding', industry: 'Cross-Industry', dataSource: 'Inventory, COGS' },
+  { code: 'INV.TURN', name: 'Inventory Turnover (x)', industry: 'Cross-Industry', dataSource: 'Inventory, COGS' },
+  { code: 'FIN.CURRENT_RATIO', name: 'Current Ratio', industry: 'Cross-Industry', dataSource: 'Balance Sheet' },
+  { code: 'FIN.QUICK_RATIO', name: 'Quick Ratio', industry: 'Cross-Industry', dataSource: 'Balance Sheet' },
+  { code: 'FIN.ROA%', name: 'Return on Assets %', industry: 'Cross-Industry', dataSource: 'GL, Balance Sheet' },
+  { code: 'FIN.ROE%', name: 'Return on Equity %', industry: 'Cross-Industry', dataSource: 'GL, Balance Sheet' },
+  { code: 'AR.AGING_90+%', name: 'AR >90 Days %', industry: 'Cross-Industry', dataSource: 'AR Aging' },
+  { code: 'RTL.SSS_GROWTH%', name: 'Same-Store Sales Growth %', industry: 'Retail', dataSource: 'POS' },
+  { code: 'RTL.AOV', name: 'Average Order Value', industry: 'Retail', dataSource: 'POS, eCom' },
+  { code: 'RTL.CONV_RATE%', name: 'Conversion Rate %', industry: 'Retail', dataSource: 'Web Analytics, POS' },
+  { code: 'MFG.OEE', name: 'Overall Equipment Effectiveness', industry: 'Manufacturing', dataSource: 'MES, Production' },
+  { code: 'CS.NPS', name: 'Net Promoter Score', industry: 'Cross-Industry', dataSource: 'Surveys' },
+];
+
+const packageOptions = [
+  { value: 'BASIC', label: 'Basic Package', price: 5000 },
+  { value: 'STANDARD', label: 'Standard Package', price: 10000 },
+  { value: 'PREMIUM', label: 'Premium Package', price: 20000 },
+  { value: 'CUSTOM', label: 'Custom Package', price: 0 },
+];
+
+const addOnOptions = [
+  { value: 'EXTRA_USERS', label: 'Extra Users (+5)', price: 1000 },
+  { value: 'ADVANCED_REPORTING', label: 'Advanced Reporting', price: 2000 },
+  { value: 'API_ACCESS', label: 'API Access', price: 1500 },
+  { value: 'DEDICATED_SUPPORT', label: 'Dedicated Support', price: 3000 },
+  { value: 'TRAINING_PACKAGE', label: 'Training Package', price: 2500 },
+];
+
 const DRAFT_KEY = 'planBuilderDraft';
 
 const PlanBuilder: React.FC = () => {
   const { modal } = App.useApp();
   const [current, setCurrent] = useState<number>(0);
+  
+  // Forms for each stage
   const [basicForm] = Form.useForm<BasicInfoForm>();
+  const [erpForm] = Form.useForm<ERPForm>();
+  const [governanceForm] = Form.useForm<GovernanceForm>();
+  const [pricingForm] = Form.useForm<PricingForm>();
+  
+  // Stage-specific state
   const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const [kpis, setKPIs] = useState<KPIItem[]>([]);
+  const [assignments, setAssignments] = useState<AssignmentItem[]>([]);
+  const [selectedPackage, setSelectedPackage] = useState<string>('');
+  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
+  
+  // Modal states
   const [milestoneForm] = Form.useForm();
   const [editingMilestone, setEditingMilestone] = useState<Milestone | null>(null);
   const [milestoneModalVisible, setMilestoneModalVisible] = useState(false);
+  
+  const [kpiForm] = Form.useForm();
+  const [editingKPI, setEditingKPI] = useState<KPIItem | null>(null);
+  const [kpiModalVisible, setKPIModalVisible] = useState(false);
+  
+  const [assignmentForm] = Form.useForm();
+  const [editingAssignment, setEditingAssignment] = useState<AssignmentItem | null>(null);
+  const [assignmentModalVisible, setAssignmentModalVisible] = useState(false);
+  
+  // General state
   const [submitting, setSubmitting] = useState(false);
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
@@ -229,8 +368,14 @@ const PlanBuilder: React.FC = () => {
   }, [basicForm, milestones, current, draftLoaded]);
 
   const stages: { key: StageKey; title: string }[] = useMemo(() => ([
-    { key: 'basic', title: 'Basic Information' },
-    { key: 'milestones', title: 'Milestones' },
+    { key: 'basic', title: 'Client & Scope' },
+    { key: 'erp', title: 'Baseline & Data Sources' },
+    { key: 'kpis', title: 'KPIs & Targets' },
+    { key: 'milestones', title: 'Milestones & Timeline' },
+    { key: 'governance', title: 'Workflow & Governance' },
+    { key: 'pricing', title: 'Pricing & Commercials' },
+    { key: 'assignments', title: 'Assignments & Partners' },
+    { key: 'review', title: 'Review & Approval' },
   ]), []);
 
   const clamped = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
@@ -240,7 +385,22 @@ const PlanBuilder: React.FC = () => {
     return milestones.reduce((sum, m) => sum + m.budgetPercent, 0);
   }, [milestones]);
 
+  const totalKPIWeight = useMemo(() => {
+    return kpis.reduce((sum, k) => sum + k.weight, 0);
+  }, [kpis]);
+
+  const totalPrice = useMemo(() => {
+    const basePackage = packageOptions.find(p => p.value === selectedPackage);
+    const basePrice = basePackage?.price || 0;
+    const addOnsPrice = selectedAddOns.reduce((sum, addOnValue) => {
+      const addOn = addOnOptions.find(a => a.value === addOnValue);
+      return sum + (addOn?.price || 0);
+    }, 0);
+    return basePrice + addOnsPrice;
+  }, [selectedPackage, selectedAddOns]);
+
   const next = async () => {
+    // Stage 1: Basic Information validation
     if (stages[safeCurrent]?.key === 'basic') {
       try {
         await basicForm.validateFields();
@@ -249,6 +409,29 @@ const PlanBuilder: React.FC = () => {
         return;
       }
     }
+    
+    // Stage 2: ERP validation (optional but if filled, check completion)
+    if (stages[safeCurrent]?.key === 'erp') {
+      const erpValues = erpForm.getFieldsValue();
+      if (erpValues.erpType && erpValues.erpType !== 'NONE' && (!erpValues.dataDomains || erpValues.dataDomains.length === 0)) {
+        message.error('Please select at least one data domain for ERP integration');
+        return;
+      }
+    }
+    
+    // Stage 3: KPIs validation
+    if (stages[safeCurrent]?.key === 'kpis') {
+      if (kpis.length === 0) {
+        message.error('Please add at least one KPI to track');
+        return;
+      }
+      if (Math.abs(totalKPIWeight - 100) > 0.01) {
+        message.error(`KPI weights must total 100% (currently ${totalKPIWeight.toFixed(1)}%)`);
+        return;
+      }
+    }
+    
+    // Stage 4: Milestones validation
     if (stages[safeCurrent]?.key === 'milestones') {
       if (milestones.length === 0) {
         message.error('Please add at least one milestone');
@@ -259,6 +442,39 @@ const PlanBuilder: React.FC = () => {
         return;
       }
     }
+    
+    // Stage 5: Governance validation
+    if (stages[safeCurrent]?.key === 'governance') {
+      try {
+        await governanceForm.validateFields();
+      } catch {
+        message.error('Please complete governance settings');
+        return;
+      }
+    }
+    
+    // Stage 6: Pricing validation
+    if (stages[safeCurrent]?.key === 'pricing') {
+      try {
+        await pricingForm.validateFields();
+      } catch {
+        message.error('Please complete pricing details');
+        return;
+      }
+      if (!selectedPackage) {
+        message.error('Please select a package');
+        return;
+      }
+    }
+    
+    // Stage 7: Assignments validation
+    if (stages[safeCurrent]?.key === 'assignments') {
+      if (assignments.length === 0) {
+        message.warning('No assignments created. You can add them later.');
+        // Allow proceeding without assignments
+      }
+    }
+    
     setCurrent((c) => Math.min(c + 1, stages.length - 1));
   };
 
@@ -299,6 +515,110 @@ const PlanBuilder: React.FC = () => {
   const deleteMilestone = (id: string) => {
     setMilestones(prev => prev.filter(m => m.id !== id));
     message.success('Milestone deleted');
+  };
+
+  // KPI Modal Handlers
+  const openKPIModal = (kpi?: KPIItem) => {
+    if (kpi) {
+      setEditingKPI(kpi);
+      kpiForm.setFieldsValue(kpi);
+    } else {
+      setEditingKPI(null);
+      kpiForm.resetFields();
+      kpiForm.setFieldsValue({ 
+        thresholdGreen: 90, 
+        thresholdAmber: 70, 
+        thresholdRed: 50,
+        weight: 0,
+        effectiveFrom: new Date().toISOString().split('T')[0]
+      });
+    }
+    setKPIModalVisible(true);
+  };
+
+  const saveKPI = async () => {
+    try {
+      const values = await kpiForm.validateFields();
+      if (editingKPI) {
+        setKPIs(prev => prev.map(k => k.id === editingKPI.id ? { ...editingKPI, ...values } : k));
+        message.success('KPI updated');
+      } else {
+        const newKPI: KPIItem = {
+          id: Date.now().toString(),
+          ...values,
+        };
+        setKPIs(prev => [...prev, newKPI]);
+        message.success('KPI added');
+      }
+      setKPIModalVisible(false);
+    } catch (err) {
+      message.error('Please complete all required fields');
+    }
+  };
+
+  const deleteKPI = (id: string) => {
+    setKPIs(prev => prev.filter(k => k.id !== id));
+    message.success('KPI deleted');
+  };
+
+  const addKPIFromCatalog = (catalogKPI: typeof kpiCatalog[0]) => {
+    const newKPI: KPIItem = {
+      id: Date.now().toString(),
+      kpiCode: catalogKPI.code,
+      kpiName: catalogKPI.name,
+      targetValue: 0,
+      thresholdGreen: 90,
+      thresholdAmber: 70,
+      thresholdRed: 50,
+      weight: 0,
+      calculationSource: catalogKPI.dataSource,
+      effectiveFrom: new Date().toISOString().split('T')[0],
+    };
+    setKPIs(prev => [...prev, newKPI]);
+    message.success(`Added ${catalogKPI.name} to KPIs`);
+  };
+
+  // Assignment Modal Handlers
+  const openAssignmentModal = (assignment?: AssignmentItem) => {
+    if (assignment) {
+      setEditingAssignment(assignment);
+      assignmentForm.setFieldsValue(assignment);
+    } else {
+      setEditingAssignment(null);
+      assignmentForm.resetFields();
+      assignmentForm.setFieldsValue({ 
+        type: 'SETUP',
+        slaHours: 24,
+        priority: 'MEDIUM',
+        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      });
+    }
+    setAssignmentModalVisible(true);
+  };
+
+  const saveAssignment = async () => {
+    try {
+      const values = await assignmentForm.validateFields();
+      if (editingAssignment) {
+        setAssignments(prev => prev.map(a => a.id === editingAssignment.id ? { ...editingAssignment, ...values } : a));
+        message.success('Assignment updated');
+      } else {
+        const newAssignment: AssignmentItem = {
+          id: Date.now().toString(),
+          ...values,
+        };
+        setAssignments(prev => [...prev, newAssignment]);
+        message.success('Assignment created');
+      }
+      setAssignmentModalVisible(false);
+    } catch (err) {
+      message.error('Please complete all required fields');
+    }
+  };
+
+  const deleteAssignment = (id: string) => {
+    setAssignments(prev => prev.filter(a => a.id !== id));
+    message.success('Assignment deleted');
   };
 
   const handleSubmit = async () => {
@@ -570,6 +890,173 @@ const PlanBuilder: React.FC = () => {
             </Form.Item>
           </Space>
         </Form>
+      )}
+
+      {/* Stage 2: ERP & Data Sources */}
+      {stages[safeCurrent]?.key === 'erp' && (
+        <Form form={erpForm} layout="vertical" initialValues={{ erpType: 'NONE', dataDomains: [], mappingHealth: 0 }}>
+          <Title level={4}>Baseline & Data Sources</Title>
+          <Paragraph type="secondary">
+            Connect your ERP system to automatically sync financial data, or choose manual entry for complete control.
+          </Paragraph>
+
+          <Form.Item name="erpType" label="ERP System" rules={[{ required: true }]}>
+            <Select style={{ width: '100%' }} options={erpTypes} onChange={(value) => {
+              if (value === 'NONE' || value === 'MANUAL') {
+                erpForm.setFieldsValue({ dataDomains: [], mappingHealth: 0 });
+              }
+            }} />
+          </Form.Item>
+
+          <Form.Item shouldUpdate={(prevValues, currentValues) => prevValues.erpType !== currentValues.erpType} noStyle>
+            {() => {
+              const erpType = erpForm.getFieldValue('erpType');
+              return erpType && erpType !== 'NONE' ? (
+                <>
+                  <Form.Item name="erpStatus" label="Connection Status">
+                    <Select style={{ width: '100%' }}>
+                      <Option value="NOT_CONNECTED">Not Connected</Option>
+                      <Option value="CONNECTING">Connecting...</Option>
+                      <Option value="CONNECTED">Connected</Option>
+                      <Option value="ERROR">Connection Error</Option>
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item name="dataDomains" label="Data Domains to Sync" rules={[{ required: true, message: 'Select at least one data domain' }]}>
+                    <Select mode="multiple" style={{ width: '100%' }} placeholder="Select data domains">
+                      {dataDomainOptions.map(d => <Option key={d} value={d}>{d}</Option>)}
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item name="mappingHealth" label="Field Mapping Health %">
+                    <InputNumber min={0} max={100} style={{ width: '100%' }} addonAfter="%" placeholder="0-100" />
+                  </Form.Item>
+
+                  <Form.Item name="lastSync" label="Last Sync">
+                    <DatePicker showTime style={{ width: '100%' }} />
+                  </Form.Item>
+
+                  <Space size="middle" style={{ marginTop: 16 }}>
+                    <Button type="primary" icon={<PlusOutlined />}>Connect ERP</Button>
+                    <Button icon={<ReloadOutlined />}>Test Sync</Button>
+                    <Button>Import CSV</Button>
+                  </Space>
+                </>
+              ) : null;
+            }}
+          </Form.Item>
+
+          <Card size="small" style={{ marginTop: 24, backgroundColor: '#f0f5ff' }}>
+            <Paragraph>
+              <strong>💡 ERP Integration Benefits:</strong>
+              <ul style={{ marginTop: 8, marginBottom: 0 }}>
+                <li>Automatic data sync - no manual entry</li>
+                <li>Real-time KPI tracking</li>
+                <li>Reduced errors and discrepancies</li>
+                <li>Historical data analysis</li>
+              </ul>
+            </Paragraph>
+          </Card>
+        </Form>
+      )}
+
+      {/* Stage 3: KPIs & Targets */}
+      {stages[safeCurrent]?.key === 'kpis' && (
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div>
+              <Title level={4} style={{ margin: 0 }}>KPIs & Targets</Title>
+              <Text type="secondary">Select and configure key performance indicators to track plan success</Text>
+            </div>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => openKPIModal()}>Add Custom KPI</Button>
+          </div>
+
+          {/* KPI Weight Summary */}
+          {kpis.length > 0 && (
+            <Card 
+              size="small" 
+              style={{ 
+                marginBottom: 16, 
+                backgroundColor: totalKPIWeight === 100 ? '#f6ffed' : '#fff2e8',
+                border: totalKPIWeight === 100 ? '1px solid #b7eb8f' : '1px solid #ffbb96'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text strong>Total KPI Weight: {totalKPIWeight.toFixed(1)}%</Text>
+                {totalKPIWeight === 100 ? (
+                  <Tag color="success">✓ Weights Complete</Tag>
+                ) : (
+                  <Tag color="warning">{totalKPIWeight < 100 ? `${(100 - totalKPIWeight).toFixed(1)}% remaining` : `${(totalKPIWeight - 100).toFixed(1)}% over weight`}</Tag>
+                )}
+              </div>
+              <Progress percent={Math.min(totalKPIWeight, 100)} status={totalKPIWeight === 100 ? 'success' : totalKPIWeight > 100 ? 'exception' : 'active'} style={{ marginTop: 8 }} />
+              {totalKPIWeight !== 100 && (
+                <Text type="warning" style={{ fontSize: 12, display: 'block', marginTop: 8 }}>
+                  ⚠️ KPI weights must total exactly 100% to proceed
+                </Text>
+              )}
+            </Card>
+          )}
+
+          {/* KPI Catalog */}
+          {kpis.length === 0 && (
+            <Card title="📊 KPI Catalog - Select from Standard KPIs" size="small" style={{ marginBottom: 16 }}>
+              <Row gutter={[8, 8]}>
+                {kpiCatalog.slice(0, 10).map(kpi => (
+                  <Col span={12} key={kpi.code}>
+                    <Card size="small" hoverable onClick={() => addKPIFromCatalog(kpi)} style={{ cursor: 'pointer' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <Text strong>{kpi.name}</Text>
+                          <br />
+                          <Text type="secondary" style={{ fontSize: 12 }}>{kpi.code}</Text>
+                          <br />
+                          <Tag color="blue" style={{ marginTop: 4 }}>{kpi.industry}</Tag>
+                        </div>
+                        <PlusOutlined style={{ fontSize: 18, color: '#1890ff' }} />
+                      </div>
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+              <Paragraph type="secondary" style={{ marginTop: 16, marginBottom: 0 }}>
+                Click any KPI to add it to your plan. You can customize targets and thresholds after adding.
+              </Paragraph>
+            </Card>
+          )}
+
+          {/* Selected KPIs Table */}
+          {kpis.length > 0 && (
+            <Table
+              dataSource={kpis}
+              rowKey="id"
+              pagination={false}
+              size="small"
+              scroll={{ x: 'max-content' }}
+              columns={[
+                { title: 'KPI Code', dataIndex: 'kpiCode', key: 'kpiCode', width: 120 },
+                { title: 'KPI Name', dataIndex: 'kpiName', key: 'kpiName', width: 200 },
+                { title: 'Target', dataIndex: 'targetValue', key: 'targetValue', width: 100 },
+                { title: 'Green ≥', dataIndex: 'thresholdGreen', key: 'thresholdGreen', width: 80 },
+                { title: 'Amber ≥', dataIndex: 'thresholdAmber', key: 'thresholdAmber', width: 80 },
+                { title: 'Red <', dataIndex: 'thresholdRed', key: 'thresholdRed', width: 80 },
+                { title: 'Weight %', dataIndex: 'weight', key: 'weight', width: 90, render: (v: number) => `${v}%` },
+                { title: 'Actions', key: 'actions', width: 120, fixed: 'right' as const, render: (_: any, record: KPIItem) => (
+                  <Space>
+                    <Button size="small" icon={<EditOutlined />} onClick={() => openKPIModal(record)} />
+                    <Button size="small" danger icon={<DeleteOutlined />} onClick={() => deleteKPI(record.id)} />
+                  </Space>
+                )},
+              ]}
+            />
+          )}
+
+          {kpis.length === 0 && (
+            <Card size="small" style={{ textAlign: 'center', padding: '40px 0' }}>
+              <Paragraph type="secondary">No KPIs added yet. Select from the catalog above or add a custom KPI.</Paragraph>
+            </Card>
+          )}
+        </div>
       )}
 
       {stages[safeCurrent]?.key === 'milestones' && (
