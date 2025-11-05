@@ -94,55 +94,13 @@ export async function GET(request: NextRequest) {
     
     const formattedData = Array.from(periodMap.values());
     
-    // If no data, return mock data for demo
-    if (formattedData.length === 0) {
-      return NextResponse.json(generateMockPlansTrend(period));
-    }
-    
+    // Return empty array if no data
     return NextResponse.json(formattedData);
   } catch (error) {
     console.error('Error fetching plans trend:', error);
     
-    // Return mock data on error for demo
-    return NextResponse.json(generateMockPlansTrend('monthly'));
+    // Return empty array on error
+    return NextResponse.json([]);
   }
-}
-
-// Generate mock data for demonstration
-function generateMockPlansTrend(period: string) {
-  const periods = [];
-  const currentDate = new Date();
-  const numberOfPeriods = period === 'quarterly' ? 4 : 12;
-  
-  // Base numbers that grow over time
-  const baseInitiated = [8, 10, 12, 15, 14, 18, 20, 22, 25, 24, 28, 30];
-  const conversionRates = [0.5, 0.55, 0.6, 0.65, 0.7, 0.68, 0.72, 0.75, 0.73, 0.77, 0.8, 0.78];
-  
-  for (let i = numberOfPeriods - 1; i >= 0; i--) {
-    let date: Date;
-    let dataIndex: number;
-    
-    if (period === 'quarterly') {
-      const quarter = Math.floor(currentDate.getMonth() / 3) - i;
-      date = new Date(currentDate.getFullYear(), quarter * 3, 1);
-      dataIndex = i * 3; // Use data from corresponding months
-    } else {
-      date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
-      dataIndex = numberOfPeriods - 1 - i;
-    }
-    
-    const initiated = baseInitiated[dataIndex] || 15;
-    const conversionRate = conversionRates[dataIndex] || 0.65;
-    const closed = Math.round(initiated * conversionRate);
-    
-    periods.push({
-      period: date.toISOString(),
-      initiated,
-      closed,
-      conversionRate: Math.round(conversionRate * 100)
-    });
-  }
-  
-  return periods;
 }
 

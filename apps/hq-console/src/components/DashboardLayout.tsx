@@ -190,6 +190,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         },
       ],
     },
+    ...(canAccessPage('customers') ? [{
+      key: 'customers',
+      icon: <UserOutlined style={{ fontSize: 18 }} />,
+      label: (
+        <span style={{ fontWeight: 500, fontSize: 15 }}>
+          Customers
+        </span>
+      ),
+    }] : []),
     ...(canAccessPage('partners') ? [{
       key: 'partners',
       icon: <TeamOutlined style={{ fontSize: 18 }} />,
@@ -199,12 +208,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         </span>
       ),
     }] : []),
-    // Temporarily commented out until routes are created
-    // ...(canAccessPage('customers') ? [{
-    //   key: 'customers',
-    //   icon: <TeamOutlined />,
-    //   label: t('navigation.customers'),
-    // }] : []),
     // ...(canAccessPage('contracts') ? [{
     //   key: 'contracts',
     //   icon: <FileTextOutlined />,
@@ -220,9 +223,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const handleMenuClick = ({ key }: { key: string }) => {
     setSelectedKey(key);
     
-    // Navigation logic
+    // Navigation logic (middleware disabled, no locale prefixes)
     if (key === 'dashboard') {
       window.location.href = '/';
+    } else if (key === 'customers') {
+      window.location.href = '/customers';
     } else if (key === 'plans/list') {
       window.location.href = '/plans';
     } else if (key === 'plans/new') {
