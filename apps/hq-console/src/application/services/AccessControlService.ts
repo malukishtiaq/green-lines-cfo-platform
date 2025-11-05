@@ -80,6 +80,10 @@ export class AccessControlService {
       Permission.READ_SERVICE_PLANS,
       Permission.UPDATE_SERVICE_PLANS,
       Permission.DELETE_SERVICE_PLANS,
+      Permission.CREATE_PARTNERS,
+      Permission.READ_PARTNERS,
+      Permission.UPDATE_PARTNERS,
+      Permission.DELETE_PARTNERS,
       Permission.READ_REPORTS,
       Permission.EXPORT_REPORTS,
       Permission.READ_PROFILE,
@@ -159,6 +163,7 @@ export class AccessControlService {
     const pagePermissions: Record<string, Permission[]> = {
       'dashboard': [Permission.READ_TASKS],
       'customers': [Permission.READ_CUSTOMERS],
+      'partners': [Permission.READ_PARTNERS],
       'service-plans': [Permission.READ_SERVICE_PLANS],
       'tasks': [Permission.READ_TASKS],
       'settings': [Permission.READ_SETTINGS],
