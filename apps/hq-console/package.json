@@ -24,6 +24,8 @@
     "antd": "^5.27.5",
     "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.3",
     "next": "15.5.5",
     "next-auth": "^4.24.11",
     "next-intl": "^4.3.12",

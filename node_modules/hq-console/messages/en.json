@@ -382,5 +382,38 @@
     "thisQuarter": "This Quarter",
     "thisMonth": "This Month",
     "customRange": "Custom Range"
+  },
+  "dashboard": {
+    "filters": {
+      "dateRange": "Date Range",
+      "region": "Region / Country",
+      "industry": "Industry",
+      "partnerTier": "Partner Tier",
+      "planType": "Plan Type",
+      "status": "Status",
+      "clearAll": "Clear All Filters",
+      "thisMonth": "This Month",
+      "qtd": "QTD",
+      "ytd": "YTD",
+      "allTime": "All Time",
+      "custom": "Custom"
+    },
+    "actions": {
+      "createPlan": "Create Plan",
+      "invitePartner": "Invite Partner",
+      "exportDashboard": "Export Dashboard",
+      "exportPDF": "Export as PDF",
+      "exportPNG": "Export as PNG",
+      "refresh": "Refresh"
+    },
+    "charts": {
+      "clientsByRegion": "Clients by Region",
+      "plansTrend": "Plans Trend: Total vs Closed",
+      "conversionRate": "Conversion Rate",
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "barView": "Bar View",
+      "mapView": "Map View"
+    }
   }
 }

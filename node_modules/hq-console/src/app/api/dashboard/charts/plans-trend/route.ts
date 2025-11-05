@@ -6,6 +6,40 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const period = searchParams.get('period') || 'monthly'; // monthly or quarterly
+    const selectedRegion = searchParams.get('region');
+    const industry = searchParams.get('industry');
+    const planType = searchParams.get('planType');
+    const status = searchParams.get('status');
+    
+    // Map regions to countries
+    const regionToCountries: { [key: string]: string[] } = {
+      'GCC': ['UAE', 'Saudi Arabia', 'Kuwait', 'Qatar', 'Bahrain', 'Oman'],
+      'MENA': ['Egypt', 'Jordan', 'Lebanon', 'Morocco', 'Tunisia', 'Algeria', 'Iraq', 'Yemen'],
+      'APAC': ['India', 'Pakistan', 'Bangladesh', 'Philippines', 'Singapore', 'Malaysia', 'Indonesia', 'Thailand', 'Vietnam', 'China', 'Japan', 'South Korea', 'Australia'],
+      'EU': ['United Kingdom', 'Germany', 'France', 'Italy', 'Spain', 'Netherlands', 'Poland', 'Belgium', 'Sweden', 'Austria']
+    };
+    
+    // Build where clause for filters
+    const whereClause: any = {
+      createdAt: { gte: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000) } // Last 12 months
+    };
+    
+    if (planType) {
+      whereClause.type = planType;
+    }
+    
+    if (selectedRegion && regionToCountries[selectedRegion]) {
+      whereClause.customer = {
+        country: { in: regionToCountries[selectedRegion] }
+      };
+      if (industry) {
+        whereClause.customer.industry = industry;
+      }
+    } else if (industry) {
+      whereClause.customer = {
+        industry
+      };
+    }
     
     // Get plans initiated and closed over time
     // Group by month or quarter

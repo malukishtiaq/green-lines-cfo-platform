@@ -382,5 +382,38 @@
     "thisQuarter": "هذا الربع",
     "thisMonth": "هذا الشهر",
     "customRange": "نطاق مخصص"
+  },
+  "dashboard": {
+    "filters": {
+      "dateRange": "نطاق التاريخ",
+      "region": "المنطقة / الدولة",
+      "industry": "الصناعة",
+      "partnerTier": "مستوى الشريك",
+      "planType": "نوع الخطة",
+      "status": "الحالة",
+      "clearAll": "مسح جميع الفلاتر",
+      "thisMonth": "هذا الشهر",
+      "qtd": "ربع السنة الحالي",
+      "ytd": "العام الحالي",
+      "allTime": "كل الأوقات",
+      "custom": "مخصص"
+    },
+    "actions": {
+      "createPlan": "إنشاء خطة",
+      "invitePartner": "دعوة شريك",
+      "exportDashboard": "تصدير لوحة المعلومات",
+      "exportPDF": "تصدير كـ PDF",
+      "exportPNG": "تصدير كـ PNG",
+      "refresh": "تحديث"
+    },
+    "charts": {
+      "clientsByRegion": "العملاء حسب المنطقة",
+      "plansTrend": "اتجاه الخطط: الإجمالي مقابل المغلق",
+      "conversionRate": "معدل التحويل",
+      "monthly": "شهري",
+      "quarterly": "ربع سنوي",
+      "barView": "عرض الأعمدة",
+      "mapView": "عرض الخريطة"
+    }
   }
 }

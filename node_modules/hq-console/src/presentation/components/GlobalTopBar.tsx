@@ -65,11 +65,23 @@ interface UserPreference {
 }
 
 export default function GlobalTopBar() {
-  const t = useTranslations('globalControls');
-  const tCommon = useTranslations('common');
-  const locale = useLocale();
+  // Safely use translations with fallback
+  let t: any, tCommon: any, locale: string, isRTL: boolean;
+  try {
+    t = useTranslations('globalControls');
+    tCommon = useTranslations('common');
+    locale = useLocale();
+    isRTL = locale === 'ar';
+  } catch (error) {
+    // Fallback if context is not available
+    console.warn('i18n context not available, using fallbacks');
+    t = (key: string) => key;
+    tCommon = (key: string) => key;
+    locale = 'en';
+    isRTL = false;
+  }
+  
   const router = useRouter();
-  const isRTL = locale === 'ar';
 
   // State
   const [searchQuery, setSearchQuery] = useState('');
@@ -349,7 +361,7 @@ export default function GlobalTopBar() {
             // Handle date range picker
           }}
         >
-          {preferences.defaultDateRange.replace('_', ' ')}
+          {preferences.defaultDateRange?.replace('_', ' ') || 'Date Range'}
         </Button>
       </Tooltip>
 

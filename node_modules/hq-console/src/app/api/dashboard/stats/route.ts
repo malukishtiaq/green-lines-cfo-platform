@@ -67,6 +67,12 @@ export async function GET(request: NextRequest) {
     if (Object.keys(customerWhereClause).length > 0) {
       planWhereClause.customer = customerWhereClause;
     }
+    if (planType) {
+      planWhereClause.type = planType;
+    }
+    if (status) {
+      planWhereClause.status = status;
+    }
 
     // Get dashboard stats according to spec
     console.log('Executing Prisma queries...');

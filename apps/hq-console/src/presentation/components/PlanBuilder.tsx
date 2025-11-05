@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
-import { Card, Steps, Button, Form, Input, Select, DatePicker, Space, Typography, message, Table, InputNumber, Checkbox, Modal, Tag, Progress, Tooltip, App } from 'antd';
+import React, { useMemo, useState, useEffect } from 'react';
+import { Card, Steps, Button, Form, Input, Select, DatePicker, Space, Typography, message, Table, InputNumber, Checkbox, Modal, Tag, Progress, Tooltip, App, Row, Col, Divider } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, SaveOutlined, DeleteFilled } from '@ant-design/icons';
 
 const { Title, Paragraph, Text } = Typography;
@@ -13,6 +13,26 @@ type StageKey = 'basic' | 'erp' | 'kpis' | 'milestones' | 'governance' | 'pricin
 interface BasicInfoForm {
   planName: string;
   description?: string;
+  clientId?: string; // Lookup to Customer
+  branchQty: number;
+  planPeriod: {
+    durationType: 'FIXED' | 'QUARTER';
+    startDate?: string;
+    endDate?: string;
+    quarter?: string;
+  };
+  session: {
+    frequency: 'WEEKLY' | 'MONTHLY';
+    meetingHoursPerMonth: number;
+    presentMode: 'ONLINE' | 'VISIT';
+  };
+  planType: 'RIGHT_TRACK' | 'PERFORMANCE_MONITORING';
+  objectives: string;
+  users: Array<{
+    id: string;
+    name: string;
+    phone: string;
+  }>;
   industry: string;
   companySize: 'STARTUP' | 'SME' | 'ENTERPRISE';
   durationType: 'FIXED' | 'ONGOING';
@@ -55,6 +75,13 @@ interface Milestone {
   deliverables: string;
   dependencies: string[];
   criticalPath: boolean;
+  // New fields from spec
+  partnerAssigned?: string; // Partner type: ERP, Accounting, Stock count, etc.
+  dateFrom?: string;
+  dateTo?: string;
+  dashboardTitle?: string;
+  dueDate?: string;
+  owner: 'HQ' | 'PARTNER' | 'CLIENT';
 }
 
 interface GovernanceForm {
@@ -180,6 +207,16 @@ const PlanBuilder: React.FC = () => {
   const [assignments, setAssignments] = useState<AssignmentItem[]>([]);
   const [selectedPackage, setSelectedPackage] = useState<string>('');
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
+  const [users, setUsers] = useState<Array<{ id: string; name: string; phone: string }>>([]);
+  
+  // Clients state (TODO: Replace with actual API call when CRM is implemented)
+  const [clients, setClients] = useState<Array<{ id: string; name: string; industry?: string }>>([
+    { id: 'client1', name: 'ABC Company', industry: 'Manufacturing' },
+    { id: 'client2', name: 'XYZ Corporation', industry: 'Retail' },
+    { id: 'client3', name: 'Tech Solutions Inc', industry: 'Technology' },
+    { id: 'client4', name: 'Green Lines Trading', industry: 'Trading' },
+    { id: 'client5', name: 'Al Salam Group', industry: 'Real Estate' },
+  ]);
   
   // Modal states
   const [milestoneForm] = Form.useForm();
@@ -832,63 +869,181 @@ const PlanBuilder: React.FC = () => {
       </Steps>
 
       {stages[safeCurrent]?.key === 'basic' && (
-        <Form form={basicForm} layout="vertical" initialValues={{ durationType: 'FIXED', workingDays: [], accessRequirements: [] }}>
-          <Title level={4}>Plan Identity</Title>
-          <Form.Item name="planName" label="Plan Name" rules={[{ required: true, message: 'Required' }]}>
-            <Input maxLength={120} showCount />
+        <Form form={basicForm} layout="vertical" initialValues={{ 
+          planType: 'RIGHT_TRACK',
+          'planPeriod.durationType': 'FIXED',
+          'session.frequency': 'MONTHLY',
+          'session.presentMode': 'ONLINE',
+          branchQty: 1,
+          users: []
+        }}>
+          <Title level={4}>Client & Scope</Title>
+          
+          {/* Client Selection */}
+          <Row gutter={[16, 16]}>
+            <Col span={12}>
+              <Form.Item name="clientId" label="Client" rules={[{ required: true, message: 'Please select a client' }]}>
+                <Select 
+                  showSearch
+                  placeholder="Select a client"
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                  }
+                  options={clients.map(client => ({
+                    value: client.id,
+                    label: `${client.name}${client.industry ? ` (${client.industry})` : ''}`,
+                  }))}
+                />
+              </Form.Item>
+            </Col>
+            
+            <Col span={12}>
+              <Form.Item name="branchQty" label="Branch Quantity" rules={[{ required: true }]}>
+                <InputNumber min={1} max={1000} style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          {/* Plan Type */}
+          <Form.Item name="planType" label="Plan Type" rules={[{ required: true }]}>
+            <Select style={{ width: '100%' }}>
+              <Option value="RIGHT_TRACK">Right Track</Option>
+              <Option value="PERFORMANCE_MONITORING">Performance Monitoring</Option>
+            </Select>
           </Form.Item>
-          <Form.Item name="description" label="Description" rules={[{ max: 500 }] }>
-            <Input.TextArea rows={3} maxLength={500} showCount />
-          </Form.Item>
-          <Space size="large" wrap>
-            <Form.Item name="industry" label="Client Industry" rules={[{ required: true }]}>
-              <Select style={{ minWidth: 220 }}>
-                {industries.map(x => <Option key={x} value={x}>{x}</Option>)}
+
+          {/* Plan Period */}
+          <Card size="small" title="Plan Period" style={{ marginBottom: 16 }}>
+            <Form.Item name={['planPeriod', 'durationType']} label="Duration Type" rules={[{ required: true }]}>
+              <Select style={{ width: '100%' }}>
+                <Option value="FIXED">Fixed (Start & End Date)</Option>
+                <Option value="QUARTER">By Quarter</Option>
               </Select>
             </Form.Item>
-            <Form.Item name="companySize" label="Company Size" rules={[{ required: true }]}>
-              <Select style={{ minWidth: 220 }} options={companySizes} />
-            </Form.Item>
-          </Space>
 
-          <Title level={4} style={{ marginTop: 24 }}>Timeline Configuration</Title>
-          <Space size="large" wrap>
-            <Form.Item name="durationType" label="Duration Type" rules={[{ required: true }]}>
-              <Select style={{ minWidth: 220 }} options={[{value:'FIXED',label:'Fixed Duration'},{value:'ONGOING',label:'Ongoing Service'}]} />
+            <Form.Item shouldUpdate={(prevValues, currentValues) => 
+              prevValues.planPeriod?.durationType !== currentValues.planPeriod?.durationType
+            } noStyle>
+              {() => {
+                const durationType = basicForm.getFieldValue(['planPeriod', 'durationType']);
+                return durationType === 'FIXED' ? (
+                  <Row gutter={[16, 16]}>
+                    <Col span={12}>
+                      <Form.Item name={['planPeriod', 'startDate']} label="Start Date" rules={[{ required: true }]}>
+                        <DatePicker style={{ width: '100%' }} />
+                      </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item name={['planPeriod', 'endDate']} label="End Date" rules={[{ required: true }]}>
+                        <DatePicker style={{ width: '100%' }} />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                ) : (
+                  <Form.Item name={['planPeriod', 'quarter']} label="Quarter" rules={[{ required: true }]}>
+                    <Select style={{ width: '100%' }}>
+                      <Option value="Q1_2025">Q1 2025</Option>
+                      <Option value="Q2_2025">Q2 2025</Option>
+                      <Option value="Q3_2025">Q3 2025</Option>
+                      <Option value="Q4_2025">Q4 2025</Option>
+                    </Select>
+                  </Form.Item>
+                );
+              }}
             </Form.Item>
-            <Form.Item shouldUpdate noStyle>
-              {() => basicForm.getFieldValue('durationType') === 'FIXED' && (
-                <Form.Item name="durationWeeks" label="Duration Weeks" rules={[{ required: true }, { type: 'number', transform: (v)=>Number(v), min: 1, max: 104 }] }>
-                  <Input type="number" style={{ width: 220 }} />
+          </Card>
+
+          {/* Session Details */}
+          <Card size="small" title="Session Configuration" style={{ marginBottom: 16 }}>
+            <Row gutter={[16, 16]}>
+              <Col span={8}>
+                <Form.Item name={['session', 'frequency']} label="Frequency" rules={[{ required: true }]}>
+                  <Select style={{ width: '100%' }}>
+                    <Option value="WEEKLY">Weekly</Option>
+                    <Option value="MONTHLY">Monthly</Option>
+                  </Select>
                 </Form.Item>
-              )}
-            </Form.Item>
-            <Form.Item name="startDate" label="Start Date" rules={[{ required: true }]}>
-              <DatePicker style={{ width: 220 }} />
-            </Form.Item>
-            <Form.Item name="workingDays" label="Preferred Working Days">
-              <Select mode="multiple" style={{ minWidth: 320 }}>
-                {workingDays.map(d => <Option key={d} value={d}>{d}</Option>)}
-              </Select>
-            </Form.Item>
-          </Space>
+              </Col>
 
-          <Title level={4} style={{ marginTop: 24 }}>Location Details</Title>
-          <Form.Item name="address" label="Client Address" rules={[{ required: true }]}>
-            <Input />
+              <Col span={8}>
+                <Form.Item name={['session', 'meetingHoursPerMonth']} label="Meeting Hours/Month" rules={[{ required: true }]}>
+                  <InputNumber min={1} max={100} style={{ width: '100%' }} />
+                </Form.Item>
+              </Col>
+
+              <Col span={8}>
+                <Form.Item name={['session', 'presentMode']} label="Presentation Mode" rules={[{ required: true }]}>
+                  <Select style={{ width: '100%' }}>
+                    <Option value="ONLINE">Online</Option>
+                    <Option value="VISIT">On-Site Visit</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
+          </Card>
+
+          {/* Objectives */}
+          <Form.Item name="objectives" label="Objectives" rules={[{ required: true, message: 'Please provide plan objectives' }]}>
+            <Input.TextArea 
+              rows={4} 
+              maxLength={1000} 
+              showCount 
+              placeholder="Describe the main objectives of this plan..."
+            />
           </Form.Item>
-          <Space size="large" wrap>
-            <Form.Item name="siteType" label="Site Type">
-              <Select style={{ minWidth: 220 }}>
-                {siteTypes.map(s => <Option key={s} value={s}>{s}</Option>)}
-              </Select>
-            </Form.Item>
-            <Form.Item name="accessRequirements" label="Access Requirements">
-              <Select mode="multiple" style={{ minWidth: 320 }}>
-                {accessOptions.map(a => <Option key={a} value={a}>{a}</Option>)}
-              </Select>
-            </Form.Item>
-          </Space>
+
+          {/* User Details */}
+          <Card size="small" title="App Users" style={{ marginBottom: 16 }}>
+            <Paragraph type="secondary">Add users who will have access to the CFO App for this plan</Paragraph>
+            
+            {users.map((user, index) => (
+              <Card key={user.id} size="small" style={{ marginBottom: 8 }}>
+                <Row gutter={[16, 16]} align="middle">
+                  <Col span={10}>
+                    <Input
+                      placeholder="User Name"
+                      value={user.name}
+                      onChange={(e) => {
+                        const newUsers = [...users];
+                        newUsers[index].name = e.target.value;
+                        setUsers(newUsers);
+                      }}
+                    />
+                  </Col>
+                  <Col span={10}>
+                    <Input
+                      placeholder="Phone Number"
+                      value={user.phone}
+                      onChange={(e) => {
+                        const newUsers = [...users];
+                        newUsers[index].phone = e.target.value;
+                        setUsers(newUsers);
+                      }}
+                    />
+                  </Col>
+                  <Col span={4}>
+                    <Button 
+                      danger 
+                      icon={<DeleteOutlined />} 
+                      onClick={() => setUsers(users.filter((_, i) => i !== index))}
+                    >
+                      Remove
+                    </Button>
+                  </Col>
+                </Row>
+              </Card>
+            ))}
+
+            <Button 
+              type="dashed" 
+              icon={<PlusOutlined />} 
+              onClick={() => setUsers([...users, { id: Date.now().toString(), name: '', phone: '' }])}
+              block
+            >
+              Add User
+            </Button>
+          </Card>
         </Form>
       )}
 
@@ -1172,9 +1327,69 @@ const PlanBuilder: React.FC = () => {
           <Form.Item name="sequence" label="Sequence Number" rules={[{ required: true }]}>
             <InputNumber min={1} style={{ width: '100%' }} />
           </Form.Item>
-          <Form.Item name="name" label="Milestone Name" rules={[{ required: true, message: 'Required' }]}>
+          <Form.Item name="name" label="Milestone Title" rules={[{ required: true, message: 'Required' }]}>
             <Input placeholder="e.g., Planning & Assessment" />
           </Form.Item>
+          
+          <Form.Item name="partnerAssigned" label="Partner Assigned">
+            <Select placeholder="Select partner type" allowClear>
+              <Option value="ERP">ERP Consultant</Option>
+              <Option value="ACCOUNTING">Accounting Firm</Option>
+              <Option value="STOCK_COUNT">Stock Count</Option>
+              <Option value="IMPLEMENTATION">Implementation</Option>
+              <Option value="TRAINING">Training</Option>
+              <Option value="OTHER">Other</Option>
+            </Select>
+          </Form.Item>
+          
+          <Row gutter={[16, 16]}>
+            <Col span={12}>
+              <Form.Item name="dateFrom" label="Start Date" rules={[{ required: true }]}>
+                <DatePicker style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="dateTo" label="End Date" rules={[{ required: true }]}>
+                <DatePicker style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+          </Row>
+          
+          <Form.Item name="deliverables" label="Deliverables" rules={[{ required: true }]}>
+            <Input.TextArea rows={3} placeholder="e.g., Site Survey, Technical Design, Equipment Procurement" />
+          </Form.Item>
+          
+          <Form.Item name="dependencies" label="Dependencies (previous milestones)">
+            <Select mode="multiple" placeholder="Select dependencies">
+              {milestones.filter(m => !editingMilestone || m.id !== editingMilestone.id).map(m => (
+                <Option key={m.id} value={m.id}>Phase {m.sequence}: {m.name}</Option>
+              ))}
+            </Select>
+          </Form.Item>
+          
+          <Divider>Milestone Dashboard Settings</Divider>
+          
+          <Form.Item name="dashboardTitle" label="Dashboard Title" rules={[{ required: true }]}>
+            <Input placeholder="Title to show on dashboard" />
+          </Form.Item>
+          
+          <Row gutter={[16, 16]}>
+            <Col span={12}>
+              <Form.Item name="dueDate" label="Due Date" rules={[{ required: true }]}>
+                <DatePicker style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="owner" label="Owner" rules={[{ required: true }]}>
+                <Select style={{ width: '100%' }}>
+                  <Option value="HQ">HQ</Option>
+                  <Option value="PARTNER">Partner</Option>
+                  <Option value="CLIENT">Client</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          
           <Space style={{ width: '100%' }} size="large">
             <Form.Item name="durationWeeks" label="Duration (weeks)" rules={[{ required: true }, { type: 'number', min: 1, max: 52 }]}>
               <InputNumber min={1} max={52} style={{ width: 150 }} />
@@ -1183,16 +1398,7 @@ const PlanBuilder: React.FC = () => {
               <InputNumber min={0} max={100} step={0.1} style={{ width: 150 }} />
             </Form.Item>
           </Space>
-          <Form.Item name="deliverables" label="Deliverables" rules={[{ required: true }]}>
-            <Input.TextArea rows={3} placeholder="e.g., Site Survey, Technical Design, Equipment Procurement" />
-          </Form.Item>
-          <Form.Item name="dependencies" label="Dependencies (previous milestones)">
-            <Select mode="multiple" placeholder="Select dependencies">
-              {milestones.filter(m => !editingMilestone || m.id !== editingMilestone.id).map(m => (
-                <Option key={m.id} value={m.id}>Phase {m.sequence}: {m.name}</Option>
-              ))}
-            </Select>
-          </Form.Item>
+          
           <Form.Item name="criticalPath" valuePropName="checked">
             <Checkbox>Mark as Critical Path</Checkbox>
           </Form.Item>

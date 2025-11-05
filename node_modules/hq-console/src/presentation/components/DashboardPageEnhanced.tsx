@@ -1,94 +1,82 @@
-// Presentation Layer - Enhanced Dashboard Page
+// Presentation Layer - Comprehensive Enhanced Dashboard Page
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Row,
   Col,
   Card,
   Statistic,
   Select,
-  DatePicker,
   Button,
   Space,
   Typography,
   Spin,
-  Alert,
+  Switch,
   Dropdown,
+  DatePicker,
+  message,
 } from 'antd';
 import {
   UserOutlined,
   FileTextOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
-  ArrowUpOutlined,
-  ArrowDownOutlined,
-  FilterOutlined,
   PlusOutlined,
   UserAddOutlined,
   DownloadOutlined,
   ReloadOutlined,
+  BarChartOutlined,
+  GlobalOutlined,
 } from '@ant-design/icons';
-import { useTranslations, useLocale } from 'next-intl';
-import { Line, Bar, Column } from '@ant-design/plots';
+import { Column, Line, DualAxes } from '@ant-design/plots';
+import type { MenuProps } from 'antd';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
 
-// Types
-interface DashboardStats {
-  totalPlansInitiated: number;
-  totalOpenPlans: number;
-  totalClosedPlans: number;
-  totalPartners: number;
-  conversionRate: number;
-  plansByRegion: { region: string; count: number }[];
-  plansByStatus: { status: string; count: number }[];
+interface DashboardFilters {
+  dateRange: string;
+  region: string | null;
+  industry: string | null;
+  partnerTier: string | null;
+  planType: string | null;
+  status: string | null;
+  customDateRange?: [Date, Date] | null;
 }
 
-interface RegionData {
-  region: string;
-  count: number;
-  countries: { country: string; count: number }[];
-}
-
-interface PlansTrendData {
-  period: string;
-  initiated: number;
-  closed: number;
-  conversionRate: number;
-}
-
-const DashboardPageEnhanced: React.FC = () => {
-  const t = useTranslations('dashboard');
-  const tCommon = useTranslations('common');
-  const locale = useLocale();
-  const isRTL = locale === 'ar';
-
-  // State
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [regionData, setRegionData] = useState<RegionData[]>([]);
-  const [trendData, setTrendData] = useState<PlansTrendData[]>([]);
+const DashboardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Filter state
-  const [filters, setFilters] = useState({
-    dateRange: 'ALL',
-    region: null as string | null,
-    industry: null as string | null,
-    partnerTier: null as string | null,
-    planType: null as string | null,
-    status: null as string | null,
+  const [stats, setStats] = useState({
+    totalPlansInitiated: 0,
+    totalOpenPlans: 0,
+    totalClosedPlans: 0,
+    totalPartners: 0,
+    conversionRate: 0,
   });
+  const [regionData, setRegionData] = useState<any[]>([]);
+  const [trendData, setTrendData] = useState<any[]>([]);
+  const [regionViewMode, setRegionViewMode] = useState<'bar' | 'map'>('bar');
+  const [trendPeriod, setTrendPeriod] = useState<'monthly' | 'quarterly'>('monthly');
+  
+  const [filters, setFilters] = useState<DashboardFilters>({
+    dateRange: 'ALL',
+    region: null,
+    industry: null,
+    partnerTier: null,
+    planType: null,
+    status: null,
+    customDateRange: null,
+  });
+
+  const dashboardRef = useRef<HTMLDivElement>(null);
 
   // Fetch data
   const fetchDashboardData = async () => {
     setLoading(true);
-    setError(null);
-    
     try {
-      // Build query params
       const params = new URLSearchParams();
       if (filters.dateRange) params.set('dateRange', filters.dateRange);
       if (filters.region) params.set('region', filters.region);
@@ -96,17 +84,15 @@ const DashboardPageEnhanced: React.FC = () => {
       if (filters.partnerTier) params.set('partnerTier', filters.partnerTier);
       if (filters.planType) params.set('planType', filters.planType);
       if (filters.status) params.set('status', filters.status);
-
-      // Fetch all data in parallel
-      const [statsRes, regionRes, trendRes] = await Promise.all([
-        fetch(`/api/dashboard/stats?${params.toString()}`),
-        fetch(`/api/dashboard/charts/clients-by-region?${params.toString()}`),
-        fetch(`/api/dashboard/charts/plans-trend?period=monthly`),
-      ]);
-
-      if (!statsRes.ok || !regionRes.ok || !trendRes.ok) {
-        throw new Error('Failed to fetch dashboard data');
+      if (filters.customDateRange && filters.customDateRange[0]) {
+        params.set('startDate', filters.customDateRange[0].toISOString());
       }
+
+      const [statsRes, regionRes, trendRes] = await Promise.all([
+        fetch(`/api/dashboard/stats?${params.toString()}`, { cache: 'no-store' }),
+        fetch(`/api/dashboard/charts/clients-by-region?${params.toString()}`, { cache: 'no-store' }),
+        fetch(`/api/dashboard/charts/plans-trend?period=${trendPeriod}&${params.toString()}`, { cache: 'no-store' }),
+      ]);
 
       const statsData = await statsRes.json();
       const regionDataRes = await regionRes.json();
@@ -116,7 +102,8 @@ const DashboardPageEnhanced: React.FC = () => {
       setRegionData(regionDataRes);
       setTrendData(trendDataRes);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('Error fetching dashboard data:', err);
+      message.error('Failed to fetch dashboard data');
     } finally {
       setLoading(false);
     }
@@ -124,217 +111,357 @@ const DashboardPageEnhanced: React.FC = () => {
 
   useEffect(() => {
     fetchDashboardData();
-  }, [filters]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, trendPeriod]);
 
-  // Handle export
-  const handleExport = () => {
-    // TODO: Implement export functionality
-    console.log('Export dashboard');
+  // Export handlers
+  const exportToPDF = async () => {
+    if (!dashboardRef.current) return;
+    
+    message.loading({ content: 'Generating PDF...', key: 'export' });
+    
+    try {
+      const canvas = await html2canvas(dashboardRef.current, {
+        scale: 2,
+        logging: false,
+        useCORS: true,
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      pdf.save(`dashboard-${new Date().toISOString().split('T')[0]}.pdf`);
+      
+      message.success({ content: 'PDF downloaded successfully!', key: 'export' });
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      message.error({ content: 'Failed to export PDF', key: 'export' });
+    }
   };
 
-  // Handle create plan
-  const handleCreatePlan = () => {
-    window.location.href = '/plans/builder';
+  const exportToPNG = async () => {
+    if (!dashboardRef.current) return;
+    
+    message.loading({ content: 'Generating PNG...', key: 'export' });
+    
+    try {
+      const canvas = await html2canvas(dashboardRef.current, {
+        scale: 2,
+        logging: false,
+        useCORS: true,
+      });
+      
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.download = `dashboard-${new Date().toISOString().split('T')[0]}.png`;
+          link.href = url;
+          link.click();
+          URL.revokeObjectURL(url);
+          message.success({ content: 'PNG downloaded successfully!', key: 'export' });
+        }
+      });
+    } catch (error) {
+      console.error('Error exporting PNG:', error);
+      message.error({ content: 'Failed to export PNG', key: 'export' });
+    }
   };
 
-  // Handle invite partner
-  const handleInvitePartner = () => {
-    window.location.href = '/partners?action=create';
-  };
-
-  if (loading && !stats) {
-    return (
-      <div style={{ textAlign: 'center', padding: '50px' }}>
-        <Spin size="large" />
-        <p>{tCommon('loading')}</p>
-      </div>
-    );
-  }
-
-  if (error && !stats) {
-    return (
-      <Alert
-        message={tCommon('error')}
-        description={error}
-        type="error"
-        showIcon
-      />
-    );
-  }
+  const exportMenuItems: MenuProps['items'] = [
+    {
+      key: 'pdf',
+      label: 'Export as PDF',
+      onClick: exportToPDF,
+    },
+    {
+      key: 'png',
+      label: 'Export as PNG',
+      onClick: exportToPNG,
+    },
+  ];
 
   // Charts configuration
   const regionChartConfig = {
     data: regionData,
     xField: 'region',
     yField: 'count',
-    label: {
-      position: 'middle' as const,
-      style: {
-        fill: '#FFFFFF',
-        opacity: 0.6,
+    height: 300,
+    label: false,
+    tooltip: {
+      customContent: (title: string, items: any[]) => {
+        if (!items || items.length === 0) return '';
+        const regionInfo = regionData.find(r => r.region === title);
+        if (!regionInfo) return '';
+        
+        let html = `<div style="padding: 12px; min-width: 180px;">`;
+        html += `<div style="font-weight: bold; margin-bottom: 8px; font-size: 14px;">${title}</div>`;
+        html += `<div style="color: #666; margin-bottom: 8px;">Total Clients: <strong>${regionInfo.count}</strong></div>`;
+        if (regionInfo.countries && regionInfo.countries.length > 0) {
+          html += `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">`;
+          html += `<div style="font-size: 12px; color: #888; margin-bottom: 4px;">Country Breakdown:</div>`;
+          regionInfo.countries.forEach((c: any) => {
+            html += `<div style="margin: 4px 0; font-size: 12px; display: flex; justify-content: space-between;">
+              <span>• ${c.country}</span>
+              <span style="font-weight: 500; margin-left: 12px;">${c.count}</span>
+            </div>`;
+          });
+          html += `</div>`;
+        }
+        html += `</div>`;
+        return html;
       },
     },
     xAxis: {
       label: {
         autoRotate: false,
+        autoHide: false,
+        style: {
+          fontSize: 12,
+        }
+      }
+    },
+    yAxis: {
+      label: {
+        formatter: (v: string) => `${v}`,
       },
     },
     meta: {
-      region: {
-        alias: t('filters.region'),
-      },
-      count: {
-        alias: t('totalCustomers'),
-      },
+      region: { alias: 'Region' },
+      count: { alias: 'Clients' },
     },
   };
 
-  const trendChartConfig = {
-    data: trendData,
+  // Transform trend data for dual axes chart with conversion rate
+  const trendChartData = trendData.map(item => ({
+    period: new Date(item.period).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+    initiated: item.initiated,
+    closed: item.closed,
+    conversionRate: item.conversionRate,
+  }));
+
+  const dualAxesConfig = {
+    data: [trendChartData, trendChartData],
     xField: 'period',
-    yField: 'value',
-    seriesField: 'type',
-    smooth: true,
-    animation: {
-      appear: {
-        animation: 'path-in',
-        duration: 1000,
+    yField: ['initiated', 'conversionRate'],
+    height: 300,
+    geometryOptions: [
+      {
+        geometry: 'line',
+        seriesField: 'type',
+        lineStyle: {
+          lineWidth: 2,
+        },
+        point: {
+          size: 4,
+          shape: 'circle',
+        },
+      },
+      {
+        geometry: 'line',
+        lineStyle: {
+          lineWidth: 2,
+          lineDash: [4, 4],
+        },
+        color: '#ff4d4f',
+        point: {
+          size: 4,
+          shape: 'diamond',
+        },
+      },
+    ],
+    legend: {
+      position: 'top' as const,
+    },
+    yAxis: {
+      initiated: {
+        label: {
+          formatter: (v: string) => `${v}`,
+        },
+      },
+      conversionRate: {
+        label: {
+          formatter: (v: string) => `${v}%`,
+        },
       },
     },
-    color: ['#1890ff', '#52c41a'],
   };
 
-  // Transform trend data for chart
-  const trendChartData = trendData.flatMap(item => [
-    { period: new Date(item.period).toLocaleDateString(), value: item.initiated, type: 'Initiated' },
-    { period: new Date(item.period).toLocaleDateString(), value: item.closed, type: 'Closed' },
-  ]);
+  const handleFilterChange = (key: keyof DashboardFilters, value: any) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      dateRange: 'ALL',
+      region: null,
+      industry: null,
+      partnerTier: null,
+      planType: null,
+      status: null,
+      customDateRange: null,
+    });
+  };
+
+  if (loading && regionData.length === 0 && trendData.length === 0) {
+    return (
+      <div style={{ textAlign: 'center', padding: '50px' }}>
+        <Spin size="large" />
+        <p>Loading Dashboard...</p>
+      </div>
+    );
+  }
 
   return (
-    <div dir={isRTL ? 'rtl' : 'ltr'}>
+    <div ref={dashboardRef}>
       <Row justify="space-between" align="middle" style={{ marginBottom: '24px' }}>
         <Col>
-          <Title level={2}>{t('title')}</Title>
+          <Title level={2}>Dashboard Overview</Title>
         </Col>
         <Col>
           <Space>
             <Button
               type="primary"
               icon={<PlusOutlined />}
-              onClick={handleCreatePlan}
+              onClick={() => window.location.href = '/plans/new'}
             >
-              {t('actions.createPlan')}
+              Create Plan
             </Button>
             <Button
               icon={<UserAddOutlined />}
-              onClick={handleInvitePartner}
+              onClick={() => window.location.href = '/partners?action=create'}
             >
-              {t('actions.invitePartner')}
+              Invite Partner
             </Button>
-            <Button
-              icon={<DownloadOutlined />}
-              onClick={handleExport}
-            >
-              {t('actions.exportDashboard')}
-            </Button>
+            <Dropdown menu={{ items: exportMenuItems }} placement="bottomRight">
+              <Button icon={<DownloadOutlined />}>
+                Export Dashboard
+              </Button>
+            </Dropdown>
             <Button
               icon={<ReloadOutlined />}
               onClick={fetchDashboardData}
-              loading={loading}
             />
           </Space>
         </Col>
       </Row>
 
-      {/* Filters */}
-      <Card style={{ marginBottom: '24px' }}>
+      {/* Comprehensive Filters Panel */}
+      <Card title="Filters" style={{ marginBottom: '24px' }}>
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={12} md={6} lg={4}>
             <Select
-              placeholder={t('filters.dateRange')}
+              placeholder="Date Range"
               style={{ width: '100%' }}
               value={filters.dateRange}
-              onChange={(value) => setFilters({ ...filters, dateRange: value })}
+              onChange={(value) => handleFilterChange('dateRange', value)}
               options={[
-                { label: t('filters.thisMonth'), value: 'THIS_MONTH' },
-                { label: t('filters.qtd'), value: 'QTD' },
-                { label: t('filters.ytd'), value: 'YTD' },
-                { label: t('filters.custom'), value: 'CUSTOM' },
-                { label: tCommon('common.all'), value: 'ALL' },
+                { label: 'This Month', value: 'THIS_MONTH' },
+                { label: 'QTD', value: 'QTD' },
+                { label: 'YTD', value: 'YTD' },
+                { label: 'All Time', value: 'ALL' },
+                { label: 'Custom', value: 'CUSTOM' },
               ]}
             />
           </Col>
+          {filters.dateRange === 'CUSTOM' && (
+            <Col xs={24} sm={12} md={6} lg={4}>
+              <RangePicker
+                style={{ width: '100%' }}
+                onChange={(dates) => handleFilterChange('customDateRange', dates as any)}
+              />
+            </Col>
+          )}
           <Col xs={24} sm={12} md={6} lg={4}>
             <Select
-              placeholder={t('filters.region')}
+              placeholder="Region / Country"
               style={{ width: '100%' }}
               allowClear
               value={filters.region}
-              onChange={(value) => setFilters({ ...filters, region: value })}
+              onChange={(value) => handleFilterChange('region', value)}
               options={[
-                { label: t('regions.gcc'), value: 'GCC' },
-                { label: t('regions.mena'), value: 'MENA' },
-                { label: t('regions.apac'), value: 'APAC' },
-                { label: t('regions.eu'), value: 'EU' },
+                { label: 'GCC', value: 'GCC' },
+                { label: 'MENA', value: 'MENA' },
+                { label: 'APAC', value: 'APAC' },
+                { label: 'EU', value: 'EU' },
               ]}
             />
           </Col>
           <Col xs={24} sm={12} md={6} lg={4}>
             <Select
-              placeholder={t('filters.industry')}
+              placeholder="Industry"
               style={{ width: '100%' }}
               allowClear
               value={filters.industry}
-              onChange={(value) => setFilters({ ...filters, industry: value })}
+              onChange={(value) => handleFilterChange('industry', value)}
               options={[
-                { label: 'Technology', value: 'TECHNOLOGY' },
-                { label: 'Healthcare', value: 'HEALTHCARE' },
-                { label: 'Finance', value: 'FINANCE' },
-                { label: 'Retail', value: 'RETAIL' },
-                { label: 'Manufacturing', value: 'MANUFACTURING' },
+                { label: 'Technology', value: 'Technology' },
+                { label: 'Manufacturing', value: 'Manufacturing' },
+                { label: 'Retail', value: 'Retail' },
+                { label: 'Healthcare', value: 'Healthcare' },
+                { label: 'Finance', value: 'Finance' },
+                { label: 'Real Estate', value: 'Real Estate' },
+                { label: 'Education', value: 'Education' },
+                { label: 'Logistics', value: 'Logistics' },
               ]}
             />
           </Col>
           <Col xs={24} sm={12} md={6} lg={4}>
             <Select
-              placeholder={t('filters.planType')}
+              placeholder="Partner Tier"
+              style={{ width: '100%' }}
+              allowClear
+              value={filters.partnerTier}
+              onChange={(value) => handleFilterChange('partnerTier', value)}
+              options={[
+                { label: 'Platinum', value: 'PLATINUM' },
+                { label: 'Gold', value: 'GOLD' },
+                { label: 'Silver', value: 'SILVER' },
+                { label: 'Bronze', value: 'BRONZE' },
+              ]}
+            />
+          </Col>
+          <Col xs={24} sm={12} md={6} lg={4}>
+            <Select
+              placeholder="Plan Type"
               style={{ width: '100%' }}
               allowClear
               value={filters.planType}
-              onChange={(value) => setFilters({ ...filters, planType: value })}
+              onChange={(value) => handleFilterChange('planType', value)}
               options={[
-                { label: t('planTypes.rightTrack'), value: 'RIGHT_TRACK' },
-                { label: t('planTypes.stayOnTrack'), value: 'STAY_ON_TRACK' },
+                { label: 'Basic CFO', value: 'BASIC_CFO' },
+                { label: 'Premium CFO', value: 'PREMIUM_CFO' },
+                { label: 'Enterprise CFO', value: 'ENTERPRISE_CFO' },
+                { label: 'Consulting', value: 'CONSULTING' },
+                { label: 'Audit', value: 'AUDIT' },
+                { label: 'Tax Filing', value: 'TAX_FILING' },
               ]}
             />
           </Col>
           <Col xs={24} sm={12} md={6} lg={4}>
             <Select
-              placeholder={t('filters.status')}
+              placeholder="Status"
               style={{ width: '100%' }}
               allowClear
               value={filters.status}
-              onChange={(value) => setFilters({ ...filters, status: value })}
+              onChange={(value) => handleFilterChange('status', value)}
               options={[
-                { label: 'Active', value: 'ACTIVE' },
-                { label: 'Completed', value: 'COMPLETED' },
-                { label: 'Suspended', value: 'SUSPENDED' },
+                { label: 'Open', value: 'ACTIVE' },
+                { label: 'In Progress', value: 'IN_PROGRESS' },
+                { label: 'Closed', value: 'COMPLETED' },
+                { label: 'Inactive', value: 'INACTIVE' },
               ]}
             />
           </Col>
           <Col xs={24} sm={12} md={6} lg={4}>
             <Button
               block
-              onClick={() => setFilters({
-                dateRange: 'ALL',
-                region: null,
-                industry: null,
-                partnerTier: null,
-                planType: null,
-                status: null,
-              })}
+              onClick={clearFilters}
             >
-              {t('filters.clearFilters')}
+              Clear All Filters
             </Button>
           </Col>
         </Row>
@@ -345,8 +472,8 @@ const DashboardPageEnhanced: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title={t('totalPlansInitiated')}
-              value={stats?.totalPlansInitiated || 0}
+              title="Total Plans Initiated"
+              value={stats.totalPlansInitiated}
               prefix={<FileTextOutlined />}
               valueStyle={{ color: '#1890ff' }}
             />
@@ -355,8 +482,8 @@ const DashboardPageEnhanced: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title={t('totalOpenPlans')}
-              value={stats?.totalOpenPlans || 0}
+              title="Total Open Plans"
+              value={stats.totalOpenPlans}
               prefix={<ClockCircleOutlined />}
               valueStyle={{ color: '#faad14' }}
             />
@@ -365,19 +492,18 @@ const DashboardPageEnhanced: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title={t('totalClosedPlans')}
-              value={stats?.totalClosedPlans || 0}
+              title="Total Closed Plans"
+              value={stats.totalClosedPlans}
               prefix={<CheckCircleOutlined />}
               valueStyle={{ color: '#52c41a' }}
-              suffix={<ArrowUpOutlined />}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title={t('totalPartners')}
-              value={stats?.totalPartners || 0}
+              title="Total Partners"
+              value={stats.totalPartners}
               prefix={<UserOutlined />}
               valueStyle={{ color: '#722ed1' }}
             />
@@ -388,23 +514,96 @@ const DashboardPageEnhanced: React.FC = () => {
       {/* Charts Section */}
       <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
         <Col xs={24} lg={12}>
-          <Card title={t('clientsByRegion')} style={{ height: 400 }}>
-            <Column {...regionChartConfig} />
+          <Card 
+            title="Clients by Region" 
+            extra={
+              <Space>
+                <Switch
+                  checked={regionViewMode === 'map'}
+                  checkedChildren={<GlobalOutlined />}
+                  unCheckedChildren={<BarChartOutlined />}
+                  onChange={(checked) => setRegionViewMode(checked ? 'map' : 'bar')}
+                />
+              </Space>
+            }
+            style={{ minHeight: 400 }}
+          >
+            <Spin spinning={loading}>
+              {regionData.length > 0 ? (
+                regionViewMode === 'bar' ? (
+                  <Column {...regionChartConfig} />
+                ) : (
+                  <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>
+                    Map view coming soon (requires mapping library)
+                  </div>
+                )
+              ) : (
+                <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>
+                  No regional data available
+                </div>
+              )}
+            </Spin>
           </Card>
         </Col>
         <Col xs={24} lg={12}>
           <Card 
-            title={t('plansTrend')} 
+            title="Plans Trend: Total vs Closed" 
             extra={
               <Space>
+                <Select
+                  value={trendPeriod}
+                  onChange={setTrendPeriod}
+                  style={{ width: 120 }}
+                  options={[
+                    { label: 'Monthly', value: 'monthly' },
+                    { label: 'Quarterly', value: 'quarterly' },
+                  ]}
+                />
                 <span style={{ fontSize: '14px', color: '#666' }}>
-                  {t('conversionRate')}: {stats?.conversionRate || 0}%
+                  Conv. Rate: {stats.conversionRate}%
                 </span>
               </Space>
             }
-            style={{ height: 400 }}
+            style={{ minHeight: 400 }}
           >
-            <Line {...{ ...trendChartConfig, data: trendChartData }} />
+            <Spin spinning={loading}>
+              {trendData.length > 0 ? (
+                <Line
+                  data={trendChartData}
+                  xField="period"
+                  yField="initiated"
+                  seriesField="type"
+                  height={300}
+                  smooth={true}
+                  color={['#1890ff', '#52c41a']}
+                  legend={{ position: 'top' as const }}
+                  yAxis={{
+                    label: {
+                      formatter: (v: string) => `${v}`,
+                    },
+                  }}
+                  point={{
+                    size: 4,
+                    shape: 'circle',
+                  }}
+                  annotations={[
+                    {
+                      type: 'line',
+                      start: ['min', stats.conversionRate],
+                      end: ['max', stats.conversionRate],
+                      style: {
+                        stroke: '#ff4d4f',
+                        lineDash: [4, 4],
+                      },
+                    },
+                  ]}
+                />
+              ) : (
+                <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>
+                  No trend data available
+                </div>
+              )}
+            </Spin>
           </Card>
         </Col>
       </Row>
@@ -412,5 +611,4 @@ const DashboardPageEnhanced: React.FC = () => {
   );
 };
 
-export default DashboardPageEnhanced;
-
+export default DashboardPage;
