@@ -16,7 +16,6 @@ import {
 import { SaveOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useRouter, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import DashboardLayout from '@/components/DashboardLayout';
 
 const { TextArea } = Input;
 
@@ -133,16 +132,14 @@ export default function EditCustomerPage() {
 
   if (fetching) {
     return (
-      <DashboardLayout>
-        <div style={{ textAlign: 'center' }}>
-          <Spin size="large" />
-        </div>
-      </DashboardLayout>
+      <div style={{ padding: '24px', textAlign: 'center' }}>
+        <Spin size="large" />
+      </div>
     );
   }
 
   return (
-    <DashboardLayout>
+    <div style={{ padding: '24px' }}>
       <Card>
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
           <Row justify="space-between" align="middle">
@@ -305,7 +302,7 @@ export default function EditCustomerPage() {
           </Form>
         </Space>
       </Card>
-    </DashboardLayout>
+    </div>
   );
 }
 

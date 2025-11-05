@@ -73,18 +73,11 @@ const DashboardPage: React.FC = () => {
 
   const dashboardRef = useRef<HTMLDivElement>(null);
 
-  // Fetch global user preferences (including region) and listen for changes
+  // Fetch global user preferences (including region)
   useEffect(() => {
     const fetchGlobalPreferences = async () => {
       try {
-        // First, fetch current user
-        const userRes = await fetch('/api/user/current');
-        if (!userRes.ok) return;
-        
-        const userData = await userRes.json();
-        
-        // Then fetch their preferences
-        const res = await fetch(`/api/user/preferences?userId=${userData.id}`);
+        const res = await fetch('/api/user/preferences');
         if (res.ok) {
           const data = await res.json();
           setGlobalRegion(data.defaultRegion || null);
@@ -93,25 +86,7 @@ const DashboardPage: React.FC = () => {
         console.error('Error fetching global preferences:', error);
       }
     };
-    
     fetchGlobalPreferences();
-    
-    // Listen for global filter changes
-    const handleGlobalFilterChange = (event: any) => {
-      if (event.detail.region !== undefined) {
-        setGlobalRegion(event.detail.region || null);
-      }
-    };
-
-    if (typeof window !== 'undefined') {
-      window.addEventListener('globalFilterChange', handleGlobalFilterChange);
-    }
-    
-    return () => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('globalFilterChange', handleGlobalFilterChange);
-      }
-    };
   }, []);
 
   // Fetch data

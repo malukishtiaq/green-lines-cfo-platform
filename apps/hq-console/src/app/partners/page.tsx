@@ -29,7 +29,6 @@ import {
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { ColumnsType } from 'antd/es/table';
-import DashboardLayout from '@/components/DashboardLayout';
 
 const { Search } = Input;
 
@@ -112,29 +111,6 @@ export default function PartnersPage() {
     id: '',
     name: '',
   });
-
-  // Initialize from URL params and listen for global filter changes
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const urlRegion = params.get('region');
-      if (urlRegion) {
-        setRegionFilter(urlRegion);
-      } else {
-        setRegionFilter(null);
-      }
-    }
-
-    // Listen for global filter changes
-    const handleGlobalFilterChange = (event: any) => {
-      if (event.detail.region !== undefined) {
-        setRegionFilter(event.detail.region || null);
-      }
-    };
-
-    window.addEventListener('globalFilterChange', handleGlobalFilterChange);
-    return () => window.removeEventListener('globalFilterChange', handleGlobalFilterChange);
-  }, []);
 
   useEffect(() => {
     fetchPartners();
@@ -250,7 +226,7 @@ export default function PartnersPage() {
       title: t('rating'),
       dataIndex: 'rating',
       key: 'rating',
-      render: (rating) => rating ? <Rate disabled defaultValue={rating} style={{ fontSize: '14px' }} /> : '-',
+      render: (rating) => rating ? <Rate disabled defaultValue={rating} /> : '-',
     },
     {
       title: t('availability'),
@@ -299,7 +275,7 @@ export default function PartnersPage() {
   ];
 
   return (
-    <DashboardLayout>
+    <div style={{ padding: '24px' }}>
       <Card>
         <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
           <Col>
@@ -399,7 +375,7 @@ export default function PartnersPage() {
       >
         <p>Are you sure you want to delete <strong>{deleteModal.name}</strong>?</p>
       </Modal>
-    </DashboardLayout>
+    </div>
   );
 }
 

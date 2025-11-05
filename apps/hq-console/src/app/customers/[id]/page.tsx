@@ -17,7 +17,6 @@ import { ArrowLeftOutlined, EditOutlined, UserOutlined } from '@ant-design/icons
 import { useRouter, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { ColumnsType } from 'antd/es/table';
-import DashboardLayout from '@/components/DashboardLayout';
 
 interface ServicePlan {
   id: string;
@@ -161,11 +160,9 @@ export default function ViewCustomerPage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <div style={{ textAlign: 'center' }}>
-          <Spin size="large" />
-        </div>
-      </DashboardLayout>
+      <div style={{ padding: '24px', textAlign: 'center' }}>
+        <Spin size="large" />
+      </div>
     );
   }
 
@@ -174,7 +171,7 @@ export default function ViewCustomerPage() {
   }
 
   return (
-    <DashboardLayout>
+    <div style={{ padding: '24px' }}>
       <Card>
         <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
           <Col>
@@ -257,7 +254,7 @@ export default function ViewCustomerPage() {
           </>
         )}
       </Card>
-    </DashboardLayout>
+    </div>
   );
 }
 
