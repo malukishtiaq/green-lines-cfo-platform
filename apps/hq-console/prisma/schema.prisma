@@ -30,6 +30,12 @@ model User {
 
   // Contract relations
   createdContracts Contract[]
+  
+  // Global Controls relations
+  notifications              Notification[]
+  preference                 UserPreference?
+  searchLogs                 SearchLog[]
+  notificationPreferences    NotificationPreference[]
 
   @@map("users")
 }
@@ -664,3 +670,139 @@ model Service {
 
   @@map("services")
 }
+
+// ========================================
+// Global Controls - Notifications System
+// ========================================
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type        NotificationType
+  title       String
+  message     String
+  link        String?   // Deep link to relevant page
+  
+  // Reference to source entity (polymorphic)
+  entityType  String?   // "TASK" | "PLAN" | "CUSTOMER" | "PARTNER" | "CONTRACT"
+  entityId    String?   // ID of the related entity
+  
+  isRead      Boolean  @default(false)
+  readAt      DateTime?
+  
+  priority    NotificationPriority @default(NORMAL)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  TASK_ASSIGNED
+  TASK_COMPLETED
+  TASK_OVERDUE
+  PLAN_CREATED
+  PLAN_UPDATED
+  PLAN_COMPLETED
+  PARTNER_ASSIGNED
+  CONTRACT_SIGNED
+  APPROVAL_PENDING
+  PAYMENT_RECEIVED
+  SYSTEM_ALERT
+  CUSTOM
+}
+
+enum NotificationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+// ========================================
+// Global Controls - User Preferences
+// ========================================
+
+model UserPreference {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Display Preferences
+  language    String   @default("en")      // "en" | "ar"
+  currency    String   @default("AED")     // "AED" | "SAR" | "USD" | "EUR" | "GBP"
+  timezone    String   @default("Asia/Dubai")
+  dateFormat  String   @default("DD/MM/YYYY")
+  
+  // Default Filters (applied globally)
+  defaultRegion     String?   // "GCC" | "MENA" | "APAC" | "EU"
+  defaultOrg        String?   // Organization ID (for future multi-org support)
+  defaultDateRange  String    @default("THIS_MONTH")
+  
+  // Notification Preferences
+  emailNotifications    Boolean @default(true)
+  pushNotifications     Boolean @default(true)
+  smsNotifications      Boolean @default(false)
+  
+  // UI Preferences
+  sidebarCollapsed      Boolean @default(false)
+  dashboardLayout       Json?   // Custom dashboard layout
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("user_preferences")
+}
+
+// ========================================
+// Global Controls - Search Logs
+// ========================================
+
+model SearchLog {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  query       String
+  category    String?  // "ALL" | "CUSTOMERS" | "PLANS" | "TASKS" | "PARTNERS"
+  resultsCount Int     @default(0)
+  
+  // Track what user clicked
+  clickedEntityType String?
+  clickedEntityId   String?
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([userId, createdAt])
+  @@map("search_logs")
+}
+
+// ========================================
+// Global Controls - Notification Preferences
+// ========================================
+
+model NotificationPreference {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  notificationType  NotificationType
+  
+  // Channels
+  emailEnabled      Boolean  @default(true)
+  pushEnabled       Boolean  @default(true)
+  smsEnabled        Boolean  @default(false)
+  inAppEnabled      Boolean  @default(true)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@unique([userId, notificationType])
+  @@map("notification_preferences")
+}
+

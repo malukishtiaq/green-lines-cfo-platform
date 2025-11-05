@@ -444,6 +444,254 @@ async function main() {
   console.log(`     • EU: 10`);
   console.log(`   - Service Plans: ${totalPlansCreated}`);
   console.log('');
+  
+  // ========================================
+  // Global Controls - Seed Data
+  // ========================================
+  
+  console.log('🔔 Seeding Global Controls data...');
+  
+  // Create User Preference for admin user
+  const userPreference = await prisma.userPreference.upsert({
+    where: { userId: adminUser.id },
+    update: {},
+    create: {
+      userId: adminUser.id,
+      language: 'en',
+      currency: 'AED',
+      timezone: 'Asia/Dubai',
+      dateFormat: 'DD/MM/YYYY',
+      defaultRegion: 'GCC',
+      defaultDateRange: 'THIS_MONTH',
+      emailNotifications: true,
+      pushNotifications: true,
+      smsNotifications: false,
+      sidebarCollapsed: false,
+    },
+  });
+  
+  console.log('✅ User preference created for admin');
+  
+  // Create sample notifications
+  const notifications = await Promise.all([
+    // Task notifications
+    prisma.notification.create({
+      data: {
+        userId: adminUser.id,
+        type: 'TASK_ASSIGNED',
+        title: 'New Task Assigned',
+        message: 'You have been assigned to Financial Review for ABC Company',
+        link: '/tasks',
+        entityType: 'TASK',
+        entityId: 'task_123',
+        priority: 'HIGH',
+        isRead: false,
+      },
+    }),
+    prisma.notification.create({
+      data: {
+        userId: adminUser.id,
+        type: 'TASK_OVERDUE',
+        title: 'Task Overdue',
+        message: 'Tax preparation task for XYZ Corp is overdue by 2 days',
+        link: '/tasks',
+        entityType: 'TASK',
+        entityId: 'task_456',
+        priority: 'URGENT',
+        isRead: false,
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+      },
+    }),
+    
+    // Plan notifications
+    prisma.notification.create({
+      data: {
+        userId: adminUser.id,
+        type: 'PLAN_CREATED',
+        title: 'New Plan Created',
+        message: 'Premium CFO plan created for Tech Innovators',
+        link: '/plans',
+        entityType: 'PLAN',
+        entityId: customers[0]?.id,
+        priority: 'NORMAL',
+        isRead: true,
+        readAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+      },
+    }),
+    prisma.notification.create({
+      data: {
+        userId: adminUser.id,
+        type: 'PLAN_UPDATED',
+        title: 'Plan Updated',
+        message: 'Enterprise CFO plan has been updated with new KPIs',
+        link: '/plans',
+        entityType: 'PLAN',
+        entityId: customers[1]?.id,
+        priority: 'NORMAL',
+        isRead: false,
+        createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
+      },
+    }),
+    
+    // Partner notifications
+    prisma.notification.create({
+      data: {
+        userId: adminUser.id,
+        type: 'PARTNER_ASSIGNED',
+        title: 'Partner Assigned',
+        message: 'Dubai Finance Consulting assigned to Global Trading plan',
+        link: '/partners',
+        entityType: 'PARTNER',
+        entityId: partners[0]?.id,
+        priority: 'NORMAL',
+        isRead: false,
+        createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
+      },
+    }),
+    
+    // Contract notifications
+    prisma.notification.create({
+      data: {
+        userId: adminUser.id,
+        type: 'CONTRACT_SIGNED',
+        title: 'Contract Signed',
+        message: 'Service agreement signed by ABC Company',
+        link: '/contracts',
+        entityType: 'CONTRACT',
+        entityId: 'contract_789',
+        priority: 'HIGH',
+        isRead: false,
+        createdAt: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
+      },
+    }),
+    
+    // System alerts
+    prisma.notification.create({
+      data: {
+        userId: adminUser.id,
+        type: 'SYSTEM_ALERT',
+        title: 'System Maintenance',
+        message: 'Scheduled maintenance on Nov 10, 2025 from 2:00 AM - 4:00 AM GST',
+        link: '/settings',
+        priority: 'LOW',
+        isRead: true,
+        readAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+      },
+    }),
+    
+    // Approval notifications
+    prisma.notification.create({
+      data: {
+        userId: adminUser.id,
+        type: 'APPROVAL_PENDING',
+        title: 'Approval Required',
+        message: 'Plan changes for Manufacturing Solutions need your approval',
+        link: '/approvals',
+        entityType: 'PLAN',
+        entityId: customers[5]?.id,
+        priority: 'HIGH',
+        isRead: false,
+        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+      },
+    }),
+  ]);
+  
+  console.log(`✅ Created ${notifications.length} sample notifications`);
+  
+  // Create notification preferences for admin user
+  const notificationTypes: Array<'TASK_ASSIGNED' | 'TASK_COMPLETED' | 'TASK_OVERDUE' | 'PLAN_CREATED' | 'PLAN_UPDATED' | 'PARTNER_ASSIGNED' | 'CONTRACT_SIGNED' | 'APPROVAL_PENDING'> = [
+    'TASK_ASSIGNED',
+    'TASK_COMPLETED',
+    'TASK_OVERDUE',
+    'PLAN_CREATED',
+    'PLAN_UPDATED',
+    'PARTNER_ASSIGNED',
+    'CONTRACT_SIGNED',
+    'APPROVAL_PENDING',
+  ];
+  
+  const notificationPreferences = await Promise.all(
+    notificationTypes.map((type) =>
+      prisma.notificationPreference.upsert({
+        where: {
+          userId_notificationType: {
+            userId: adminUser.id,
+            notificationType: type,
+          },
+        },
+        update: {},
+        create: {
+          userId: adminUser.id,
+          notificationType: type,
+          emailEnabled: true,
+          pushEnabled: true,
+          smsEnabled: false,
+          inAppEnabled: true,
+        },
+      })
+    )
+  );
+  
+  console.log(`✅ Created ${notificationPreferences.length} notification preferences`);
+  
+  // Create sample search logs
+  const searchLogs = await Promise.all([
+    prisma.searchLog.create({
+      data: {
+        userId: adminUser.id,
+        query: 'ABC Company',
+        category: 'CUSTOMERS',
+        resultsCount: 1,
+        clickedEntityType: 'CUSTOMER',
+        clickedEntityId: customers[0]?.id,
+        createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
+      },
+    }),
+    prisma.searchLog.create({
+      data: {
+        userId: adminUser.id,
+        query: 'Premium CFO',
+        category: 'PLANS',
+        resultsCount: 5,
+        clickedEntityType: 'PLAN',
+        clickedEntityId: customers[2]?.id,
+        createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000), // 3 hours ago
+      },
+    }),
+    prisma.searchLog.create({
+      data: {
+        userId: adminUser.id,
+        query: 'Dubai Finance',
+        category: 'PARTNERS',
+        resultsCount: 1,
+        clickedEntityType: 'PARTNER',
+        clickedEntityId: partners[0]?.id,
+        createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
+      },
+    }),
+    prisma.searchLog.create({
+      data: {
+        userId: adminUser.id,
+        query: 'financial review',
+        category: 'ALL',
+        resultsCount: 12,
+        createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
+      },
+    }),
+  ]);
+  
+  console.log(`✅ Created ${searchLogs.length} search logs`);
+  
+  console.log('');
+  console.log('📊 Global Controls Summary:');
+  console.log(`   - User Preferences: 1`);
+  console.log(`   - Notifications: ${notifications.length} (${notifications.filter(n => !n.isRead).length} unread)`);
+  console.log(`   - Notification Preferences: ${notificationPreferences.length}`);
+  console.log(`   - Search Logs: ${searchLogs.length}`);
+  console.log('');
+  
   console.log('✨ Database seed completed successfully!');
 }
 

@@ -31,6 +31,7 @@ import type { MenuProps } from 'antd';
 // import ThemeSwitcher from './ThemeSwitcher';
 import { useAccessControl } from '@/presentation/hooks/useAccessControl';
 import { UserRole, Permission } from '@/domain/entities/AccessControl';
+import GlobalTopBar from '@/presentation/components/GlobalTopBar';
 
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
@@ -321,82 +322,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         />
       </Sider>
       <Layout>
-        <Header style={{ 
-          padding: 0, 
-          background: 'linear-gradient(90deg, #ffffff 0%, #f8fafc 100%)',
-          borderBottom: '1px solid #e2e8f0',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          direction: isRTL ? 'rtl' : 'ltr'
-        }}>
-          <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            style={{
-              fontSize: '18px',
-              width: 64,
-              height: 64,
-              color: '#64748b',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = '#3b82f6';
-              e.currentTarget.style.backgroundColor = '#f1f5f9';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = '#64748b';
-              e.currentTarget.style.backgroundColor = 'transparent';
-            }}
-          />
-          
-          <Space size="middle" style={{ marginRight: 24 }}>
-            <Button
-              type="text"
-              icon={<BellOutlined />}
-              style={{
-                fontSize: 18,
-                color: '#64748b',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#3b82f6';
-                e.currentTarget.style.backgroundColor = '#f1f5f9';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = '#64748b';
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
-            />
-            
-            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
-              <Space style={{ 
-                cursor: 'pointer',
-                padding: '8px 12px',
-                borderRadius: 8,
-                transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#f1f5f9';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
-              >
-                <Avatar 
-                  size="small" 
-                  icon={<UserOutlined />}
-                  style={{
-                    background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)'
-                  }}
-                />
-                <span style={{ fontWeight: 500, color: '#374151' }}>Admin User</span>
-              </Space>
-            </Dropdown>
-          </Space>
-        </Header>
+        <GlobalTopBar />
         <Content
           style={{
             margin: '24px 16px',

@@ -364,5 +364,23 @@
     "back": "السابق",
     "submit": "إرسال الخطة",
     "completeRequired": "يرجى إكمال الحقول المطلوبة"
+  },
+  "globalControls": {
+    "searchPlaceholder": "البحث عن العملاء، الخطط، المهام، الشركاء...",
+    "dateRange": "نطاق التاريخ",
+    "region": "المنطقة",
+    "currency": "العملة",
+    "notifications": "الإشعارات",
+    "noNotifications": "لا توجد إشعارات",
+    "markAllRead": "وضع علامة مقروءة على الكل",
+    "markAsRead": "وضع علامة مقروءة",
+    "profile": "الملف الشخصي",
+    "settings": "الإعدادات",
+    "logout": "تسجيل الخروج",
+    "allTime": "كل الأوقات",
+    "thisYear": "هذا العام",
+    "thisQuarter": "هذا الربع",
+    "thisMonth": "هذا الشهر",
+    "customRange": "نطاق مخصص"
   }
 }

@@ -364,5 +364,23 @@
     "back": "Back",
     "submit": "Submit Plan",
     "completeRequired": "Please complete required fields"
+  },
+  "globalControls": {
+    "searchPlaceholder": "Search customers, plans, tasks, partners...",
+    "dateRange": "Date Range",
+    "region": "Region",
+    "currency": "Currency",
+    "notifications": "Notifications",
+    "noNotifications": "No notifications",
+    "markAllRead": "Mark all as read",
+    "markAsRead": "Mark as read",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout",
+    "allTime": "All Time",
+    "thisYear": "This Year",
+    "thisQuarter": "This Quarter",
+    "thisMonth": "This Month",
+    "customRange": "Custom Range"
   }
 }
