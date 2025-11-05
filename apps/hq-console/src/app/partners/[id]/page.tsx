@@ -18,6 +18,7 @@ import { ArrowLeftOutlined, EditOutlined, UserOutlined, CheckCircleOutlined, Sto
 import { useRouter, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { ColumnsType } from 'antd/es/table';
+import DashboardLayout from '@/components/DashboardLayout';
 
 interface Assignment {
   id: string;
@@ -170,9 +171,11 @@ export default function ViewPartnerPage() {
 
   if (loading) {
     return (
-      <div style={{ padding: '24px', textAlign: 'center' }}>
-        <Spin size="large" />
-      </div>
+      <DashboardLayout>
+        <div style={{ textAlign: 'center' }}>
+          <Spin size="large" />
+        </div>
+      </DashboardLayout>
     );
   }
 
@@ -181,7 +184,7 @@ export default function ViewPartnerPage() {
   }
 
   return (
-    <div style={{ padding: '24px' }}>
+    <DashboardLayout>
       <Card>
         <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
           <Col>
@@ -235,7 +238,7 @@ export default function ViewPartnerPage() {
           </Descriptions.Item>
           
           <Descriptions.Item label={t('rating')}>
-            {partner.rating ? <Rate disabled defaultValue={partner.rating} /> : '-'}
+            {partner.rating ? <Rate disabled defaultValue={partner.rating} style={{ fontSize: '14px' }} /> : '-'}
           </Descriptions.Item>
           <Descriptions.Item label={t('availability')}>
             <Tag color={getAvailabilityColor(partner.availability)}>{partner.availability}</Tag>
@@ -284,7 +287,7 @@ export default function ViewPartnerPage() {
           </>
         )}
       </Card>
-    </div>
+    </DashboardLayout>
   );
 }
 

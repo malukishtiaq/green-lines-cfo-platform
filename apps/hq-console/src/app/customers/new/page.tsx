@@ -15,6 +15,7 @@ import {
 import { SaveOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import DashboardLayout from '@/components/DashboardLayout';
 
 const { TextArea } = Input;
 
@@ -105,171 +106,171 @@ export default function NewCustomerPage() {
   };
 
   return (
-    <div style={{ padding: '24px' }}>
+    <DashboardLayout>
       <Card>
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
-          <Row justify="space-between" align="middle">
-            <Col>
-              <h2 style={{ margin: 0 }}>{t('addCustomer')}</h2>
-            </Col>
-            <Col>
-              <Button
-                icon={<ArrowLeftOutlined />}
-                onClick={() => router.push('/customers')}
-              >
-                {tCommon('back')}
-              </Button>
-            </Col>
-          </Row>
-
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleSubmit}
-            initialValues={{ status: 'ACTIVE', size: 'MEDIUM' }}
-          >
-            <Row gutter={16}>
-              <Col xs={24} md={12}>
-                <Form.Item
-                  name="name"
-                  label={t('name')}
-                  rules={[{ required: true, message: t('nameRequired') }]}
-                >
-                  <Input size="large" placeholder={t('namePlaceholder')} />
-                </Form.Item>
-              </Col>
-              <Col xs={24} md={12}>
-                <Form.Item
-                  name="email"
-                  label={t('email')}
-                  rules={[
-                    { required: true, message: t('emailRequired') },
-                    { type: 'email', message: t('emailInvalid') },
-                  ]}
-                >
-                  <Input size="large" placeholder={t('emailPlaceholder')} />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Row gutter={16}>
-              <Col xs={24} md={12}>
-                <Form.Item name="phone" label={t('phone')}>
-                  <Input size="large" placeholder={t('phonePlaceholder')} />
-                </Form.Item>
-              </Col>
-              <Col xs={24} md={12}>
-                <Form.Item name="company" label={t('company')}>
-                  <Input size="large" placeholder={t('companyPlaceholder')} />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Row gutter={16}>
-              <Col xs={24} md={12}>
-                <Form.Item name="country" label={t('country')}>
-                  <Select
-                    size="large"
-                    placeholder={t('countryPlaceholder')}
-                    showSearch
-                    options={allCountries.map(c => ({ label: c, value: c }))}
-                  />
-                </Form.Item>
-              </Col>
-              <Col xs={24} md={12}>
-                <Form.Item name="city" label={t('city')}>
-                  <Input size="large" placeholder={t('cityPlaceholder')} />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Row gutter={16}>
-              <Col xs={24}>
-                <Form.Item name="address" label={t('address')}>
-                  <Input size="large" placeholder={t('addressPlaceholder')} />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Row gutter={16}>
-              <Col xs={24} md={8}>
-                <Form.Item name="industry" label={t('industry')}>
-                  <Select
-                    size="large"
-                    placeholder={t('industryPlaceholder')}
-                    options={[
-                      { label: 'Technology', value: 'Technology' },
-                      { label: 'Manufacturing', value: 'Manufacturing' },
-                      { label: 'Retail', value: 'Retail' },
-                      { label: 'Healthcare', value: 'Healthcare' },
-                      { label: 'Finance', value: 'Finance' },
-                      { label: 'Real Estate', value: 'Real Estate' },
-                      { label: 'Education', value: 'Education' },
-                      { label: 'Logistics', value: 'Logistics' },
-                    ]}
-                  />
-                </Form.Item>
-              </Col>
-              <Col xs={24} md={8}>
-                <Form.Item name="size" label={t('size')}>
-                  <Select
-                    size="large"
-                    options={[
-                      { label: 'Small', value: 'SMALL' },
-                      { label: 'Medium', value: 'MEDIUM' },
-                      { label: 'Large', value: 'LARGE' },
-                      { label: 'Enterprise', value: 'ENTERPRISE' },
-                    ]}
-                  />
-                </Form.Item>
-              </Col>
-              <Col xs={24} md={8}>
-                <Form.Item name="status" label={t('status')}>
-                  <Select
-                    size="large"
-                    options={[
-                      { label: 'Active', value: 'ACTIVE' },
-                      { label: 'Inactive', value: 'INACTIVE' },
-                      { label: 'Suspended', value: 'SUSPENDED' },
-                    ]}
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Row gutter={16}>
-              <Col xs={24}>
-                <Form.Item name="notes" label={t('notes')}>
-                  <TextArea
-                    rows={4}
-                    placeholder={t('notesPlaceholder')}
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Row justify="end">
+          <Space direction="vertical" size="large" style={{ width: '100%' }}>
+            <Row justify="space-between" align="middle">
               <Col>
-                <Space>
-                  <Button onClick={() => router.push('/customers')}>
-                    {tCommon('cancel')}
-                  </Button>
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    icon={<SaveOutlined />}
-                    loading={loading}
-                    size="large"
-                  >
-                    {tCommon('save')}
-                  </Button>
-                </Space>
+                <h2 style={{ margin: 0 }}>{t('addCustomer')}</h2>
+              </Col>
+              <Col>
+                <Button
+                  icon={<ArrowLeftOutlined />}
+                  onClick={() => router.push('/customers')}
+                >
+                  {tCommon('back')}
+                </Button>
               </Col>
             </Row>
+
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={handleSubmit}
+              initialValues={{ status: 'ACTIVE', size: 'MEDIUM' }}
+            >
+              <Row gutter={16}>
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    name="name"
+                    label={t('name')}
+                    rules={[{ required: true, message: t('nameRequired') }]}
+                  >
+                    <Input size="large" placeholder={t('namePlaceholder')} />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    name="email"
+                    label={t('email')}
+                    rules={[
+                      { required: true, message: t('emailRequired') },
+                      { type: 'email', message: t('emailInvalid') },
+                    ]}
+                  >
+                    <Input size="large" placeholder={t('emailPlaceholder')} />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Row gutter={16}>
+                <Col xs={24} md={12}>
+                  <Form.Item name="phone" label={t('phone')}>
+                    <Input size="large" placeholder={t('phonePlaceholder')} />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item name="company" label={t('company')}>
+                    <Input size="large" placeholder={t('companyPlaceholder')} />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Row gutter={16}>
+                <Col xs={24} md={12}>
+                  <Form.Item name="country" label={t('country')}>
+                    <Select
+                      size="large"
+                      placeholder={t('countryPlaceholder')}
+                      showSearch
+                      options={allCountries.map(c => ({ label: c, value: c }))}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item name="city" label={t('city')}>
+                    <Input size="large" placeholder={t('cityPlaceholder')} />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Row gutter={16}>
+                <Col xs={24}>
+                  <Form.Item name="address" label={t('address')}>
+                    <Input size="large" placeholder={t('addressPlaceholder')} />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Row gutter={16}>
+                <Col xs={24} md={8}>
+                  <Form.Item name="industry" label={t('industry')}>
+                    <Select
+                      size="large"
+                      placeholder={t('industryPlaceholder')}
+                      options={[
+                        { label: 'Technology', value: 'Technology' },
+                        { label: 'Manufacturing', value: 'Manufacturing' },
+                        { label: 'Retail', value: 'Retail' },
+                        { label: 'Healthcare', value: 'Healthcare' },
+                        { label: 'Finance', value: 'Finance' },
+                        { label: 'Real Estate', value: 'Real Estate' },
+                        { label: 'Education', value: 'Education' },
+                        { label: 'Logistics', value: 'Logistics' },
+                      ]}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Form.Item name="size" label={t('size')}>
+                    <Select
+                      size="large"
+                      options={[
+                        { label: 'Small', value: 'SMALL' },
+                        { label: 'Medium', value: 'MEDIUM' },
+                        { label: 'Large', value: 'LARGE' },
+                        { label: 'Enterprise', value: 'ENTERPRISE' },
+                      ]}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Form.Item name="status" label={t('status')}>
+                    <Select
+                      size="large"
+                      options={[
+                        { label: 'Active', value: 'ACTIVE' },
+                        { label: 'Inactive', value: 'INACTIVE' },
+                        { label: 'Suspended', value: 'SUSPENDED' },
+                      ]}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Row gutter={16}>
+                <Col xs={24}>
+                  <Form.Item name="notes" label={t('notes')}>
+                    <TextArea
+                      rows={4}
+                      placeholder={t('notesPlaceholder')}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Row justify="end">
+                <Col>
+                  <Space>
+                    <Button onClick={() => router.push('/customers')}>
+                      {tCommon('cancel')}
+                    </Button>
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      icon={<SaveOutlined />}
+                      loading={loading}
+                      size="large"
+                    >
+                      {tCommon('save')}
+                    </Button>
+                  </Space>
+                </Col>
+              </Row>
           </Form>
         </Space>
       </Card>
-    </div>
+    </DashboardLayout>
   );
 }
 

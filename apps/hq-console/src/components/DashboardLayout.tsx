@@ -52,12 +52,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       const path = window.location.pathname;
       if (path === '/' || path === '/dashboard') {
         setSelectedKey('dashboard');
+      } else if (path === '/customers') {
+        setSelectedKey('customers');
+      } else if (path === '/partners') {
+        setSelectedKey('partners');
       } else if (path === '/plans/new') {
         setSelectedKey('plans/new');
       } else if (path === '/plans') {
         setSelectedKey('plans');
-      } else if (path === '/partners') {
-        setSelectedKey('partners');
       } else if (path === '/tasks') {
         setSelectedKey('tasks');
       }
@@ -327,15 +329,27 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         />
       </Sider>
       <Layout>
-        <GlobalTopBar />
+        <Header
+          style={{
+            padding: 0,
+            background: '#fff',
+            borderBottom: '1px solid #f0f0f0',
+            height: 'auto',
+            lineHeight: 'normal',
+            margin: 0,
+            paddingRight: 0,
+          }}
+        >
+          <GlobalTopBar />
+        </Header>
         <Content
           style={{
-            margin: '24px 16px',
-            padding: 24,
+            margin: '16px',
+            padding: 0,
             minHeight: 280,
-            background: '#fff',
-            borderRadius: 8,
-            direction: isRTL ? 'rtl' : 'ltr'
+            background: 'transparent',
+            direction: isRTL ? 'rtl' : 'ltr',
+            overflowY: 'auto',
           }}
         >
           {hasDraft && typeof window !== 'undefined' && !window.location.pathname.includes('/plans/new') && (

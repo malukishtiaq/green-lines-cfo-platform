@@ -25,6 +25,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { ColumnsType } from 'antd/es/table';
+import DashboardLayout from '@/components/DashboardLayout';
 
 const { Search } = Input;
 
@@ -103,6 +104,24 @@ export default function PlansPage() {
     id: '',
     name: '',
   });
+
+  // Initialize from URL params and listen for global filter changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      // Plans page doesn't directly use region filter but we keep the listener
+      // in case we want to add region-based filtering in the future
+    }
+
+    // Listen for global filter changes (for future use)
+    const handleGlobalFilterChange = (event: any) => {
+      // Currently plans don't filter by region, but this is ready for future enhancement
+      console.log('Global filter changed:', event.detail);
+    };
+
+    window.addEventListener('globalFilterChange', handleGlobalFilterChange);
+    return () => window.removeEventListener('globalFilterChange', handleGlobalFilterChange);
+  }, []);
 
   useEffect(() => {
     fetchPlans();
@@ -265,7 +284,7 @@ export default function PlansPage() {
   ];
 
   return (
-    <div style={{ padding: '24px' }}>
+    <DashboardLayout>
       <Card>
         <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
           <Col>
@@ -351,6 +370,6 @@ export default function PlansPage() {
       >
         <p>Are you sure you want to delete <strong>{deleteModal.name}</strong>?</p>
       </Modal>
-    </div>
+    </DashboardLayout>
   );
 }

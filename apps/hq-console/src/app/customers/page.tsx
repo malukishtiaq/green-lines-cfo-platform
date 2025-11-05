@@ -25,6 +25,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { ColumnsType } from 'antd/es/table';
+import DashboardLayout from '@/components/DashboardLayout';
 
 const { Search } = Input;
 
@@ -99,6 +100,29 @@ export default function CustomersPage() {
     id: '',
     name: '',
   });
+
+  // Initialize from URL params and listen for global filter changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const urlRegion = params.get('region');
+      if (urlRegion) {
+        setRegionFilter(urlRegion);
+      } else {
+        setRegionFilter(null);
+      }
+    }
+
+    // Listen for global filter changes
+    const handleGlobalFilterChange = (event: any) => {
+      if (event.detail.region !== undefined) {
+        setRegionFilter(event.detail.region || null);
+      }
+    };
+
+    window.addEventListener('globalFilterChange', handleGlobalFilterChange);
+    return () => window.removeEventListener('globalFilterChange', handleGlobalFilterChange);
+  }, []);
 
   useEffect(() => {
     fetchCustomers();
@@ -252,107 +276,107 @@ export default function CustomersPage() {
   ];
 
   return (
-    <div style={{ padding: '24px' }}>
+    <DashboardLayout>
       <Card>
-        <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
-          <Col>
-            <h2 style={{ margin: 0 }}>{t('title')}</h2>
-          </Col>
-          <Col>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => router.push('/customers/new')}
-              size="large"
-            >
-              {t('addCustomer')}
-            </Button>
-          </Col>
-        </Row>
+          <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
+            <Col>
+              <h2 style={{ margin: 0 }}>{t('title')}</h2>
+            </Col>
+            <Col>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => router.push('/customers/new')}
+                size="large"
+              >
+                {t('addCustomer')}
+              </Button>
+            </Col>
+          </Row>
 
-        <Row gutter={16} style={{ marginBottom: 16 }}>
-          <Col xs={24} sm={12} md={6}>
-            <Search
-              placeholder={t('searchPlaceholder')}
-              allowClear
-              onSearch={setSearchText}
-              onChange={(e) => !e.target.value && setSearchText('')}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Select
-              placeholder={t('filterByRegion')}
-              allowClear
-              style={{ width: '100%' }}
-              onChange={setRegionFilter}
-              options={[
-                { label: 'GCC', value: 'GCC' },
-                { label: 'MENA', value: 'MENA' },
-                { label: 'APAC', value: 'APAC' },
-                { label: 'EU', value: 'EU' },
-              ]}
-            />
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Select
-              placeholder={t('filterByIndustry')}
-              allowClear
-              style={{ width: '100%' }}
-              onChange={setIndustryFilter}
-              options={[
-                { label: 'Technology', value: 'Technology' },
-                { label: 'Manufacturing', value: 'Manufacturing' },
-                { label: 'Retail', value: 'Retail' },
-                { label: 'Healthcare', value: 'Healthcare' },
-                { label: 'Finance', value: 'Finance' },
-                { label: 'Real Estate', value: 'Real Estate' },
-                { label: 'Education', value: 'Education' },
-                { label: 'Logistics', value: 'Logistics' },
-              ]}
-            />
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Select
-              placeholder={t('filterByStatus')}
-              allowClear
-              style={{ width: '100%' }}
-              onChange={setStatusFilter}
-              options={[
-                { label: 'Active', value: 'ACTIVE' },
-                { label: 'Inactive', value: 'INACTIVE' },
-                { label: 'Suspended', value: 'SUSPENDED' },
-              ]}
-            />
-          </Col>
-        </Row>
+          <Row gutter={16} style={{ marginBottom: 16 }}>
+            <Col xs={24} sm={12} md={6}>
+              <Search
+                placeholder={t('searchPlaceholder')}
+                allowClear
+                onSearch={setSearchText}
+                onChange={(e) => !e.target.value && setSearchText('')}
+                style={{ width: '100%' }}
+              />
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <Select
+                placeholder={t('filterByRegion')}
+                allowClear
+                style={{ width: '100%' }}
+                onChange={setRegionFilter}
+                options={[
+                  { label: 'GCC', value: 'GCC' },
+                  { label: 'MENA', value: 'MENA' },
+                  { label: 'APAC', value: 'APAC' },
+                  { label: 'EU', value: 'EU' },
+                ]}
+              />
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <Select
+                placeholder={t('filterByIndustry')}
+                allowClear
+                style={{ width: '100%' }}
+                onChange={setIndustryFilter}
+                options={[
+                  { label: 'Technology', value: 'Technology' },
+                  { label: 'Manufacturing', value: 'Manufacturing' },
+                  { label: 'Retail', value: 'Retail' },
+                  { label: 'Healthcare', value: 'Healthcare' },
+                  { label: 'Finance', value: 'Finance' },
+                  { label: 'Real Estate', value: 'Real Estate' },
+                  { label: 'Education', value: 'Education' },
+                  { label: 'Logistics', value: 'Logistics' },
+                ]}
+              />
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <Select
+                placeholder={t('filterByStatus')}
+                allowClear
+                style={{ width: '100%' }}
+                onChange={setStatusFilter}
+                options={[
+                  { label: 'Active', value: 'ACTIVE' },
+                  { label: 'Inactive', value: 'INACTIVE' },
+                  { label: 'Suspended', value: 'SUSPENDED' },
+                ]}
+              />
+            </Col>
+          </Row>
 
-        <Table
-          columns={columns}
-          dataSource={customers}
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => `${tCommon('total')} ${total} ${t('customers')}`,
-          }}
-        />
-      </Card>
+          <Table
+            columns={columns}
+            dataSource={customers}
+            rowKey="id"
+            loading={loading}
+            pagination={{
+              pageSize: 10,
+              showSizeChanger: true,
+              showTotal: (total) => `${tCommon('total')} ${total} ${t('customers')}`,
+            }}
+          />
+        </Card>
 
-      <Modal
-        title={t('deleteConfirmTitle')}
-        open={deleteModal.visible}
-        onOk={confirmDelete}
-        onCancel={() => setDeleteModal({ visible: false, id: '', name: '' })}
-        okText={tCommon('delete')}
-        cancelText={tCommon('cancel')}
-        okType="danger"
-        centered
-      >
-        <p>Are you sure you want to delete <strong>{deleteModal.name}</strong>?</p>
-      </Modal>
-    </div>
+        <Modal
+          title={t('deleteConfirmTitle')}
+          open={deleteModal.visible}
+          onOk={confirmDelete}
+          onCancel={() => setDeleteModal({ visible: false, id: '', name: '' })}
+          okText={tCommon('delete')}
+          cancelText={tCommon('cancel')}
+          okType="danger"
+          centered
+        >
+          <p>Are you sure you want to delete <strong>{deleteModal.name}</strong>?</p>
+        </Modal>
+    </DashboardLayout>
   );
 }
 
