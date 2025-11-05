@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
 import { Card, Steps, Button, Form, Input, Select, DatePicker, Space, Typography, message, Table, InputNumber, Checkbox, Modal, Tag, Progress, Tooltip, App, Row, Col, Divider } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, SaveOutlined, DeleteFilled, ReloadOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, SaveOutlined, DeleteFilled } from '@ant-design/icons';
 
 const { Title, Paragraph, Text } = Typography;
 const { Step } = Steps;
@@ -209,9 +209,14 @@ const PlanBuilder: React.FC = () => {
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
   const [users, setUsers] = useState<Array<{ id: string; name: string; phone: string }>>([]);
   
-  // Clients state - Fetch from database
-  const [clients, setClients] = useState<Array<{ id: string; name: string; company?: string | null; industry?: string | null }>>([]);
-  const [loadingClients, setLoadingClients] = useState(true);
+  // Clients state (TODO: Replace with actual API call when CRM is implemented)
+  const [clients, setClients] = useState<Array<{ id: string; name: string; industry?: string }>>([
+    { id: 'client1', name: 'ABC Company', industry: 'Manufacturing' },
+    { id: 'client2', name: 'XYZ Corporation', industry: 'Retail' },
+    { id: 'client3', name: 'Tech Solutions Inc', industry: 'Technology' },
+    { id: 'client4', name: 'Green Lines Trading', industry: 'Trading' },
+    { id: 'client5', name: 'Al Salam Group', industry: 'Real Estate' },
+  ]);
   
   // Modal states
   const [milestoneForm] = Form.useForm();
@@ -231,30 +236,6 @@ const PlanBuilder: React.FC = () => {
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [autoEditMilestone, setAutoEditMilestone] = useState<string | null>(null);
-
-  // Fetch customers from database
-  React.useEffect(() => {
-    const fetchCustomers = async () => {
-      try {
-        setLoadingClients(true);
-        const response = await fetch('/api/customers');
-        if (response.ok) {
-          const data = await response.json();
-          setClients(data);
-        } else {
-          console.error('Failed to fetch customers');
-          message.error('Failed to load customers');
-        }
-      } catch (error) {
-        console.error('Error fetching customers:', error);
-        message.error('Error loading customers');
-      } finally {
-        setLoadingClients(false);
-      }
-    };
-
-    fetchCustomers();
-  }, []);
 
   // Check for milestone parameter in URL
   React.useEffect(() => {
@@ -905,26 +886,14 @@ const PlanBuilder: React.FC = () => {
                 <Select 
                   showSearch
                   placeholder="Select a client"
-                  loading={loadingClients}
-                  notFoundContent={loadingClients ? 'Loading customers...' : 'No customers found'}
                   optionFilterProp="children"
                   filterOption={(input, option) =>
                     (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                   }
-                  options={clients.map(client => {
-                    // Format: "Name - Company (Industry)" or just "Name" if no company
-                    let label = client.name;
-                    if (client.company) {
-                      label = `${client.name} - ${client.company}`;
-                    }
-                    if (client.industry) {
-                      label += ` (${client.industry})`;
-                    }
-                    return {
-                      value: client.id,
-                      label: label,
-                    };
-                  })}
+                  options={clients.map(client => ({
+                    value: client.id,
+                    label: `${client.name}${client.industry ? ` (${client.industry})` : ''}`,
+                  }))}
                 />
               </Form.Item>
             </Col>

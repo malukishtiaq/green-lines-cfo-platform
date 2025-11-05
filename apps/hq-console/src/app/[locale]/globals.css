@@ -20,32 +20,6 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-y: scroll; /* Always show scrollbar to prevent layout shift */
-  scrollbar-gutter: stable; /* Reserve space for scrollbar */
-}
-
-/* Modern scrollbar styling */
-body::-webkit-scrollbar {
-  width: 8px;
-}
-
-body::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-body::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
-}
-
-body::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-/* For Firefox */
-body {
-  scrollbar-width: thin;
-  scrollbar-color: #888 transparent;
 }
 
 /* RTL Support */

@@ -100,38 +100,18 @@ export default function GlobalTopBar() {
 
   const searchDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
-  // User ID state - fetch from API on mount
-  const [userId, setUserId] = useState<string>('');
+  // Hardcoded userId for now (later get from session)
+  const userId = 'cm38rg80u0000vv2r6lgxrsvu'; // Use actual admin user ID from seed
 
-  // Fetch user ID and preferences on mount
+  // Fetch user preferences on mount
   useEffect(() => {
-    const initializeUser = async () => {
-      try {
-        // Fetch the admin user from the API
-        const response = await fetch('/api/user/current');
-        if (response.ok) {
-          const data = await response.json();
-          setUserId(data.id);
-        }
-      } catch (error) {
-        console.error('Error fetching current user:', error);
-      }
-    };
-
-    initializeUser();
-  }, []);
-
-  // Fetch preferences and notifications when userId is available
-  useEffect(() => {
-    if (!userId) return;
-
     fetchUserPreferences();
     fetchUnreadCount();
     
     // Poll for new notifications every 30 seconds
     const interval = setInterval(fetchUnreadCount, 30000);
     return () => clearInterval(interval);
-  }, [userId]);
+  }, []);
 
   const fetchUserPreferences = async () => {
     try {
@@ -241,12 +221,6 @@ export default function GlobalTopBar() {
   // Update preferences
   const updatePreference = async (key: string, value: any) => {
     try {
-      // If userId is not available yet, skip
-      if (!userId) {
-        console.warn('userId not available, skipping preference update');
-        return;
-      }
-
       const response = await fetch('/api/user/preferences', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -257,25 +231,6 @@ export default function GlobalTopBar() {
       });
       const data = await response.json();
       setPreferences(data);
-      
-      // Update URL parameters if on customers or partners page
-      if (key === 'defaultRegion' && typeof window !== 'undefined') {
-        const path = window.location.pathname;
-        if (path === '/customers' || path === '/partners' || path === '/plans') {
-          const url = new URL(window.location.href);
-          if (value) {
-            url.searchParams.set('region', value);
-          } else {
-            url.searchParams.delete('region');
-          }
-          window.history.pushState({}, '', url);
-        }
-        
-        // Trigger a custom event to notify pages (including dashboard)
-        window.dispatchEvent(new CustomEvent('globalFilterChange', { 
-          detail: { region: value } 
-        }));
-      }
     } catch (error) {
       console.error('Error updating preference:', error);
     }
@@ -331,20 +286,17 @@ export default function GlobalTopBar() {
         display: 'flex',
         alignItems: 'center',
         gap: '16px',
-        padding: '12px 16px',
+        padding: '12px 24px',
         backgroundColor: '#fff',
-        width: '100%',
+        borderBottom: '1px solid #f0f0f0',
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
         direction: isRTL ? 'rtl' : 'ltr',
       }}
     >
       {/* Global Search */}
-      <div
-        style={{
-          flex: 1,
-          maxWidth: '500px',
-          position: 'relative'
-        }}
-      >
+      <div style={{ flex: 1, maxWidth: '500px' }}>
         <Input
           size="large"
           prefix={<SearchOutlined />}
@@ -400,81 +352,63 @@ export default function GlobalTopBar() {
         )}
       </div>
 
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px',
-          marginLeft: 'auto'
-        }}
-      >
-        {/* Date Range Filter */}
-        <Tooltip title={t('dateRange')}>
-          <Button
-            icon={<CalendarOutlined />}
-            size="large"
-            onClick={() => {
-              // Handle date range picker
-            }}
-          >
-            {preferences.defaultDateRange?.replace('_', ' ') || 'Date Range'}
-          </Button>
-        </Tooltip>
-
-        {/* Region Filter */}
-        <Select
+      {/* Date Range Filter */}
+      <Tooltip title={t('dateRange')}>
+        <Button
+          icon={<CalendarOutlined />}
           size="large"
-          style={{ width: '120px' }}
-          placeholder={t('region')}
-          value={preferences.defaultRegion || undefined}
-          onChange={(value) => updatePreference('defaultRegion', value === undefined ? null : value)}
-          options={[
-            { label: 'GCC', value: 'GCC' },
-            { label: 'MENA', value: 'MENA' },
-            { label: 'APAC', value: 'APAC' },
-            { label: 'EU', value: 'EU' },
-          ]}
-          allowClear
-        />
+          onClick={() => {
+            // Handle date range picker
+          }}
+        >
+          {preferences.defaultDateRange?.replace('_', ' ') || 'Date Range'}
+        </Button>
+      </Tooltip>
 
-        {/* Currency Selector */}
-        <Select
+      {/* Region Filter */}
+      <Select
+        size="large"
+        style={{ width: '120px' }}
+        placeholder={t('region')}
+        value={preferences.defaultRegion || undefined}
+        onChange={(value) => updatePreference('defaultRegion', value)}
+        options={[
+          { label: 'GCC', value: 'GCC' },
+          { label: 'MENA', value: 'MENA' },
+          { label: 'APAC', value: 'APAC' },
+          { label: 'EU', value: 'EU' },
+        ]}
+        allowClear
+      />
+
+      {/* Currency Selector */}
+      <Select
+        size="large"
+        style={{ width: '100px' }}
+        value={preferences.currency}
+        onChange={(value) => updatePreference('currency', value)}
+        suffixIcon={<DollarOutlined />}
+        options={[
+          { label: 'AED', value: 'AED' },
+          { label: 'SAR', value: 'SAR' },
+          { label: 'USD', value: 'USD' },
+          { label: 'EUR', value: 'EUR' },
+          { label: 'GBP', value: 'GBP' },
+        ]}
+      />
+
+      {/* Notifications */}
+      <Badge count={unreadCount} offset={[-5, 5]}>
+        <Button
+          type="text"
+          icon={<BellOutlined style={{ fontSize: '20px' }} />}
           size="large"
-          style={{ width: '100px' }}
-          value={preferences.currency}
-          onChange={(value) => updatePreference('currency', value)}
-          suffixIcon={<DollarOutlined />}
-          options={[
-            { label: 'AED', value: 'AED' },
-            { label: 'SAR', value: 'SAR' },
-            { label: 'USD', value: 'USD' },
-            { label: 'EUR', value: 'EUR' },
-            { label: 'GBP', value: 'GBP' },
-          ]}
+          onClick={() => {
+            setNotificationsVisible(true);
+            fetchNotifications();
+          }}
         />
-
-        {/* Notifications */}
-        <Badge count={unreadCount} offset={[-5, 5]}>
-          <Button
-            type="text"
-            icon={<BellOutlined style={{ fontSize: '20px' }} />}
-            size="large"
-            onClick={() => {
-              setNotificationsVisible(true);
-              fetchNotifications();
-            }}
-          />
-        </Badge>
-
-        {/* User Menu */}
-        <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
-          <Avatar
-            size="large"
-            icon={<UserOutlined />}
-            style={{ cursor: 'pointer', backgroundColor: '#1890ff' }}
-          />
-        </Dropdown>
-      </div>
+      </Badge>
 
       {/* Notifications Drawer */}
       <Drawer
@@ -563,6 +497,15 @@ export default function GlobalTopBar() {
           />
         )}
       </Drawer>
+
+      {/* User Menu */}
+      <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+        <Avatar
+          size="large"
+          icon={<UserOutlined />}
+          style={{ cursor: 'pointer', backgroundColor: '#1890ff' }}
+        />
+      </Dropdown>
     </div>
   );
 }
