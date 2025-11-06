@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
+import dayjs from 'dayjs';
+import type { Dayjs } from 'dayjs';
 import { Card, Steps, Button, Form, Input, Select, DatePicker, Space, Typography, message, Table, InputNumber, Checkbox, Modal, Tag, Progress, Tooltip, App, Row, Col, Divider } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, SaveOutlined, DeleteFilled, ReloadOutlined } from '@ant-design/icons';
 
@@ -210,13 +212,8 @@ const PlanBuilder: React.FC = () => {
   const [users, setUsers] = useState<Array<{ id: string; name: string; phone: string }>>([]);
   
   // Clients state (TODO: Replace with actual API call when CRM is implemented)
-  const [clients, setClients] = useState<Array<{ id: string; name: string; industry?: string }>>([
-    { id: 'client1', name: 'ABC Company', industry: 'Manufacturing' },
-    { id: 'client2', name: 'XYZ Corporation', industry: 'Retail' },
-    { id: 'client3', name: 'Tech Solutions Inc', industry: 'Technology' },
-    { id: 'client4', name: 'Green Lines Trading', industry: 'Trading' },
-    { id: 'client5', name: 'Al Salam Group', industry: 'Real Estate' },
-  ]);
+  const [clients, setClients] = useState<Array<{ id: string; name: string; company?: string | null; industry?: string | null }>>([]);
+  const [clientsLoading, setClientsLoading] = useState<boolean>(false);
   
   // Modal states
   const [milestoneForm] = Form.useForm();
@@ -236,6 +233,37 @@ const PlanBuilder: React.FC = () => {
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [autoEditMilestone, setAutoEditMilestone] = useState<string | null>(null);
+
+  // Fetch clients from API to populate dropdown
+  React.useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        setClientsLoading(true);
+        const response = await fetch('/api/customers');
+        if (!response.ok) {
+          throw new Error(`Failed with status ${response.status}`);
+        }
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setClients(
+            data.map((client: any) => ({
+              id: client.id,
+              name: client.name,
+              company: client.company ?? null,
+              industry: client.industry ?? null,
+            }))
+          );
+        }
+      } catch (error) {
+        console.error('Error loading customers:', error);
+        message.error('Failed to load customers. Please refresh or try again later.');
+      } finally {
+        setClientsLoading(false);
+      }
+    };
+
+    fetchClients();
+  }, []);
 
   // Check for milestone parameter in URL
   React.useEffect(() => {
@@ -558,16 +586,23 @@ const PlanBuilder: React.FC = () => {
   const openKPIModal = (kpi?: KPIItem) => {
     if (kpi) {
       setEditingKPI(kpi);
-      kpiForm.setFieldsValue(kpi);
+      kpiForm.setFieldsValue({
+        ...kpi,
+        effectiveFrom: kpi.effectiveFrom ? dayjs(kpi.effectiveFrom) : undefined,
+        effectiveTo: kpi.effectiveTo ? dayjs(kpi.effectiveTo) : undefined,
+      });
     } else {
       setEditingKPI(null);
       kpiForm.resetFields();
       kpiForm.setFieldsValue({ 
+        kpiCode: '',
+        kpiName: '',
+        targetValue: 0,
         thresholdGreen: 90, 
         thresholdAmber: 70, 
         thresholdRed: 50,
         weight: 0,
-        effectiveFrom: new Date().toISOString().split('T')[0]
+        effectiveFrom: dayjs(),
       });
     }
     setKPIModalVisible(true);
@@ -575,7 +610,21 @@ const PlanBuilder: React.FC = () => {
 
   const saveKPI = async () => {
     try {
-      const values = await kpiForm.validateFields();
+      const rawValues = await kpiForm.validateFields();
+      const values = {
+        ...rawValues,
+        targetValue: Number(rawValues.targetValue ?? 0),
+        thresholdGreen: Number(rawValues.thresholdGreen ?? 0),
+        thresholdAmber: Number(rawValues.thresholdAmber ?? 0),
+        thresholdRed: Number(rawValues.thresholdRed ?? 0),
+        weight: Number(rawValues.weight ?? 0),
+        effectiveFrom: rawValues.effectiveFrom
+          ? (rawValues.effectiveFrom as Dayjs).format('YYYY-MM-DD')
+          : undefined,
+        effectiveTo: rawValues.effectiveTo
+          ? (rawValues.effectiveTo as Dayjs).format('YYYY-MM-DD')
+          : undefined,
+      };
       if (editingKPI) {
         setKPIs(prev => prev.map(k => k.id === editingKPI.id ? { ...editingKPI, ...values } : k));
         message.success('KPI updated');
@@ -882,18 +931,28 @@ const PlanBuilder: React.FC = () => {
           {/* Client Selection */}
           <Row gutter={[16, 16]}>
             <Col span={12}>
-              <Form.Item name="clientId" label="Client" rules={[{ required: true, message: 'Please select a client' }]}>
+              <Form.Item name="clientId" label="Client" rules={[{ required: true, message: 'Please select a client' }]}> 
                 <Select 
                   showSearch
                   placeholder="Select a client"
-                  optionFilterProp="children"
+                  loading={clientsLoading}
+                  optionFilterProp="label"
                   filterOption={(input, option) =>
                     (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                   }
-                  options={clients.map(client => ({
-                    value: client.id,
-                    label: `${client.name}${client.industry ? ` (${client.industry})` : ''}`,
-                  }))}
+                  notFoundContent={clientsLoading ? 'Loading customers…' : 'No customers found'}
+                  options={clients.map(client => {
+                    const baseLabel = client.company
+                      ? `${client.name} - ${client.company}`
+                      : client.name;
+                    const label = client.industry
+                      ? `${baseLabel} (${client.industry})`
+                      : baseLabel;
+                    return {
+                      value: client.id,
+                      label,
+                    };
+                  })}
                 />
               </Form.Item>
             </Col>
@@ -1213,6 +1272,69 @@ const PlanBuilder: React.FC = () => {
           )}
         </div>
       )}
+
+      <Modal
+        open={kpiModalVisible}
+        title={editingKPI ? `Edit KPI: ${editingKPI.kpiName}` : 'Add KPI'}
+        onCancel={() => setKPIModalVisible(false)}
+        onOk={saveKPI}
+        okText={editingKPI ? 'Save KPI' : 'Add KPI'}
+        destroyOnClose
+        width={520}
+      >
+        <Form form={kpiForm} layout="vertical">
+          <Form.Item name="kpiCode" label="KPI Code" rules={[{ required: true, message: 'KPI code is required' }]}>
+            <Input placeholder="e.g., FIN.REV_GROWTH" />
+          </Form.Item>
+          <Form.Item name="kpiName" label="KPI Name" rules={[{ required: true, message: 'KPI name is required' }]}>
+            <Input placeholder="e.g., Revenue Growth %" />
+          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name="targetValue" label="Target" rules={[{ type: 'number', min: 0 }]}>
+                <InputNumber style={{ width: '100%' }} min={0} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="weight" label="Weight %" rules={[{ required: true, message: 'Weight is required' }, { type: 'number', min: 0, max: 100 }]}>
+                <InputNumber style={{ width: '100%' }} min={0} max={100} />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={8}>
+              <Form.Item name="thresholdGreen" label="Green ≥" rules={[{ type: 'number' }]}>
+                <InputNumber style={{ width: '100%' }} min={0} />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item name="thresholdAmber" label="Amber ≥" rules={[{ type: 'number' }]}>
+                <InputNumber style={{ width: '100%' }} min={0} />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item name="thresholdRed" label="Red <" rules={[{ type: 'number' }]}>
+                <InputNumber style={{ width: '100%' }} min={0} />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Form.Item name="calculationSource" label="Calculation Source">
+            <Input placeholder="e.g., GL, Sales Ledger" />
+          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name="effectiveFrom" label="Effective From" rules={[{ required: true, message: 'Effective date is required' }]}>
+                <DatePicker style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="effectiveTo" label="Effective To">
+                <DatePicker style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Modal>
 
       {stages[safeCurrent]?.key === 'milestones' && (
         <div>
