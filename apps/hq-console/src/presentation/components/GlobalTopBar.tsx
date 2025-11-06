@@ -293,11 +293,11 @@ export default function GlobalTopBar() {
         top: 0,
         zIndex: 100,
         direction: isRTL ? 'rtl' : 'ltr',
-        width: 'fit-content',
+        width: '100%',
       }}
     >
       {/* Global Search */}
-      <div style={{ width: '500px', maxWidth: '500px' }}>
+      <div style={{ flex: 1, maxWidth: '500px', position: 'relative' }}>
         <Input
           size="large"
           prefix={<SearchOutlined />}
@@ -358,6 +358,7 @@ export default function GlobalTopBar() {
         <Button
           icon={<CalendarOutlined />}
           size="large"
+          style={{ marginLeft: 'auto' }}
           onClick={() => {
             // Handle date range picker
           }}
