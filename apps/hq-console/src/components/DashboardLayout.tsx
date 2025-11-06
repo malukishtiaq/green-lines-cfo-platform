@@ -45,6 +45,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [hasDraft, setHasDraft] = useState(false);
   const [draftInfo, setDraftInfo] = useState<{ lastSaved?: string; stage?: number } | null>(null);
   const [selectedKey, setSelectedKey] = useState('dashboard');
+  const [openKeys, setOpenKeys] = useState<string[]>([]);
 
   // Set selected key based on current path
   useEffect(() => {
@@ -52,14 +53,30 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       const path = window.location.pathname;
       if (path === '/' || path === '/dashboard') {
         setSelectedKey('dashboard');
-      } else if (path === '/plans/new') {
-        setSelectedKey('plans/new');
-      } else if (path === '/plans') {
-        setSelectedKey('plans');
-      } else if (path === '/partners') {
+        setOpenKeys([]);
+      } else if (path.startsWith('/plans')) {
+        // Handle all plan-related pages
+        setOpenKeys(['plans']); // Expand Plans menu
+        if (path === '/plans/new') {
+          setSelectedKey('plans/new');
+        } else {
+          // This handles /plans, /plans/[id], /plans/edit/[id], etc.
+          setSelectedKey('plans/list');
+        }
+      } else if (path.startsWith('/tasks')) {
+        // Handle all task-related pages
+        setOpenKeys(['tasks']); // Expand Tasks menu
+        if (path === '/tasks/new') {
+          setSelectedKey('tasks/new');
+        } else {
+          setSelectedKey('tasks');
+        }
+      } else if (path.startsWith('/partners')) {
         setSelectedKey('partners');
-      } else if (path === '/tasks') {
-        setSelectedKey('tasks');
+        setOpenKeys([]);
+      } else if (path.startsWith('/customers')) {
+        setSelectedKey('customers');
+        setOpenKeys([]);
       }
     }
   }, []);
@@ -314,6 +331,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           theme="dark"
           mode="inline"
           selectedKeys={[selectedKey]}
+          openKeys={openKeys}
+          onOpenChange={setOpenKeys}
           items={menuItems}
           onClick={handleMenuClick}
           style={{ 

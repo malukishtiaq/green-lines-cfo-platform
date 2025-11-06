@@ -251,7 +251,7 @@ const DashboardPage: React.FC = () => {
     },
   };
 
-  // Transform trend data for line chart with conversion rate
+  // Transform trend data for column chart with conversion rate
   const trendChartData = trendData.flatMap(item => [
     {
       period: new Date(item.period).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
@@ -270,38 +270,76 @@ const DashboardPage: React.FC = () => {
     xField: 'period',
     yField: 'value',
     seriesField: 'type',
+    isGroup: true,
     height: 300,
-    smooth: true,
+    columnStyle: {
+      radius: [4, 4, 0, 0],
+    },
+    color: ({ type }: any) => {
+      return type === 'Initiated' ? '#1890ff' : '#52c41a'; // Blue for Initiated, Green for Closed
+    },
     animation: {
       appear: {
-        animation: 'path-in',
-        duration: 1000,
+        animation: 'scale-in-y',
+        duration: 600,
       },
-    },
-    lineStyle: {
-      lineWidth: 2,
-    },
-    point: {
-      size: 4,
-      shape: 'circle',
     },
     legend: {
       position: 'top' as const,
+      itemName: {
+        style: {
+          fill: '#000',
+          fontSize: 14,
+        },
+      },
     },
     xAxis: {
       label: {
         autoRotate: true,
         autoHide: false,
-      },
+        style: {
+          fontSize: 12,
+        }
+      }
     },
     yAxis: {
       label: {
         formatter: (v: string) => `${v}`,
       },
+      title: {
+        text: 'Number of Plans',
+        style: {
+          fontSize: 12,
+        }
+      }
     },
     tooltip: {
       shared: true,
-      showMarkers: true,
+      showMarkers: false,
+      customContent: (title: string, items: any[]) => {
+        if (!items || items.length === 0) return '';
+        
+        const initiated = items.find((item: any) => item.data?.type === 'Initiated');
+        const closed = items.find((item: any) => item.data?.type === 'Closed');
+        
+        return `
+          <div style="padding: 12px;">
+            <div style="margin-bottom: 8px; font-weight: 500;">${title}</div>
+            ${initiated ? `
+              <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                <span style="display: inline-block; width: 10px; height: 10px; background: #1890ff; border-radius: 2px; margin-right: 8px;"></span>
+                <span>Initiated: <strong>${initiated.value}</strong></span>
+              </div>
+            ` : ''}
+            ${closed ? `
+              <div style="display: flex; align-items: center;">
+                <span style="display: inline-block; width: 10px; height: 10px; background: #52c41a; border-radius: 2px; margin-right: 8px;"></span>
+                <span>Closed: <strong>${closed.value}</strong></span>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      },
     },
   };
 
@@ -565,7 +603,7 @@ const DashboardPage: React.FC = () => {
           >
             <Spin spinning={loading}>
               {trendData.length > 0 ? (
-                <Line {...trendChartConfig} />
+                <Column {...trendChartConfig} />
               ) : (
                 <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>
                   No trend data available

@@ -25,6 +25,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { ColumnsType } from 'antd/es/table';
+import DashboardLayout from '@/components/DashboardLayout';
 
 const { Search } = Input;
 
@@ -248,7 +249,7 @@ export default function PlansPage() {
             <Button
               type="link"
               icon={<EditOutlined />}
-              onClick={() => router.push(`/plans/${record.id}/edit`)}
+              onClick={() => router.push(`/plans/edit/${record.id}`)}
             />
           </Tooltip>
           <Tooltip title={tCommon('delete')}>
@@ -265,23 +266,24 @@ export default function PlansPage() {
   ];
 
   return (
-    <div style={{ padding: '24px' }}>
-      <Card>
-        <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
-          <Col>
-            <h2 style={{ margin: 0 }}>{t('title')}</h2>
-          </Col>
-          <Col>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => router.push('/plans/new')}
-              size="large"
-            >
-              {t('addPlan')}
-            </Button>
-          </Col>
-        </Row>
+    <DashboardLayout>
+      <div style={{ padding: '24px' }}>
+        <Card>
+          <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
+            <Col>
+              <h2 style={{ margin: 0 }}>{t('title')}</h2>
+            </Col>
+            <Col>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => router.push('/plans/new')}
+                size="large"
+              >
+                {t('addPlan')}
+              </Button>
+            </Col>
+          </Row>
 
         <Row gutter={16} style={{ marginBottom: 16 }}>
           <Col xs={24} sm={12} md={8}>
@@ -351,6 +353,7 @@ export default function PlansPage() {
       >
         <p>Are you sure you want to delete <strong>{deleteModal.name}</strong>?</p>
       </Modal>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
