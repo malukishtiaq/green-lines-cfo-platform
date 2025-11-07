@@ -25,6 +25,7 @@ import {
   DollarOutlined,
   FileTextOutlined,
   ClockCircleOutlined,
+  DashboardOutlined,
 } from '@ant-design/icons';
 import DashboardLayout from '@/components/DashboardLayout';
 import { CleanArchitectureConfig } from '@/application';
@@ -259,6 +260,10 @@ export default function PlanDetailsPage({ params }: { params: Promise<{ id: stri
     window.location.href = `/plans/edit/${id}`;
   };
 
+  const handleMonitor = () => {
+    window.location.href = `/en/plans/${id}/monitor`;
+  };
+
   const handleBack = () => {
     window.history.back();
   };
@@ -321,6 +326,9 @@ export default function PlanDetailsPage({ params }: { params: Promise<{ id: stri
                 <Tag color={statusColors[plan.status as keyof typeof statusColors]} style={{ fontSize: '14px', padding: '4px 12px' }}>
                   {statusLabels[plan.status as keyof typeof statusLabels]}
                 </Tag>
+                <Button icon={<DashboardOutlined />} onClick={handleMonitor} size="large">
+                  Monitor
+                </Button>
                 <Button type="primary" icon={<EditOutlined />} onClick={handleEdit} size="large">
                   Edit Plan
                 </Button>
