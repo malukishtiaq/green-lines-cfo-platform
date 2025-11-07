@@ -74,6 +74,9 @@ model Customer {
   
   // Plan Builder relations
   plans         Plan[]
+  
+  // ERP Integration relations
+  erpConnections ERPConnection[]
 
   @@map("customers")
 }
@@ -806,3 +809,75 @@ model NotificationPreference {
   @@map("notification_preferences")
 }
 
+// ========================================
+// ERP Integration
+// ========================================
+
+model ERPConnection {
+  id              String   @id @default(cuid())
+  customerId      String
+  customer        Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
+  // ERP Configuration
+  erpType         String   // ODOO, SALESFORCE, SAP, ZOHO, QUICKBOOKS, ORACLE
+  status          String   @default("NOT_CONNECTED") // NOT_CONNECTED, CONNECTING, CONNECTED, ERROR, DISCONNECTED
+  
+  // Encrypted credentials stored as JSON string
+  // Contains: odooUrl, odooDatabase, odooUsername, odooPassword for Odoo
+  // Or: salesforceInstanceUrl, salesforceClientId, salesforceClientSecret, etc for Salesforce
+  credentialsEncrypted String @db.Text
+  
+  // Connection metadata
+  lastSyncDate    DateTime?
+  lastSyncStatus  String?   // SUCCESS, FAILED, PARTIAL
+  lastSyncError   String?   @db.Text
+  mappingHealth   Int       @default(0) // 0-100 percentage
+  
+  // Data domains synced from ERP
+  dataDomains     String[]  // ['AR', 'AP', 'GL', 'Sales', 'Inventory', 'Payroll']
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relations
+  syncHistory     ERPSyncHistory[]
+  
+  @@index([customerId])
+  @@index([erpType])
+  @@index([status])
+  @@map("erp_connections")
+}
+
+model ERPSyncHistory {
+  id              String   @id @default(cuid())
+  connectionId    String
+  connection      ERPConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  
+  // Sync details
+  syncType        String   // FULL, INCREMENTAL, MANUAL, SCHEDULED
+  status          String   // SUCCESS, FAILED, PARTIAL
+  
+  // Metrics
+  recordsProcessed Int     @default(0)
+  recordsSkipped   Int     @default(0)
+  
+  // Errors and warnings
+  errors          String[] @default([])
+  warnings        String[] @default([])
+  
+  // Timing
+  startTime       DateTime
+  endTime         DateTime
+  duration        Int      // milliseconds
+  
+  // Metadata
+  triggeredBy     String?  // USER_ID or "SYSTEM" for scheduled syncs
+  dataDomainsSynced String[] // Which domains were synced in this run
+  
+  createdAt       DateTime  @default(now())
+  
+  @@index([connectionId, createdAt])
+  @@index([status])
+  @@map("erp_sync_history")
+}

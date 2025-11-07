@@ -3,8 +3,10 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
-import { Card, Steps, Button, Form, Input, Select, DatePicker, Space, Typography, message, Table, InputNumber, Checkbox, Modal, Tag, Progress, Tooltip, App, Row, Col, Divider, Switch, Statistic } from 'antd';
+import { Card, Steps, Button, Form, Input, Select, DatePicker, Space, Typography, message, Table, InputNumber, Checkbox, Modal, Tag, Progress, Tooltip, App, Row, Col, Divider, Switch, Statistic, Alert } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, SaveOutlined, DeleteFilled, ReloadOutlined } from '@ant-design/icons';
+import { ERPConfigurationForm } from './ERPConfigurationForm';
+import { ERPConnectionStatus } from './ERPConnectionStatus';
 
 type CheckboxValueType = string | number | boolean;
 
@@ -281,6 +283,11 @@ const PlanBuilder: React.FC = () => {
   const [editingAssignment, setEditingAssignment] = useState<AssignmentItem | null>(null);
   const [assignmentModalVisible, setAssignmentModalVisible] = useState(false);
   
+  // ERP Configuration state
+  const [erpConfigModalVisible, setErpConfigModalVisible] = useState(false);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
+  const [refreshERPStatus, setRefreshERPStatus] = useState(0);
+  
   // General state
   const [submitting, setSubmitting] = useState(false);
   const [draftLoaded, setDraftLoaded] = useState(false);
@@ -408,6 +415,11 @@ const PlanBuilder: React.FC = () => {
             objectives: draft.objectives || '',
             users: Array.isArray(draft.users) ? draft.users : [],
           });
+          
+          // Set selected customer ID for ERP integration
+          if (draft.clientId) {
+            setSelectedCustomerId(draft.clientId);
+          }
           
           // Set nested planPeriod fields separately
           if (draft.planPeriod) {
@@ -1355,6 +1367,7 @@ const PlanBuilder: React.FC = () => {
                     value: client.id,
                     label: `${client.name}${client.industry ? ` (${client.industry})` : ''}`,
                   }))}
+                  onChange={(value) => setSelectedCustomerId(value)}
                 />
               </Form.Item>
             </Col>
@@ -1510,57 +1523,41 @@ const PlanBuilder: React.FC = () => {
 
       {/* Stage 2: ERP & Data Sources */}
       {stages[safeCurrent]?.key === 'erp' && (
-        <Form form={erpForm} layout="vertical" initialValues={{ erpType: 'NONE', dataDomains: [], mappingHealth: 0 }}>
+        <div>
           <Title level={4}>Baseline & Data Sources</Title>
           <Paragraph type="secondary">
-            Connect your ERP system to automatically sync financial data, or choose manual entry for complete control.
+            Connect your client's ERP system to automatically sync financial data, or choose manual entry for complete control.
           </Paragraph>
 
-          <Form.Item name="erpType" label="ERP System" rules={[{ required: true }]}>
-            <Select style={{ width: '100%' }} options={erpTypes} onChange={(value) => {
-              if (value === 'NONE' || value === 'MANUAL') {
-                erpForm.setFieldsValue({ dataDomains: [], mappingHealth: 0 });
-              }
-            }} />
-          </Form.Item>
-
-          <Form.Item shouldUpdate={(prevValues, currentValues) => prevValues.erpType !== currentValues.erpType} noStyle>
-            {() => {
-              const erpType = erpForm.getFieldValue('erpType');
-              return erpType && erpType !== 'NONE' ? (
-                <>
-                  <Form.Item name="erpStatus" label="Connection Status">
-                    <Select style={{ width: '100%' }}>
-                      <Option value="NOT_CONNECTED">Not Connected</Option>
-                      <Option value="CONNECTING">Connecting...</Option>
-                      <Option value="CONNECTED">Connected</Option>
-                      <Option value="ERROR">Connection Error</Option>
-                    </Select>
-                  </Form.Item>
-
-                  <Form.Item name="dataDomains" label="Data Domains to Sync" rules={[{ required: true, message: 'Select at least one data domain' }]}>
-                    <Select mode="multiple" style={{ width: '100%' }} placeholder="Select data domains">
-                      {dataDomainOptions.map(d => <Option key={d} value={d}>{d}</Option>)}
-                    </Select>
-                  </Form.Item>
-
-                  <Form.Item name="mappingHealth" label="Field Mapping Health %">
-                    <InputNumber min={0} max={100} style={{ width: '100%' }} addonAfter="%" placeholder="0-100" />
-                  </Form.Item>
-
-                  <Form.Item name="lastSync" label="Last Sync">
-                    <DatePicker showTime style={{ width: '100%' }} />
-                  </Form.Item>
-
-                  <Space size="middle" style={{ marginTop: 16 }}>
-                    <Button type="primary" icon={<PlusOutlined />}>Connect ERP</Button>
-                    <Button icon={<ReloadOutlined />}>Test Sync</Button>
-                    <Button>Import CSV</Button>
-                  </Space>
-                </>
-              ) : null;
-            }}
-          </Form.Item>
+          {/* Show ERP Connection Status if a customer is selected */}
+          {selectedCustomerId ? (
+            <div key={`erp-status-${refreshERPStatus}`}>
+              <ERPConnectionStatus customerId={selectedCustomerId} />
+              
+              <div style={{ marginTop: 16, display: 'flex', gap: '8px' }}>
+                <Button 
+                  type="primary" 
+                  icon={<PlusOutlined />}
+                  onClick={() => setErpConfigModalVisible(true)}
+                >
+                  Configure New ERP Connection
+                </Button>
+                <Button 
+                  icon={<ReloadOutlined />}
+                  onClick={() => setRefreshERPStatus(prev => prev + 1)}
+                >
+                  Refresh Status
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Alert 
+              message="No Customer Selected" 
+              description="Please select a customer in Stage 1 (Basic Info) before configuring ERP integration."
+              type="warning"
+              showIcon
+            />
+          )}
 
           <Card size="small" style={{ marginTop: 24, backgroundColor: '#f0f5ff' }}>
             <Paragraph>
@@ -1573,7 +1570,7 @@ const PlanBuilder: React.FC = () => {
               </ul>
             </Paragraph>
           </Card>
-        </Form>
+        </div>
       )}
 
       {/* Stage 3: KPIs & Targets */}
@@ -2779,6 +2776,20 @@ const PlanBuilder: React.FC = () => {
           </Tooltip>
         )}
       </Space>
+      
+      {/* ERP Configuration Modal */}
+      {selectedCustomerId && (
+        <ERPConfigurationForm
+          visible={erpConfigModalVisible}
+          customerId={selectedCustomerId}
+          onCancel={() => setErpConfigModalVisible(false)}
+          onSuccess={() => {
+            setErpConfigModalVisible(false);
+            setRefreshERPStatus(prev => prev + 1);
+            message.success('ERP connection configured successfully!');
+          }}
+        />
+      )}
     </Card>
   );
 };

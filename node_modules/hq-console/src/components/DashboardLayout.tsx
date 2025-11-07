@@ -24,6 +24,7 @@ import {
   BarChartOutlined,
   BellOutlined,
   MonitorOutlined,
+  ApiOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 // Temporarily disabled internationalization
@@ -76,6 +77,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         }
       } else if (path.startsWith('/partners')) {
         setSelectedKey('partners');
+        setOpenKeys([]);
+      } else if (path.startsWith('/erp')) {
+        setSelectedKey('erp');
         setOpenKeys([]);
       } else if (path.startsWith('/customers')) {
         setSelectedKey('customers');
@@ -237,6 +241,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         </span>
       ),
     }] : []),
+    {
+      key: 'erp',
+      icon: <ApiOutlined style={{ fontSize: 18 }} />,
+      label: (
+        <span style={{ fontWeight: 500, fontSize: 15 }}>
+          ERP Integration
+        </span>
+      ),
+    },
     // ...(canAccessPage('contracts') ? [{
     //   key: 'contracts',
     //   icon: <FileTextOutlined />,
@@ -265,6 +278,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       window.location.href = '/plans/monitor';  // Go to monitor overview page
     } else if (key === 'partners') {
       window.location.href = '/partners';
+    } else if (key === 'erp') {
+      window.location.href = '/erp';
     } else if (key === 'tasks') {
       window.location.href = '/tasks';
     } else if (key === 'tasks/new') {
