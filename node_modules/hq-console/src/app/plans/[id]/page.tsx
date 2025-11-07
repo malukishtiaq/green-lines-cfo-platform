@@ -261,7 +261,7 @@ export default function PlanDetailsPage({ params }: { params: Promise<{ id: stri
   };
 
   const handleMonitor = () => {
-    window.location.href = `/en/plans/${id}/monitor`;
+    window.location.href = `/plans/${id}/monitor`;
   };
 
   const handleBack = () => {

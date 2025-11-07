@@ -87,7 +87,7 @@ export default function MonitorPlansPage() {
   };
 
   const handleMonitor = (planId: string) => {
-    router.push(`/en/plans/${planId}/monitor`);
+    router.push(`/plans/${planId}/monitor`);
   };
 
   const filteredPlans = plans.filter(plan => {

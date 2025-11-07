@@ -31,7 +31,6 @@ import {
   SettingOutlined,
 } from '@ant-design/icons';
 import { Column, Line } from '@ant-design/plots';
-import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import dayjs from 'dayjs';
 
@@ -43,8 +42,6 @@ interface PlanMonitorPageProps {
 }
 
 export const PlanMonitorPage: React.FC<PlanMonitorPageProps> = ({ planId }) => {
-  const t = useTranslations('planMonitor');
-  const tCommon = useTranslations('common');
   const router = useRouter();
 
   // Filters State
