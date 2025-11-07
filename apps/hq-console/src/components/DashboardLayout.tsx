@@ -23,6 +23,7 @@ import {
   FileTextOutlined,
   BarChartOutlined,
   BellOutlined,
+  MonitorOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 // Temporarily disabled internationalization
@@ -54,11 +55,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       if (path === '/' || path === '/dashboard') {
         setSelectedKey('dashboard');
         setOpenKeys([]);
-      } else if (path.startsWith('/plans')) {
-        // Handle all plan-related pages
+      } else if (path.startsWith('/plans') || path.includes('/monitor')) {
+        // Handle all plan-related pages including monitor
         setOpenKeys(['plans']); // Expand Plans menu
         if (path === '/plans/new') {
           setSelectedKey('plans/new');
+        } else if (path.includes('/monitor')) {
+          setSelectedKey('plans/monitor');
         } else {
           // This handles /plans, /plans/[id], /plans/edit/[id], etc.
           setSelectedKey('plans/list');
@@ -185,6 +188,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             </Badge>
           ),
         },
+        {
+          key: 'plans/monitor',
+          icon: <MonitorOutlined style={{ fontSize: 16 }} />,
+          label: (
+            <span style={{ fontWeight: 400, fontSize: 14 }}>
+              Monitor Plans
+            </span>
+          ),
+        },
       ],
     },
     {
@@ -249,6 +261,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       window.location.href = '/plans';
     } else if (key === 'plans/new') {
       window.location.href = '/plans/new';
+    } else if (key === 'plans/monitor') {
+      window.location.href = '/plans';  // For now, go to plans list - user can click Monitor on any plan
     } else if (key === 'partners') {
       window.location.href = '/partners';
     } else if (key === 'tasks') {
