@@ -79,8 +79,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         setSelectedKey('partners');
         setOpenKeys([]);
       } else if (path.startsWith('/erp')) {
-        setSelectedKey('erp');
-        setOpenKeys([]);
+        setOpenKeys(['erp']);
+        if (path === '/erp/test') {
+          setSelectedKey('erp/test');
+        } else {
+          setSelectedKey('erp/connections');
+        }
       } else if (path.startsWith('/customers')) {
         setSelectedKey('customers');
         setOpenKeys([]);
@@ -249,6 +253,24 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           ERP Integration
         </span>
       ),
+      children: [
+        {
+          key: 'erp/connections',
+          label: (
+            <span style={{ fontWeight: 400, fontSize: 14 }}>
+              Connections
+            </span>
+          ),
+        },
+        {
+          key: 'erp/test',
+          label: (
+            <span style={{ fontWeight: 400, fontSize: 14, color: '#52c41a' }}>
+              🧪 Test Data Sync
+            </span>
+          ),
+        },
+      ],
     },
     // ...(canAccessPage('contracts') ? [{
     //   key: 'contracts',
@@ -278,8 +300,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       window.location.href = '/plans/monitor';  // Go to monitor overview page
     } else if (key === 'partners') {
       window.location.href = '/partners';
-    } else if (key === 'erp') {
+    } else if (key === 'erp' || key === 'erp/connections') {
       window.location.href = '/erp';
+    } else if (key === 'erp/test') {
+      window.location.href = '/erp/test';
     } else if (key === 'tasks') {
       window.location.href = '/tasks';
     } else if (key === 'tasks/new') {
