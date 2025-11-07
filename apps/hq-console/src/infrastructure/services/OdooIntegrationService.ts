@@ -96,8 +96,17 @@ export class OdooIntegrationService implements IERPIntegrationService {
     password: string
   ): Promise<{ uid: number; serverVersion?: string }> {
     try {
-      // Odoo XML-RPC authentication endpoint
-      const authUrl = `${url}/web/session/authenticate`;
+      // Clean the URL - remove any query parameters
+      const baseUrl = url.split('?')[0].replace(/\/$/, '');
+      
+      // Odoo JSON-RPC authentication endpoint
+      const authUrl = `${baseUrl}/web/session/authenticate`;
+      
+      console.log('Attempting Odoo authentication:', {
+        url: authUrl,
+        database,
+        username,
+      });
       
       const response = await this.axiosInstance.post(authUrl, {
         jsonrpc: '2.0',
@@ -108,17 +117,51 @@ export class OdooIntegrationService implements IERPIntegrationService {
         },
       });
 
-      if (response.data.result && response.data.result.uid) {
-        return {
-          uid: response.data.result.uid,
-          serverVersion: response.data.result.server_version,
-        };
+      console.log('Odoo auth response:', response.data);
+
+      // Check for result
+      if (response.data.result) {
+        if (response.data.result.uid) {
+          return {
+            uid: response.data.result.uid,
+            serverVersion: response.data.result.server_version,
+          };
+        }
+        
+        // Sometimes Odoo returns error in result
+        if (response.data.result.error) {
+          throw new Error(response.data.result.error.data?.message || 'Authentication failed');
+        }
       }
 
-      throw new Error('Authentication failed - invalid credentials');
+      // Check for error in response
+      if (response.data.error) {
+        const errorMsg = response.data.error.data?.message || response.data.error.message || 'Authentication failed';
+        throw new Error(errorMsg);
+      }
+
+      throw new Error('Authentication failed - invalid credentials or database');
     } catch (error: any) {
       console.error('Odoo authentication error:', error);
-      throw new Error(`Odoo authentication failed: ${error.message}`);
+      
+      // Better error messages
+      if (error.response) {
+        if (error.response.status === 404) {
+          throw new Error('Odoo server not found. Please check the URL.');
+        } else if (error.response.status === 500) {
+          throw new Error('Odoo server error. Please check the database name.');
+        }
+      }
+      
+      if (error.code === 'ECONNREFUSED') {
+        throw new Error('Cannot connect to Odoo server. Please check the URL.');
+      }
+      
+      if (error.code === 'ETIMEDOUT') {
+        throw new Error('Connection timeout. Please check your network and Odoo server.');
+      }
+      
+      throw new Error(error.message || 'Odoo authentication failed');
     }
   }
 
