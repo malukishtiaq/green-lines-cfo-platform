@@ -60,15 +60,30 @@ export default function ERPTestPage() {
       const response = await fetch('/api/erp/connections');
       const result = await response.json();
       
+      console.log('📊 All ERP Connections:', result);
+      
       if (result.success && result.connections.length > 0) {
-        const connectedOnes = result.connections.filter(
-          (c: ERPConnection) => c.status === 'CONNECTED' && c.erpType === 'ODOO'
-        );
-        setConnections(connectedOnes);
+        console.log('✅ Found connections:', result.connections);
         
-        if (connectedOnes.length > 0) {
-          setSelectedConnection(connectedOnes[0].id);
+        // Show all Odoo connections, even if not fully connected
+        const odooConnections = result.connections.filter(
+          (c: ERPConnection) => c.erpType === 'ODOO'
+        );
+        
+        console.log('🔌 Odoo connections:', odooConnections);
+        
+        setConnections(odooConnections);
+        
+        if (odooConnections.length > 0) {
+          setSelectedConnection(odooConnections[0].id);
+          
+          // Show warning if not connected
+          if (odooConnections[0].status !== 'CONNECTED') {
+            message.warning(`Connection status is: ${odooConnections[0].status}. Please complete the connection from ERP Integration page.`);
+          }
         }
+      } else {
+        console.log('❌ No connections found');
       }
     } catch (err: any) {
       console.error('Error fetching connections:', err);
@@ -211,12 +226,24 @@ export default function ERPTestPage() {
 
       {connections.length === 0 && !loading && (
         <Alert
-          message="No Connected ERP Systems"
-          description="Please configure an Odoo ERP connection first from the ERP Integration page."
+          message="No ERP Connections Found"
+          description={
+            <div>
+              <p>No Odoo ERP connections have been created yet.</p>
+              <p><strong>Steps to create a connection:</strong></p>
+              <ol style={{ marginTop: 8, paddingLeft: 20 }}>
+                <li>Go to <strong>ERP Integration → Connections</strong></li>
+                <li>Click <strong>"New Connection"</strong></li>
+                <li>Select a customer and enter Odoo credentials</li>
+                <li>Click <strong>"Test Connection"</strong> to verify</li>
+                <li>Click <strong>"Connect"</strong> button to save</li>
+              </ol>
+            </div>
+          }
           type="warning"
           showIcon
           action={
-            <Button size="small" onClick={() => window.location.href = '/erp'}>
+            <Button size="small" type="primary" onClick={() => window.location.href = '/erp'}>
               Go to ERP Integration
             </Button>
           }
