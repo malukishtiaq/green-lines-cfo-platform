@@ -262,7 +262,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     } else if (key === 'plans/new') {
       window.location.href = '/plans/new';
     } else if (key === 'plans/monitor') {
-      window.location.href = '/plans';  // For now, go to plans list - user can click Monitor on any plan
+      window.location.href = '/plans/monitor';  // Go to monitor overview page
     } else if (key === 'partners') {
       window.location.href = '/partners';
     } else if (key === 'tasks') {
