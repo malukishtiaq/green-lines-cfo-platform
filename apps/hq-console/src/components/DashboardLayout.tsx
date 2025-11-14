@@ -25,6 +25,7 @@ import {
   BellOutlined,
   MonitorOutlined,
   ApiOutlined,
+  DollarOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 // Temporarily disabled internationalization
@@ -84,6 +85,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           setSelectedKey('erp/test');
         } else {
           setSelectedKey('erp/connections');
+        }
+      } else if (path.startsWith('/kpi')) {
+        setOpenKeys(['kpi']);
+        if (path === '/kpi/revenue-growth') {
+          setSelectedKey('kpi/revenue-growth');
         }
       } else if (path.startsWith('/customers')) {
         setSelectedKey('customers');
@@ -272,6 +278,26 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         },
       ],
     },
+    {
+      key: 'kpi',
+      icon: <DollarOutlined style={{ fontSize: 18 }} />,
+      label: (
+        <span style={{ fontWeight: 500, fontSize: 15 }}>
+          KPIs
+        </span>
+      ),
+      children: [
+        {
+          key: 'kpi/revenue-growth',
+          icon: <DollarOutlined style={{ fontSize: 16 }} />,
+          label: (
+            <span style={{ fontWeight: 400, fontSize: 14 }}>
+              Revenue Growth
+            </span>
+          ),
+        },
+      ],
+    },
     // ...(canAccessPage('contracts') ? [{
     //   key: 'contracts',
     //   icon: <FileTextOutlined />,
@@ -304,6 +330,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       window.location.href = '/erp';
     } else if (key === 'erp/test') {
       window.location.href = '/erp/test';
+    } else if (key === 'kpi/revenue-growth') {
+      window.location.href = '/kpi/revenue-growth';
     } else if (key === 'tasks') {
       window.location.href = '/tasks';
     } else if (key === 'tasks/new') {

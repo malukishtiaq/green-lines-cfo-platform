@@ -31,7 +31,27 @@ dayjs.extend(relativeTime);
 
 interface ERPConnectionStatusProps {
   customerId: string;
+  translations?: {
+    reconnect: string;
+    reconnectSuccess: string;
+    reconnectError: string;
+    refreshStatus: string;
+    syncData: string;
+    sessionExpiredTitle: string;
+    sessionExpiredDescription: string;
+  };
 }
+
+const DEFAULT_TRANSLATIONS = {
+  reconnect: 'Reconnect',
+  reconnectSuccess: 'ERP connection restored successfully.',
+  reconnectError: 'Failed to reconnect ERP connection.',
+  refreshStatus: 'Refresh Status',
+  syncData: 'Sync Data',
+  sessionExpiredTitle: 'Session expired',
+  sessionExpiredDescription:
+    'Reconnect to refresh the ERP session and resume syncing.',
+};
 
 interface ERPConnection {
   id: string;
@@ -67,10 +87,12 @@ interface ERPSyncHistory {
 
 export const ERPConnectionStatus: React.FC<ERPConnectionStatusProps> = ({
   customerId,
+  translations = DEFAULT_TRANSLATIONS,
 }) => {
   const [connection, setConnection] = useState<ERPConnection | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [reconnecting, setReconnecting] = useState(false);
   const [syncModalVisible, setSyncModalVisible] = useState(false);
   const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
 
@@ -104,6 +126,36 @@ export const ERPConnectionStatus: React.FC<ERPConnectionStatusProps> = ({
       message.error('Failed to fetch ERP connection');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleReconnect = async () => {
+    if (!connection) {
+      return;
+    }
+
+    try {
+      setReconnecting(true);
+      const response = await fetch(
+        `/api/erp/connections/${connection.id}/reconnect`,
+        {
+          method: 'POST',
+        },
+      );
+
+      const result = await response.json();
+
+      if (result.success) {
+        message.success(result.message || translations.reconnectSuccess);
+        await fetchConnection();
+      } else {
+        message.error(result.error || translations.reconnectError);
+      }
+    } catch (error) {
+      console.error('Error reconnecting ERP session:', error);
+      message.error(translations.reconnectError);
+    } finally {
+      setReconnecting(false);
     }
   };
 
@@ -207,14 +259,31 @@ export const ERPConnectionStatus: React.FC<ERPConnectionStatusProps> = ({
           </Space>
         }
         extra={
-          <Button
-            type="primary"
-            icon={<SyncOutlined />}
-            onClick={() => setSyncModalVisible(true)}
-            disabled={connection.status !== 'CONNECTED'}
-          >
-            Sync Data
-          </Button>
+          <Space>
+            <Button
+              icon={<SyncOutlined />}
+              onClick={fetchConnection}
+              disabled={loading}
+            >
+              {translations.refreshStatus}
+            </Button>
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={handleReconnect}
+              loading={reconnecting}
+              type={connection.status === 'CONNECTED' ? 'default' : 'primary'}
+            >
+              {translations.reconnect}
+            </Button>
+            <Button
+              type="primary"
+              icon={<SyncOutlined />}
+              onClick={() => setSyncModalVisible(true)}
+              disabled={connection.status !== 'CONNECTED'}
+            >
+              {translations.syncData}
+            </Button>
+          </Space>
         }
       >
         <Descriptions bordered column={2}>
@@ -273,6 +342,17 @@ export const ERPConnectionStatus: React.FC<ERPConnectionStatusProps> = ({
             message="Last Sync Error"
             description={connection.lastSyncError}
             type="error"
+            showIcon
+            style={{ marginTop: 16 }}
+          />
+        )}
+
+        {(connection.status === 'ERROR' ||
+          connection.status === 'DISCONNECTED') && (
+          <Alert
+            message={translations.sessionExpiredTitle}
+            description={translations.sessionExpiredDescription}
+            type="warning"
             showIcon
             style={{ marginTop: 16 }}
           />

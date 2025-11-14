@@ -123,6 +123,15 @@
       "stayOnTrack": "Stay on Track"
     }
   },
+  "erpIntegration": {
+    "reconnect": "Reconnect",
+    "reconnectSuccess": "ERP connection restored successfully.",
+    "reconnectError": "Failed to reconnect ERP connection.",
+    "refreshStatus": "Refresh Status",
+    "syncData": "Sync Data",
+    "sessionExpiredTitle": "Session expired",
+    "sessionExpiredDescription": "Reconnect to refresh the ERP session and resume syncing."
+  },
   "partner": {
     "title": "Partner",
     "partners": "Partners",

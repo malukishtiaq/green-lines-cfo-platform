@@ -303,7 +303,10 @@ export default function ERPTestPage() {
       {fetchingOrders ? (
         <Card>
           <div style={{ textAlign: 'center', padding: '60px 0' }}>
-            <Spin size="large" tip="Fetching POS orders from Odoo..." />
+            <Space direction="vertical" align="center" size="large">
+              <Spin size="large" />
+              <span style={{ color: '#666' }}>Fetching POS orders from Odoo...</span>
+            </Space>
           </div>
         </Card>
       ) : orders.length > 0 ? (

@@ -27,12 +27,12 @@ import {
   SearchOutlined,
   ApiOutlined,
   DatabaseOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
 import { ERPConfigurationForm } from '@/presentation/components/ERPConfigurationForm';
 import { ERPConnectionStatus } from '@/presentation/components/ERPConnectionStatus';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-
 dayjs.extend(relativeTime);
 
 interface Customer {
@@ -57,6 +57,27 @@ interface ERPConnection {
   createdAt: string;
 }
 
+type ERPIntegrationTranslations = {
+  reconnect: string;
+  reconnectSuccess: string;
+  reconnectError: string;
+  refreshStatus: string;
+  syncData: string;
+  sessionExpiredTitle: string;
+  sessionExpiredDescription: string;
+};
+
+const DEFAULT_TRANSLATIONS: ERPIntegrationTranslations = {
+  reconnect: 'Reconnect',
+  reconnectSuccess: 'ERP connection restored successfully.',
+  reconnectError: 'Failed to reconnect ERP connection.',
+  refreshStatus: 'Refresh Status',
+  syncData: 'Sync Data',
+  sessionExpiredTitle: 'Session expired',
+  sessionExpiredDescription:
+    'Reconnect to refresh the ERP session and resume syncing.',
+};
+
 export default function ERPIntegrationPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -66,6 +87,8 @@ export default function ERPIntegrationPage() {
   const [configModalVisible, setConfigModalVisible] = useState(false);
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
   const [selectedConnection, setSelectedConnection] = useState<ERPConnection | null>(null);
+  const [reconnectingId, setReconnectingId] = useState<string | null>(null);
+  const translations = DEFAULT_TRANSLATIONS;
   
   // Filters
   const [searchText, setSearchText] = useState('');
@@ -120,6 +143,29 @@ export default function ERPIntegrationPage() {
   const handleViewDetails = (connection: ERPConnection) => {
     setSelectedConnection(connection);
     setDetailsModalVisible(true);
+  };
+
+  const handleReconnectConnection = async (connectionId: string) => {
+    try {
+      setReconnectingId(connectionId);
+      const response = await fetch(`/api/erp/connections/${connectionId}/reconnect`, {
+        method: 'POST',
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        message.success(result.message || translations.reconnectSuccess);
+        await fetchData();
+      } else {
+        message.error(result.error || translations.reconnectError);
+      }
+    } catch (error) {
+      console.error('Error reconnecting ERP connection:', error);
+      message.error(translations.reconnectError);
+    } finally {
+      setReconnectingId(null);
+    }
   };
 
   // Filter connections
@@ -251,12 +297,24 @@ export default function ERPIntegrationPage() {
       title: 'Actions',
       key: 'actions',
       render: (_: any, record: ERPConnection) => (
-        <Button
-          type="link"
-          onClick={() => handleViewDetails(record)}
-        >
-          View Details
-        </Button>
+        <Space>
+          <Button
+            type="link"
+            onClick={() => handleViewDetails(record)}
+          >
+            View Details
+          </Button>
+          {record.status !== 'CONNECTED' && (
+            <Button
+              type="link"
+              icon={<ReloadOutlined />}
+              onClick={() => handleReconnectConnection(record.id)}
+              loading={reconnectingId === record.id}
+            >
+              {translations.reconnect}
+            </Button>
+          )}
+        </Space>
       ),
     },
   ];
@@ -358,7 +416,10 @@ export default function ERPIntegrationPage() {
       {loading ? (
         <Card>
           <div style={{ textAlign: 'center', padding: '40px' }}>
-            <Spin size="large" tip="Loading connections..." />
+            <Space direction="vertical" align="center" size="large">
+              <Spin size="large" />
+              <span style={{ color: '#666' }}>Loading connections...</span>
+            </Space>
           </div>
         </Card>
       ) : filteredConnections.length > 0 ? (
@@ -562,7 +623,10 @@ export default function ERPIntegrationPage() {
         width={900}
       >
         {selectedConnection && (
-          <ERPConnectionStatus customerId={selectedConnection.customerId} />
+          <ERPConnectionStatus
+            customerId={selectedConnection.customerId}
+            translations={translations}
+          />
         )}
       </Modal>
     </div>

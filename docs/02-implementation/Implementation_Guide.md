@@ -1,51 +1,392 @@
 # HQ Console Implementation Guide
-**The ONLY file you need for development**
 
-**Last Updated**: November 4, 2025  
-**Current Status**: Foundation Complete (25%) → Building Phase 1  
-**Based On**: HQ Console Navigation & Page Specifications.md (Company Spec)
+**Last Updated**: November 14, 2025  
+**Current Status**: ERP Integration & KPI System (35% Complete)  
+**Current Focus**: Implementing 12 Core KPIs from Odoo
 
 ---
 
 ## 🎯 **HOW TO USE THIS DOCUMENT**
 
-This is your **single source of truth** for HQ Console development. It contains:
+**IMPORTANT**: This document is a detailed implementation reference. For current status, always start with:
+- 📘 **`docs/CURRENT_STATUS.md`** ⭐ **Start here for every session**
 
-1. **What's Built** - Completed features (reference only)
-2. **What's Pending** - All remaining work with exact tasks
-3. **Implementation Plan** - Step-by-step build order
-4. **Progress Tracking** - Update as you complete tasks
+This document contains:
+1. **What's Built** - Completed features with technical details
+2. **What's Pending** - Remaining work organized by priority
+3. **Technical Specifications** - Detailed implementation requirements
+4. **Progress Tracking** - Check `docs/02-implementation/Progress_Tracker.md`
 
 ---
 
-## ✅ **WHAT'S ALREADY BUILT (25% Complete)**
+## ✅ **WHAT'S ALREADY BUILT (35% Complete)**
 
-### Foundation ✅ COMPLETE
+### Foundation ✅ 100% COMPLETE
 - Clean Architecture (4 layers: domain, application, infrastructure, presentation)
 - Multi-language (Arabic RTL + English LTR) with next-intl
-- Authentication (NextAuth.js)
-- Database (PostgreSQL + Prisma)
+- Authentication (NextAuth.js with role-based access)
+- Database (PostgreSQL + Prisma with encryption)
 - Design System (Ant Design Pro + custom theme)
-- HTTP Client (centralized axios)
+- HTTP Client (centralized axios with logging)
 - Access Control (8 roles, 20+ permissions)
 
-### Pages Partially Built
-- **Dashboard** (60%) - KPI cards + 3 charts
-- **Plan Builder** (40%) - Stage 1 (Client & Scope) + Stage 4 (Milestones)
-- **Partners** (30%) - Basic CRUD operations
+### Dashboard ✅ 100% COMPLETE
+- KPI cards: Total Plans Initiated, Open Plans, Closed Plans, Total Partners
+- Filters: Date Range, Region, Industry, Partner Tier, Plan Type, Status
+- Charts: Customers by Region (Bar), Plans Trend (Line with conversion rate)
+- Actions: Create Plan, Invite Partner, Export Dashboard
+- Full translations (English + Arabic) with RTL support
+- 3 API endpoints operational
+
+### ERP Integration 🔄 60% COMPLETE
+
+#### Infrastructure ✅
+- Domain entities (`ERPIntegration.ts`) - Complete
+- Service interfaces (`IERPIntegrationService.ts`) - Complete
+- Odoo integration service with session-based auth - Complete
+- Salesforce integration service (OAuth 2.0) - Complete
+- ERP Integration Factory (singleton pattern) - Complete
+- Encryption service for credentials - Complete
+
+#### Database Models ✅
+- `ERPConnection` - Stores connection details with encrypted credentials
+- `ERPSyncHistory` - Logs all sync operations
+
+#### API Endpoints ✅ (5 endpoints)
+- `POST /api/erp/test-connection` - Test ERP credentials
+- `GET /api/erp/connections` - List all connections
+- `POST /api/erp/connections/[id]/reconnect` - Reconnect expired session
+- `POST /api/erp/connections/[id]/sync` - Trigger data sync
+- `GET /api/erp/test/pos-orders` - Testing endpoint
+
+#### UI Pages ✅
+- `/erp` - ERP Integration dashboard
+- `/erp/test` - ERP testing page
+- `ERPConnectionStatus` component
+
+#### Odoo Session-Based Authentication ✅
+**Key Innovation**: Session management with `callKw()` method
+
+```typescript
+// Authenticate and extract session_id from cookies
+POST /web/session/authenticate
+→ Extract session_id from set-cookie header
+→ Store for subsequent calls
+
+// Use session_id for all API calls
+POST /web/dataset/call_kw/{model}/{method}
+Headers: Cookie: session_id=EXTRACTED_ID
+```
+
+**Documentation**: `docs/05-architecture/ERP_Integration_Guide.md`
+
+### KPI System 🔄 8% COMPLETE
+
+#### Implemented ✅
+**Revenue Growth % (FIN.REV_GROWTH%)**:
+- Endpoint: `GET /api/erp/kpi/revenue-growth`
+- Formula: `(Revenue_t - Revenue_{t-1}) / Revenue_{t-1} × 100`
+- Data Source: Odoo `account.move` (posted invoices/refunds)
+- Features: Custom date ranges, period comparison
+- Status: Tested with live Odoo instance
+
+#### Not Started ⏳ (11 Core KPIs)
+See `docs/Technology_Research/KPI_Implementation_Status.md` for full tracker
+
+**Financial**: Operating Margin %, Net Profit Margin %, EBITDA Margin %
+**Working Capital**: DSO, DPO, DIO, Cash Conversion Cycle
+**Inventory**: Inventory Turnover
+**Profitability**: ROA %, ROE %, ROCE %
+
+### Plan Builder 🔄 25% COMPLETE
+- ✅ Stage 1: Client & Scope Selection
+- ✅ Stage 4: Milestones
+- ⏳ Stages 2, 3, 5, 6, 7, 8 (pending)
+
+### Partners Page 🔄 30% COMPLETE
+- ✅ Basic CRUD operations
+- ⏳ Advanced filtering, tiers, performance metrics
 
 ---
 
-## 📋 **WHAT'S PENDING (75% Remaining)**
+## 📋 **WHAT'S PENDING - CURRENT PRIORITIES**
 
-### **PHASE 1: Complete Plan Lifecycle** (3 Weeks) - 0% Started
+### **PRIORITY 1: Complete KPI System** (Current Focus - Approved by Management)
 
-#### **Week 1: Complete Plan Builder (6 missing stages)**
+This is the **highest priority** work approved by management.
 
-**Stage 2 — Baseline & Data Sources** ❌
+#### **Step 1: Implement Remaining 11 Core KPIs** (2-3 weeks)
+
+**Approach**: Follow the Revenue Growth pattern for each KPI
+
+**Phase 1A: Financial Margin KPIs** (Week 1)
+1. **Operating Margin %** (`FIN.OP_MARGIN%`)
+   - Formula: `Operating Income / Revenue × 100`
+   - Models: `account.move`, `account.move.line`
+   - Endpoint: `/api/erp/kpi/operating-margin`
+   
+2. **Net Profit Margin %** (`FIN.NET_MARGIN%`)
+   - Formula: `Net Income / Revenue × 100`
+   - Models: `account`, `account.move.line`
+   - Endpoint: `/api/erp/kpi/net-margin`
+   
+3. **EBITDA Margin %** (`FIN.EBITDA_MARGIN%`)
+   - Formula: `EBITDA / Revenue × 100`
+   - Models: `account`, `account.move.line`
+   - Endpoint: `/api/erp/kpi/ebitda-margin`
+
+**Phase 1B: Working Capital KPIs** (Week 2)
+4. **Days Sales Outstanding** (`WC.DSO`)
+   - Formula: `(Average AR / Credit Sales) × Days`
+   - Models: `account.move`, `stock.move`
+   - Endpoint: `/api/erp/kpi/dso`
+   
+5. **Days Payables Outstanding** (`WC.DPO`)
+   - Formula: `(Average AP / Purchases or COGS) × Days`
+   - Models: Multiple models
+   - Endpoint: `/api/erp/kpi/dpo`
+
+**Phase 1C: Inventory & Profitability KPIs** (Week 3)
+6. **Days Inventory Outstanding** (`WC.DIO`)
+   - Formula: `(Average Inventory / COGS) × Days`
+   - Models: `inventory`, COGS
+   - Endpoint: `/api/erp/kpi/dio`
+   - **Dependency**: Requires stock module
+
+7. **Cash Conversion Cycle** (`WC.CCC`)
+   - Formula: `DIO + DSO - DPO`
+   - Models: Derived from above
+   - Endpoint: `/api/erp/kpi/ccc`
+   
+8. **Inventory Turnover** (`INV.TURN`)
+   - Formula: `COGS / Average Inventory`
+   - Models: `inventory`, COGS
+   - Endpoint: `/api/erp/kpi/inventory-turnover`
+
+9. **Return on Assets %** (`FIN.ROA%`)
+   - Formula: `Net Income / Avg Total Assets × 100`
+   - Models: `account`, GL Balance Sheet
+   - Endpoint: `/api/erp/kpi/roa`
+
+10. **Return on Equity %** (`FIN.ROE%`)
+    - Formula: `Net Income / Avg Equity × 100`
+    - Models: `account`, GL Balance Sheet
+    - Endpoint: `/api/erp/kpi/roe`
+
+11. **Return on Capital Employed %** (`FIN.ROCE%`)
+    - Formula: `EBIT / (Total Assets - Current Liabilities) × 100`
+    - Models: `account`, Balance Sheet
+    - Endpoint: `/api/erp/kpi/roce`
+
+**Testing Requirements for Each KPI**:
+- Test with live Odoo instance (`https://testing.glsystem.ae`)
+- Validate formula matches Excel specification
+- Performance target: < 2 seconds response time
+- Handle edge cases (zero revenue, missing data, etc.)
+- Comprehensive error handling
+
+**Documentation**: `docs/Technology_Research/KPI_Implementation_Status.md`
+
+---
+
+#### **Step 2: KPI Database Schema** (3-5 days)
+
+Add to `prisma/schema.prisma`:
+
+```prisma
+// Master catalog of all available KPIs
+model KPICatalog {
+  id              String   @id @default(uuid())
+  code            String   @unique  // e.g., "FIN.REV_GROWTH%"
+  name            String             // e.g., "Revenue Growth %"
+  formula         String             // Formula description
+  purpose         String             // What it measures
+  dataSource      String             // Where data comes from
+  industry        String             // Cross-Industry, Retail, etc.
+  odooModels      String[]           // Required Odoo models
+  isCore          Boolean  @default(false) // Core = yellow in catalog
+  category        String             // Financial, Working Capital, etc.
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  planKPIs        PlanKPI[]
+  
+  @@index([isCore, category])
+}
+
+// KPIs selected for a specific service plan
+model PlanKPI {
+  id                String   @id @default(uuid())
+  servicePlanId     String
+  kpiCatalogId      String
+  targetValue       Float              // Target to achieve
+  thresholdGreen    Float              // Green if >= this
+  thresholdAmber    Float              // Amber if >= this
+  thresholdRed      Float              // Red if < this
+  weight            Float              // Weight in overall score (must total 100%)
+  effectiveFrom     DateTime
+  effectiveTo       DateTime?
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  servicePlan       ServicePlan  @relation(fields: [servicePlanId], references: [id], onDelete: Cascade)
+  kpiCatalog        KPICatalog   @relation(fields: [kpiCatalogId], references: [id])
+  results           KPIResult[]
+  
+  @@unique([servicePlanId, kpiCatalogId])
+  @@index([servicePlanId, isActive])
+}
+
+// Historical KPI calculation results
+model KPIResult {
+  id              String   @id @default(uuid())
+  planKPIId       String
+  periodStart     DateTime
+  periodEnd       DateTime
+  actualValue     Float              // Calculated value
+  targetValue     Float              // Target at time of calculation
+  variance        Float              // (actual - target) / target * 100
+  status          String             // GREEN / AMBER / RED
+  calculatedAt    DateTime @default(now())
+  dataSourceType  String             // ODOO / SALESFORCE / MANUAL
+  calculationTime Int                // Milliseconds to calculate
+  rawData         Json?              // Store API response for debugging
+  errorMessage    String?            // If calculation failed
+  
+  planKPI         PlanKPI  @relation(fields: [planKPIId], references: [id], onDelete: Cascade)
+  
+  @@index([planKPIId, periodStart])
+  @@index([calculatedAt])
+}
 ```
-Tasks:
-- [ ] ERP Connection selector (Odoo/SAP/QuickBooks/Zoho/Manual)
+
+**Migration Steps**:
+1. Add models to schema
+2. Run `npm run db:generate`
+3. Run `npm run db:push`
+4. Seed `KPICatalog` with 12 Core KPIs from Master_KPI_Catalog
+
+---
+
+#### **Step 3: KPI Infrastructure** (5-7 days)
+
+**A. KPI Calculation Service**
+```typescript
+// File: src/application/services/KPICalculationService.ts
+
+interface IKPICalculationService {
+  calculateKPI(
+    kpiCode: string,
+    connectionId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<KPIResult>;
+  
+  calculateMultipleKPIs(
+    kpiCodes: string[],
+    connectionId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<KPIResult[]>;
+  
+  scheduleKPIRefresh(planId: string, frequency: 'HOURLY' | 'DAILY' | 'WEEKLY'): Promise<void>;
+}
+```
+
+**B. KPI Caching Strategy**
+- Cache results in database (`KPIResult` model)
+- Cache expiry: 1 hour for real-time KPIs, 24 hours for historical
+- Manual refresh available via API
+- Background job for scheduled refresh
+
+**C. API Endpoints**
+```typescript
+GET  /api/kpis/catalog              // List all available KPIs
+GET  /api/kpis/catalog/:code        // Get single KPI details
+POST /api/plans/:id/kpis            // Add KPI to plan
+GET  /api/plans/:id/kpis            // List KPIs for plan
+PUT  /api/plans/:id/kpis/:kpiId     // Update KPI targets/thresholds
+DELETE /api/plans/:id/kpis/:kpiId   // Remove KPI from plan
+GET  /api/plans/:id/kpis/:kpiId/calculate  // Calculate/refresh KPI
+GET  /api/plans/:id/kpis/calculate-all     // Calculate all plan KPIs
+```
+
+---
+
+### **PRIORITY 2: KPI User Interface** (After Priority 1)
+
+#### **Plan Builder Stage 3: KPI Selection** (3-5 days)
+
+**Features**:
+- Searchable/filterable KPI catalog
+- Category filter (Financial, Working Capital, etc.)
+- Industry filter
+- "Add to Plan" button
+- Selected KPIs list with:
+  - Target value input
+  - Threshold sliders (Green/Amber/Red)
+  - Weight input (auto-validates total = 100%)
+  - Remove button
+- Preview: Show overall KPI mix pie chart
+- Save: Add to `PlanKPI` table
+
+**UI File**: `apps/hq-console/src/app/plans/new/page.tsx` (Stage 3 tab)
+
+---
+
+#### **Plan Monitor Tab 2: KPI Dashboard** (5-7 days)
+
+**Features**:
+- KPI overview table:
+  - Columns: KPI Name, Target, Actual, Variance %, Status, Last Updated
+  - Color-coded rows (green/amber/red)
+  - Sort by any column
+  - Filter by status
+- "Refresh All KPIs" button
+- Individual KPI cards:
+  - Current value vs target
+  - Trend line (last 6 periods)
+  - Drill-down to detail view
+- Charts:
+  - Overall KPI score gauge
+  - Category performance (radar chart)
+  - Trend over time (line chart)
+- Export to Excel/PDF
+
+**UI File**: `apps/hq-console/src/app/plans/[id]/monitor/page.tsx` (KPIs tab)
+
+---
+
+#### **Dashboard KPI Widgets** (2-3 days)
+
+**Features**:
+- Top 3 performing KPIs (green)
+- Top 3 underperforming KPIs (red/amber)
+- Overall KPI health score
+- Click to navigate to Plan Monitor
+
+**UI File**: `apps/hq-console/src/presentation/components/dashboard/KPIWidget.tsx`
+
+---
+
+### **PRIORITY 3: Complete Plan Builder** (After KPI UI)
+
+Stages 2, 5, 6, 7, 8 as originally planned in this document (see below for detailed specs).
+
+---
+
+### **PRIORITY 4: Plan Monitor Full Implementation** (After Plan Builder)
+
+All 7 tabs with full functionality.
+
+---
+
+## 🔧 **TECHNICAL REFERENCE**
+
+### Original Plan Builder Stages (Lower Priority)
+
+**Note**: These are deferred until KPI system is complete.
 - [ ] Connection status indicator
 - [ ] Data Domains checkboxes (AR, AP, GL, Sales, Inventory)
 - [ ] Mapping Health % display
