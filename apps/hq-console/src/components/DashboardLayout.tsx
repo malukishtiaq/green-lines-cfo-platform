@@ -90,6 +90,28 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         setOpenKeys(['kpi']);
         if (path === '/kpi/revenue-growth') {
           setSelectedKey('kpi/revenue-growth');
+        } else if (path === '/kpi/operating-margin') {
+          setSelectedKey('kpi/operating-margin');
+        } else if (path === '/kpi/ebitda-margin') {
+          setSelectedKey('kpi/ebitda-margin');
+        } else if (path === '/kpi/cash-flow-ops') {
+          setSelectedKey('kpi/cash-flow-ops');
+        } else if (path === '/kpi/debt-equity') {
+          setSelectedKey('kpi/debt-equity');
+        } else if (path === '/kpi/employee-growth') {
+          setSelectedKey('kpi/employee-growth');
+        } else if (path === '/kpi/employee-turnover') {
+          setSelectedKey('kpi/employee-turnover');
+        } else if (path === '/kpi/average-tenure') {
+          setSelectedKey('kpi/average-tenure');
+        } else if (path === '/kpi/cost-per-hire') {
+          setSelectedKey('kpi/cost-per-hire');
+        } else if (path === '/kpi/open-positions') {
+          setSelectedKey('kpi/open-positions');
+        } else if (path === '/kpi/num-customers') {
+          setSelectedKey('kpi/num-customers');
+        } else if (path === '/kpi/avg-order-value') {
+          setSelectedKey('kpi/avg-order-value');
         }
       } else if (path.startsWith('/customers')) {
         setSelectedKey('customers');
@@ -292,7 +314,106 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           icon: <DollarOutlined style={{ fontSize: 16 }} />,
           label: (
             <span style={{ fontWeight: 400, fontSize: 14 }}>
-              Revenue Growth
+              Revenue Growth %
+            </span>
+          ),
+        },
+        {
+          key: 'kpi/operating-margin',
+          icon: <BarChartOutlined style={{ fontSize: 16 }} />,
+          label: (
+            <span style={{ fontWeight: 400, fontSize: 14 }}>
+              Operating Margin %
+            </span>
+          ),
+        },
+        {
+          key: 'kpi/ebitda-margin',
+          icon: <BarChartOutlined style={{ fontSize: 16 }} />,
+          label: (
+            <span style={{ fontWeight: 400, fontSize: 14 }}>
+              EBITDA Margin %
+            </span>
+          ),
+        },
+        {
+          key: 'kpi/cash-flow-ops',
+          icon: <DollarOutlined style={{ fontSize: 16 }} />,
+          label: (
+            <span style={{ fontWeight: 400, fontSize: 14 }}>
+              Cash Flow Operations
+            </span>
+          ),
+        },
+        {
+          key: 'kpi/debt-equity',
+          icon: <BarChartOutlined style={{ fontSize: 16 }} />,
+          label: (
+            <span style={{ fontWeight: 400, fontSize: 14 }}>
+              Debt-to-Equity Ratio
+            </span>
+          ),
+        },
+        {
+          key: 'kpi/employee-growth',
+          icon: <TeamOutlined style={{ fontSize: 16 }} />,
+          label: (
+            <span style={{ fontWeight: 400, fontSize: 14 }}>
+              Employee Growth %
+            </span>
+          ),
+        },
+        {
+          key: 'kpi/employee-turnover',
+          icon: <TeamOutlined style={{ fontSize: 16 }} />,
+          label: (
+            <span style={{ fontWeight: 400, fontSize: 14 }}>
+              Employee Turnover %
+            </span>
+          ),
+        },
+        {
+          key: 'kpi/average-tenure',
+          icon: <TeamOutlined style={{ fontSize: 16 }} />,
+          label: (
+            <span style={{ fontWeight: 400, fontSize: 14 }}>
+              Average Tenure
+            </span>
+          ),
+        },
+        {
+          key: 'kpi/cost-per-hire',
+          icon: <DollarOutlined style={{ fontSize: 16 }} />,
+          label: (
+            <span style={{ fontWeight: 400, fontSize: 14 }}>
+              Cost per Hire
+            </span>
+          ),
+        },
+        {
+          key: 'kpi/open-positions',
+          icon: <TeamOutlined style={{ fontSize: 16 }} />,
+          label: (
+            <span style={{ fontWeight: 400, fontSize: 14 }}>
+              Open Positions
+            </span>
+          ),
+        },
+        {
+          key: 'kpi/num-customers',
+          icon: <UserOutlined style={{ fontSize: 16 }} />,
+          label: (
+            <span style={{ fontWeight: 400, fontSize: 14 }}>
+              Number of Customers
+            </span>
+          ),
+        },
+        {
+          key: 'kpi/avg-order-value',
+          icon: <DollarOutlined style={{ fontSize: 16 }} />,
+          label: (
+            <span style={{ fontWeight: 400, fontSize: 14 }}>
+              Avg Order Value
             </span>
           ),
         },
@@ -332,6 +453,28 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       window.location.href = '/erp/test';
     } else if (key === 'kpi/revenue-growth') {
       window.location.href = '/kpi/revenue-growth';
+    } else if (key === 'kpi/operating-margin') {
+      window.location.href = '/kpi/operating-margin';
+    } else if (key === 'kpi/ebitda-margin') {
+      window.location.href = '/kpi/ebitda-margin';
+    } else if (key === 'kpi/cash-flow-ops') {
+      window.location.href = '/kpi/cash-flow-ops';
+    } else if (key === 'kpi/debt-equity') {
+      window.location.href = '/kpi/debt-equity';
+    } else if (key === 'kpi/employee-growth') {
+      window.location.href = '/kpi/employee-growth';
+    } else if (key === 'kpi/employee-turnover') {
+      window.location.href = '/kpi/employee-turnover';
+    } else if (key === 'kpi/average-tenure') {
+      window.location.href = '/kpi/average-tenure';
+    } else if (key === 'kpi/cost-per-hire') {
+      window.location.href = '/kpi/cost-per-hire';
+    } else if (key === 'kpi/open-positions') {
+      window.location.href = '/kpi/open-positions';
+    } else if (key === 'kpi/num-customers') {
+      window.location.href = '/kpi/num-customers';
+    } else if (key === 'kpi/avg-order-value') {
+      window.location.href = '/kpi/avg-order-value';
     } else if (key === 'tasks') {
       window.location.href = '/tasks';
     } else if (key === 'tasks/new') {
