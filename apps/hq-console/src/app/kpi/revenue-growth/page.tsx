@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import DashboardLayout from '@/components/DashboardLayout';
 import {
   Card,
   Button,
@@ -139,22 +140,23 @@ export default function RevenueGrowthKPIPage() {
   };
 
   return (
-    <div style={{ padding: '24px' }}>
-      <Card
-        title={
-          <Space>
-            <DollarOutlined style={{ fontSize: '24px', color: '#1890ff' }} />
-            <span style={{ fontSize: '20px', fontWeight: 'bold' }}>
-              Revenue Growth KPI
-            </span>
-          </Space>
-        }
-        extra={
-          <Tag color="blue" style={{ fontSize: '14px', padding: '4px 12px' }}>
-            FIN.REV_GROWTH%
-          </Tag>
-        }
-      >
+    <DashboardLayout>
+      <div style={{ padding: '24px' }}>
+        <Card
+          title={
+            <Space>
+              <DollarOutlined style={{ fontSize: '24px', color: '#1890ff' }} />
+              <span style={{ fontSize: '20px', fontWeight: 'bold' }}>
+                Revenue Growth KPI
+              </span>
+            </Space>
+          }
+          extra={
+            <Tag color="blue" style={{ fontSize: '14px', padding: '4px 12px' }}>
+              FIN.REV_GROWTH%
+            </Tag>
+          }
+        >
         {/* Filters Section */}
         <Card
           type="inner"
@@ -408,6 +410,7 @@ export default function RevenueGrowthKPIPage() {
         )}
       </Card>
     </div>
+    </DashboardLayout>
   );
 }
 
