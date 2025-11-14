@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/infrastructure/database/prisma';
+import { prisma } from '@/lib/prisma';
 import { EncryptionService } from '@/infrastructure/services/EncryptionService';
 import axios from 'axios';
 
