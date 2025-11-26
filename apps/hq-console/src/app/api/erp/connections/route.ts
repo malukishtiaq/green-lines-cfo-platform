@@ -26,12 +26,15 @@ export async function GET(request: NextRequest) {
             company: true,
           },
         },
-        syncHistory: {
-          orderBy: {
-            createdAt: 'desc',
-          },
-          take: 5, // Last 5 sync attempts
-        },
+        // NOTE: syncHistory is temporarily excluded from this query
+        // to avoid issues with legacy columns in some databases.
+        // We'll add it back once all environments are fully migrated.
+        // syncHistory: {
+        //   orderBy: {
+        //     createdAt: 'desc',
+        //   },
+        //   take: 5,
+        // },
       },
       orderBy: {
         createdAt: 'desc',
@@ -53,7 +56,6 @@ export async function GET(request: NextRequest) {
       dataDomains: conn.dataDomains,
       createdAt: conn.createdAt,
       updatedAt: conn.updatedAt,
-      syncHistory: conn.syncHistory,
     }));
 
     return NextResponse.json({
