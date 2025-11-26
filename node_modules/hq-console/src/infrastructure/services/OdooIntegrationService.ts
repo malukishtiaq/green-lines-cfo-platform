@@ -21,6 +21,8 @@ import axios, { AxiosInstance } from 'axios';
  */
 export class OdooIntegrationService implements IERPIntegrationService {
   private axiosInstance: AxiosInstance;
+  private sessionId: string | null = null;
+  private baseUrl: string | null = null;
 
   constructor() {
     this.axiosInstance = axios.create({
@@ -87,17 +89,18 @@ export class OdooIntegrationService implements IERPIntegrationService {
   }
 
   /**
-   * Authenticate with Odoo and get UID
+   * Authenticate with Odoo and get session ID
    */
   private async authenticate(
     url: string,
     database: string,
     username: string,
     password: string
-  ): Promise<{ uid: number; serverVersion?: string }> {
+  ): Promise<{ uid: number; serverVersion?: string; sessionId: string }> {
     try {
       // Clean the URL - remove any query parameters
       const baseUrl = url.split('?')[0].replace(/\/$/, '');
+      this.baseUrl = baseUrl;
       
       // Odoo JSON-RPC authentication endpoint
       const authUrl = `${baseUrl}/web/session/authenticate`;
@@ -110,6 +113,7 @@ export class OdooIntegrationService implements IERPIntegrationService {
       
       const response = await this.axiosInstance.post(authUrl, {
         jsonrpc: '2.0',
+        method: 'call',
         params: {
           db: database,
           login: username,
@@ -119,12 +123,27 @@ export class OdooIntegrationService implements IERPIntegrationService {
 
       console.log('Odoo auth response:', response.data);
 
+      // Extract session_id from cookies
+      let sessionId = '';
+      const cookies = response.headers['set-cookie'];
+      if (cookies) {
+        for (const cookie of cookies) {
+          const match = cookie.match(/session_id=([^;]+)/);
+          if (match) {
+            sessionId = match[1];
+            this.sessionId = sessionId;
+            break;
+          }
+        }
+      }
+
       // Check for result
       if (response.data.result) {
         if (response.data.result.uid) {
           return {
             uid: response.data.result.uid,
             serverVersion: response.data.result.server_version,
+            sessionId: sessionId,
           };
         }
         
@@ -163,6 +182,49 @@ export class OdooIntegrationService implements IERPIntegrationService {
       
       throw new Error(error.message || 'Odoo authentication failed');
     }
+  }
+
+  /**
+   * Make authenticated call to Odoo using call_kw endpoint
+   */
+  async callKw(
+    model: string,
+    method: string,
+    args: any[] = [],
+    kwargs: Record<string, any> = {}
+  ): Promise<any> {
+    if (!this.baseUrl || !this.sessionId) {
+      throw new Error('Not authenticated. Please authenticate first.');
+    }
+
+    const callUrl = `${this.baseUrl}/web/dataset/call_kw/${model}/${method}`;
+    
+    console.log(`Calling Odoo ${model}.${method}:`, { args, kwargs });
+
+    const response = await this.axiosInstance.post(
+      callUrl,
+      {
+        jsonrpc: '2.0',
+        method: 'call',
+        params: {
+          model,
+          method,
+          args,
+          kwargs,
+        },
+      },
+      {
+        headers: {
+          Cookie: `session_id=${this.sessionId}`,
+        },
+      }
+    );
+
+    if (response.data.error) {
+      throw new Error(response.data.error.message || 'Odoo API call failed');
+    }
+
+    return response.data.result;
   }
 
   /**

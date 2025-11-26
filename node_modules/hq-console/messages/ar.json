@@ -123,6 +123,15 @@
       "stayOnTrack": "البقاء على المسار"
     }
   },
+  "erpIntegration": {
+    "reconnect": "إعادة الاتصال",
+    "reconnectSuccess": "تم استعادة اتصال نظام ERP بنجاح.",
+    "reconnectError": "فشل في إعادة الاتصال بنظام ERP.",
+    "refreshStatus": "تحديث الحالة",
+    "syncData": "مزامنة البيانات",
+    "sessionExpiredTitle": "انتهت صلاحية الجلسة",
+    "sessionExpiredDescription": "أعد الاتصال لتحديث جلسة نظام ERP واستئناف المزامنة."
+  },
   "partner": {
     "title": "الشريك",
     "partners": "الشركاء",
