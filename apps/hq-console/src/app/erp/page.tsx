@@ -88,6 +88,7 @@ export default function ERPIntegrationPage() {
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
   const [selectedConnection, setSelectedConnection] = useState<ERPConnection | null>(null);
   const [reconnectingId, setReconnectingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const translations = DEFAULT_TRANSLATIONS;
   
   // Filters
@@ -165,6 +166,63 @@ export default function ERPIntegrationPage() {
       message.error(translations.reconnectError);
     } finally {
       setReconnectingId(null);
+    }
+  };
+
+  const handleDeleteConnection = async (connectionId: string) => {
+    // Simple browser confirm for now (more reliable in local testing)
+    const confirmed = window.confirm(
+      'Are you sure you want to delete this ERP connection? This will also remove its sync history.'
+    );
+    if (!confirmed) return;
+
+    try {
+      setDeletingId(connectionId);
+      const response = await fetch(`/api/erp/connections/${connectionId}`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        message.success('ERP connection deleted successfully');
+        await fetchData();
+      } else {
+        message.error(result.error || 'Failed to delete ERP connection');
+      }
+    } catch (error) {
+      console.error('Error deleting ERP connection:', error);
+      message.error('Failed to delete ERP connection');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleDeleteAllConnections = async () => {
+    const confirmed = window.confirm(
+      'This will permanently delete ALL ERP connections and their sync history. This is mainly for local testing. Continue?'
+    );
+    if (!confirmed) return;
+
+    try {
+      setDeletingId('ALL');
+      const response = await fetch('/api/erp/connections?all=true', {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        message.success(`Deleted ${result.deletedCount ?? 0} ERP connections`);
+        await fetchData();
+      } else {
+        message.error(result.error || 'Failed to delete ERP connections');
+      }
+    } catch (error) {
+      console.error('Error deleting ERP connections:', error);
+      message.error('Failed to delete ERP connections');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -314,6 +372,14 @@ export default function ERPIntegrationPage() {
               {translations.reconnect}
             </Button>
           )}
+          <Button
+            type="link"
+            danger
+            onClick={() => handleDeleteConnection(record.id)}
+            loading={deletingId === record.id}
+          >
+            Delete
+          </Button>
         </Space>
       ),
     },
@@ -400,6 +466,14 @@ export default function ERPIntegrationPage() {
           <Space>
             <Button icon={<SyncOutlined />} onClick={fetchData}>
               Refresh
+            </Button>
+            <Button
+              danger
+              onClick={handleDeleteAllConnections}
+              disabled={connections.length === 0}
+              loading={deletingId === 'ALL'}
+            >
+              Delete All
             </Button>
             <Button
               type="primary"

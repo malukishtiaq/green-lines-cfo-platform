@@ -125,3 +125,39 @@ export async function POST(request: NextRequest) {
   }
 }
 
+/**
+ * DELETE /api/erp/connections?all=true
+ *
+ * Delete all ERP connections (and their sync history via cascade).
+ * Useful for resetting the environment during testing.
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const all = searchParams.get('all');
+
+    if (all !== 'true') {
+      return NextResponse.json(
+        { success: false, error: 'To delete all connections, call with ?all=true' },
+        { status: 400 },
+      );
+    }
+
+    const result = await prisma.eRPConnection.deleteMany({});
+
+    return NextResponse.json({
+      success: true,
+      deletedCount: result.count,
+    });
+  } catch (error: any) {
+    console.error('Error deleting ERP connections:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message || 'Internal server error',
+      },
+      { status: 500 },
+    );
+  }
+}
+
