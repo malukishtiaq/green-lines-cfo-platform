@@ -872,10 +872,10 @@ model ERPSyncHistory {
   duration        Int      // milliseconds
   
   // Metadata
-  triggeredBy     String?  // USER_ID or "SYSTEM" for scheduled syncs
-  dataDomainsSynced String[] // Which domains were synced in this run
+  triggeredBy       String?   // USER_ID or "SYSTEM" for scheduled syncs
+  dataDomainsSynced String[] @map("dataDomainssynced") // Which domains were synced in this run
   
-  createdAt       DateTime  @default(now())
+  createdAt         DateTime  @default(now())
   
   @@index([connectionId, createdAt])
   @@index([status])
