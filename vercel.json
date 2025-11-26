@@ -1,7 +1,5 @@
 {
   "buildCommand": "turbo run build --filter=hq-console",
-  "installCommand": "npm install",
-  "framework": null,
-  "outputDirectory": "apps/hq-console/.next"
+  "installCommand": "npm install"
 }
 
